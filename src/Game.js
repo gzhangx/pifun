@@ -32,6 +32,7 @@ class Scene extends React.Component {
 
     var ballA = Bodies.circle(210, 100, 30, { restitution: 0.5 });
     var ballB = Bodies.circle(110, 50, 30, { restitution: 0.5 });
+    console.log(Bodies.rectangle(200, 0, 600, 50, { isStatic: true }));
     World.add(engine.world, [
       // walls
       Bodies.rectangle(200, 0, 600, 50, { isStatic: true }),
@@ -62,11 +63,18 @@ class Scene extends React.Component {
 
     Engine.run(engine);
 
-    Render.run(render);
+    Render.run((render));
+    function renderFunc() {
+      var ctx = c.getContext("2d");
+      setTimeout(renderFunc, 50);
+    }
+    setTimeout(renderFunc, 50);
   }
 
   render() {
-    return <div ref="scene" />;
+    return <div ref="scene" >
+      <canvas ref="canvas" width={600} height={600} />
+    </div>;
   }
 }
 export default Scene;
