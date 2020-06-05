@@ -1,31 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Matter from "matter-js";
-
+import p5 from "p5";
+const WIDTH = 600;
+const HEIGHT = 600;
 class Scene extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.drawRef = React.createRef()
   }
 
-  componentDidMount() {
-    var Engine = Matter.Engine,
+  
+
+  componentDidMount() {    
+    const Engine = Matter.Engine,
       Render = Matter.Render,
       World = Matter.World,
       Bodies = Matter.Bodies,
       Mouse = Matter.Mouse,
       MouseConstraint = Matter.MouseConstraint;
 
-    var engine = Engine.create({
+    const engine = Engine.create({
       // positionIterations: 20
     });
 
-    var render = Render.create({
+    const render = Render.create({
       element: this.refs.scene,
       engine: engine,
       options: {
-        width: 600,
-        height: 600,
+        width: WIDTH,
+        height: HEIGHT,
         wireframes: false
       }
     });
@@ -44,7 +49,7 @@ class Scene extends React.Component {
     World.add(engine.world, [ballA, ballB]);
 
     // add mouse control
-    var mouse = Mouse.create(render.canvas),
+    const mouse = Mouse.create(render.canvas),
       mouseConstraint = MouseConstraint.create(engine, {
         mouse: mouse,
         constraint: {
@@ -64,16 +69,23 @@ class Scene extends React.Component {
     Engine.run(engine);
 
     Render.run((render));
-    function renderFunc() {
-      var ctx = c.getContext("2d");
-      setTimeout(renderFunc, 50);
-    }
-    setTimeout(renderFunc, 50);
+    const Sketch = p => {
+      p.setup = () => {
+        p.createCanvas(WIDTH, HEIGHT)
+      }
+  
+      p.draw = () => {
+        p.background(0);
+        p.fill(255);
+        p.rect(ballA.position.x - 30, ballA.position.y - 30, 60,60);
+      }
+   }
+    this.myP5 = new p5(Sketch, this.drawRef.current);
   }
 
   render() {
     return <div ref="scene" >
-      <canvas ref="canvas" width={600} height={600} />
+      
     </div>;
   }
 }
