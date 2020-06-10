@@ -1,7 +1,7 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import Matter from "matter-js";
 import p5 from "p5";
+import {createEngine} from "./components/world/engine";
+
 const WIDTH = 600;
 const HEIGHT = 600;
 class Scene extends React.Component {
@@ -14,27 +14,8 @@ class Scene extends React.Component {
   
 
   componentDidMount() {    
-    const Engine = Matter.Engine,
-      Render = Matter.Render,
-      World = Matter.World,
-      Bodies = Matter.Bodies,
-      Mouse = Matter.Mouse,
-      MouseConstraint = Matter.MouseConstraint;
-
-    const engine = Engine.create({
-      // positionIterations: 20
-    });
-
-    const render = Render.create({
-      element: this.refs.scene,
-      engine: engine,
-      options: {
-        width: WIDTH,
-        height: HEIGHT,
-        wireframes: false
-      }
-    });
-
+      
+    const {addToWorld, Bodies} = createEngine();
     const allBodies = [];
 
     var ballA = Bodies.circle(210, 100, 30, { restitution: 0.5 });
@@ -42,32 +23,15 @@ class Scene extends React.Component {
     allBodies.push(ballA);
     allBodies.push(ballB);
     console.log(Bodies.rectangle(200, 0, 600, 50, { isStatic: true }));
-    World.add(engine.world, [
+    addToWorld([
       // walls      
       Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
-    ]);
+    ])
+    
 
-    World.add(engine.world, [ballA, ballB]);
-
-    // add mouse control
-    const mouse = Mouse.create(render.canvas),
-      mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
-        constraint: {
-          stiffness: 0.2,
-          render: {
-            visible: false
-          }
-        }
-      });
-
-    World.add(engine.world, mouseConstraint);
-
-    Matter.Events.on(mouseConstraint, "mousedown", function(event) {
-      //World.add(engine.world, Bodies.circle(150, 50, 30, { restitution: 0.7 }));
-    });
-
-    Engine.run(engine);
+    addToWorld([ballA, ballB]);
+    
+    
 
     //Render.run((render));
     const Sketch = p => {
@@ -89,7 +53,7 @@ class Scene extends React.Component {
         const bdy = Bodies.circle(p.mouseX, p.mouseY, 30, { restitution: 0.7 });
         allBodies.push(bdy);
         console.log('x' +p.mouseX+' ' + p.mouseY)
-        World.add(engine.world, bdy);
+        addToWorld(bdy);
         //World.add(engine.world, Bodies.circle(150, p.mouseX, p.mouseY, { restitution: 0.7 }));
       }
    }
