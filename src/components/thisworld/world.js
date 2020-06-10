@@ -1,4 +1,5 @@
 import SimpleCircle from '../objs/SimpleCircle';
+import SimpleSqure from '../objs/SimpleSqure';
 export const allBodies = [];
 export const WIDTH = 600;
 export const HEIGHT = 600;
@@ -20,24 +21,27 @@ export default  {
         p.fill(255);
         allBodies.forEach(item=>{
             const {body, type, radius } = item;
-            switch (type) {
-                case 'SimpleRect':
-                    const size = radius *2;                    
-                    p.rect(body.position.x - radius , body.position.y - radius , size,size);
-                    break;
-                case 'SimpleCircle':
-                    item.show(p);
-                    break;
-            }
+            item.show(p);            
         });
     },
     mousePressed: p=>{
+
+        return new SimpleSqure({
+            x: p.mouseX,
+            y: p.mouseY,
+            w: 30,
+            opt: { restitution: 0.5,
+            friction: 0.3 },
+        }, core);
+
         new SimpleCircle({
             x: p.mouseX,
             y: p.mouseY,
             r: 30,
             opt: { restitution: 0.5 },
         }, core);
+
+        
         //const body = core.Bodies.circle(p.mouseX, p.mouseY, 30, { restitution: 0.7 });
         //allBodies.push({
         //    type: 'SimpleCircle',
