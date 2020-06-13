@@ -7,6 +7,7 @@ export default function SimpleSqure(initInfo, engine) {
     const body = Bodies.rectangle(x, y, w, w, opts);
     addToWorld(body);
 
+    this.body = body;
     allBodies.push(this);
     this.show = p => {
         const pos = body.position;

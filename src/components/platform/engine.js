@@ -4,7 +4,9 @@ export function createEngine() {
     const Engine = Matter.Engine,
       //Render = Matter.Render,
       World = Matter.World,
-      Bodies = Matter.Bodies;      
+      Bodies = Matter.Bodies,
+      Constraint = Matter.Constraint
+      ;      
 
     const engine = Engine.create({
       // positionIterations: 20
@@ -19,7 +21,9 @@ export function createEngine() {
         World,
         engine,
         Bodies,
+        Constraint,
         addToWorld: body=>World.add(engine.world, body),
+        addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
     }
 }
 
