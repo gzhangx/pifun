@@ -28,11 +28,11 @@ export function createEngine() {
 }
 
 
-export const setup= (drawCanv, world, engine)=>{ 
+export const setup= (drawCanv, world, engine, props)=>{ 
   const Sketch = p => {
       p.setup = ()=>world.setup(p, engine);
 
-      p.draw = () => world.draw(p);        
+      p.draw = () => world.draw(p, props);        
 
       p.mousePressed = ()=>{
         world.mousePressed(p);            

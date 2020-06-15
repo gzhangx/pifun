@@ -12,6 +12,7 @@ let engine ;
 export default  {
     WIDTH,
     HEIGHT,
+    core,
     setup: (p, eng)=>{
         p.createCanvas(WIDTH, HEIGHT);
         engine = eng;
@@ -20,6 +21,31 @@ export default  {
         createWorld();
     },
     draw: p=>{
+        if (core.curKey) {
+            core.curKey = null;
+            const b1 = new SimpleSqure({
+                x: p.mouseX,
+                y: p.mouseY,
+                w: 30,
+                opt: { restitution: 0.5,
+                friction: 0.3 },
+            }, core);
+    
+            const b2 = new SimpleSqure({
+                x: p.mouseX+40,
+                y: p.mouseY+10,
+                w: 30,
+                opt: { restitution: 0.5,
+                friction: 0.3 },
+            }, core);
+    
+            //length: 60
+            const cst = {bodyA: b1.body, bodyB: b2.body, length: 60, stiffness:0.9};
+            //engine.Constraint.create(cst);
+            engine.addConstraint(cst);
+            core.constraints.push(cst);
+            return;
+        }
         p.background(0);
         p.fill(255);
         allBodies.forEach(item=>{
@@ -33,7 +59,7 @@ export default  {
         });
     },
     mousePressed: p=>{
-
+return;
         const b1 = new SimpleSqure({
             x: p.mouseX,
             y: p.mouseY,
@@ -51,7 +77,7 @@ export default  {
         }, core);
 
         //length: 60
-        const cst = {bodyA: b1.body, bodyB: b2.body, stiffness:0.9};
+        const cst = {bodyA: b1.body, bodyB: b2.body, length: 60, stiffness:0.9};
         //engine.Constraint.create(cst);
         engine.addConstraint(cst);
         core.constraints.push(cst);
