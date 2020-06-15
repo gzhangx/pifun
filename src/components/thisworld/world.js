@@ -17,7 +17,13 @@ export default  {
         p.createCanvas(WIDTH, HEIGHT);
         engine = eng;
         const {Mouse, MouseConstraint} = eng.Matter;
-        const mouse = Mouse.create(canvas),
+        eng.eventCallbacks.collisionEvent = (e)=>{            
+            if (e.name !== 'collisionActive') {
+                console.log(e.name);
+                console.log(e);
+            }
+        };
+        const mouse = Mouse.create(canvas),        
         mouseConstraint = MouseConstraint.create(engine.engine, {
             mouse,
             constraint: {

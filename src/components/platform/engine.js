@@ -5,13 +5,24 @@ export function createEngine() {
       //Render = Matter.Render,
       World = Matter.World,
       Bodies = Matter.Bodies,
-      Constraint = Matter.Constraint
+      Events = Matter.Events,
+      Constraint = Matter.Constraint      
       ;      
-
+    
     const engine = Engine.create({
       // positionIterations: 20
     });
 
+    const collisionEvents = ['collisionStart','collisionActive','collisionEnd'];
+    const eventCallbacks = {};
+    collisionEvents.forEach(eventName=>{
+      Events.on(engine, eventName, event=> {
+        //event.pairs[i].bodyA/bodyB;
+        const cb = eventCallbacks.collisionEvent;
+        return cb && cb(event);
+      });
+    });
+    
     Engine.run(engine);
     //World.add(engine.world, [
       // walls      
@@ -25,6 +36,7 @@ export function createEngine() {
         Constraint,
         addToWorld: body=>World.add(engine.world, body),
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
+        eventCallbacks,
     }
 }
 
