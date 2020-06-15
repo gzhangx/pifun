@@ -13,9 +13,20 @@ export default  {
     WIDTH,
     HEIGHT,
     core,
-    setup: (p, eng)=>{
+    setup: (p, eng, canvas)=>{
         p.createCanvas(WIDTH, HEIGHT);
         engine = eng;
+        const {Mouse, MouseConstraint} = eng.Matter;
+        const mouse = Mouse.create(canvas),
+        mouseConstraint = MouseConstraint.create(engine.engine, {
+            mouse,
+            constraint: {
+                stiffness: 0.2,                
+            }
+        });
+
+        eng.addToWorld(mouseConstraint);
+
         core.addToWorld = eng.addToWorld;        
         core.Bodies = eng.Bodies;
         createWorld();

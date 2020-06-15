@@ -19,6 +19,7 @@ export function createEngine() {
     //]);
     return {
         World,
+        Matter,
         engine,
         Bodies,
         Constraint,
@@ -30,7 +31,7 @@ export function createEngine() {
 
 export const setup= (drawCanv, world, engine, props)=>{ 
   const Sketch = p => {
-      p.setup = ()=>world.setup(p, engine);
+      p.setup = ()=>world.setup(p, engine, drawCanv);
 
       p.draw = () => world.draw(p, props);        
 
