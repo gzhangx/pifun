@@ -7,6 +7,7 @@ export const HEIGHT = 600;
 const core = {
     allBodies,
     constraints: [],
+    collisions:[],
 }
 let engine ;
 export default  {
@@ -18,9 +19,9 @@ export default  {
         engine = eng;
         const {Mouse, MouseConstraint} = eng.Matter;
         eng.eventCallbacks.collisionEvent = (e)=>{            
-            if (e.name !== 'collisionActive') {
-                console.log(e.name);
-                console.log(e);
+            
+            if (e.name === 'collisionActive' || e.pairs.length) {
+                core.collisions = e.pairs;                
             }
         };
         const mouse = Mouse.create(canvas),        
@@ -63,7 +64,7 @@ export default  {
             core.constraints.push(cst);
             return;
         }
-        p.background(0);
+        p.background(56);
         p.fill(255);
         allBodies.forEach(item=>{
             const {body, type, radius } = item;
@@ -74,6 +75,49 @@ export default  {
             const p2 = cst.bodyB.position;
             p.line(p1.x, p1.y, p2.x, p2.y);
         });
+
+        p.push();
+        const collisions = core.collisions;
+                //console.log(e.pairs);
+                for (let i = 0; i < collisions.length; i++) {
+                    const pair = collisions[i];
+        
+                    if (!pair.isActive)
+                        continue;
+        
+                    for (let j = 0; j < pair.activeContacts.length; j++) {
+                        const contact = pair.activeContacts[j],
+                            vertex = contact.vertex;                                
+                            p.stroke(128);
+                            p.strokeWeight(2);
+                        p.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
+                    }
+                
+                    // render collision normals                    
+                    const collision = pair.collision;
+
+                    if (pair.activeContacts.length > 0) {
+                        var normalPosX = pair.activeContacts[0].vertex.x,
+                            normalPosY = pair.activeContacts[0].vertex.y;
+
+                        if (pair.activeContacts.length === 2) {
+                            normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
+                            normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
+                        }
+
+                        let fx, fy;
+                        if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
+                            fx = normalPosX - collision.normal.x * 8;
+                            fy = normalPosY - collision.normal.y * 8;
+                        } else {
+                            fx = normalPosX + collision.normal.x * 8;
+                            fy = normalPosY + collision.normal.y * 8;
+                        }
+
+                        p.line(fx, fy, normalPosX, normalPosY);
+                    }
+                }
+                p.pop();
     },
     mousePressed: p=>{
 return;
