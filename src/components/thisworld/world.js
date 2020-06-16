@@ -77,47 +77,47 @@ export default  {
         });
 
         p.push();
-        const collisions = core.collisions;
-                //console.log(e.pairs);
-                for (let i = 0; i < collisions.length; i++) {
-                    const pair = collisions[i];
+        const pairs = core.collisions;
+        //console.log(e.pairs);
+        for (let i = 0; i < pairs.length; i++) {
+            const pair = pairs[i];
+
+            if (!pair.isActive)
+                continue;
+
+            for (let j = 0; j < pair.activeContacts.length; j++) {
+                const contact = pair.activeContacts[j],
+                    vertex = contact.vertex;                                
+                p.stroke(128);
+                p.strokeWeight(2);
+                p.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
+            }
         
-                    if (!pair.isActive)
-                        continue;
-        
-                    for (let j = 0; j < pair.activeContacts.length; j++) {
-                        const contact = pair.activeContacts[j],
-                            vertex = contact.vertex;                                
-                            p.stroke(128);
-                            p.strokeWeight(2);
-                        p.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
-                    }
-                
-                    // render collision normals                    
-                    const collision = pair.collision;
+            // render collision normals                    
+            const collision = pair.collision;
 
-                    if (pair.activeContacts.length > 0) {
-                        var normalPosX = pair.activeContacts[0].vertex.x,
-                            normalPosY = pair.activeContacts[0].vertex.y;
+            if (pair.activeContacts.length > 0) {
+                var normalPosX = pair.activeContacts[0].vertex.x,
+                    normalPosY = pair.activeContacts[0].vertex.y;
 
-                        if (pair.activeContacts.length === 2) {
-                            normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
-                            normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
-                        }
-
-                        let fx, fy;
-                        if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
-                            fx = normalPosX - collision.normal.x * 8;
-                            fy = normalPosY - collision.normal.y * 8;
-                        } else {
-                            fx = normalPosX + collision.normal.x * 8;
-                            fy = normalPosY + collision.normal.y * 8;
-                        }
-
-                        p.line(fx, fy, normalPosX, normalPosY);
-                    }
+                if (pair.activeContacts.length === 2) {
+                    normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
+                    normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
                 }
-                p.pop();
+
+                let fx, fy;
+                if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
+                    fx = normalPosX - collision.normal.x * 8;
+                    fy = normalPosY - collision.normal.y * 8;
+                } else {
+                    fx = normalPosX + collision.normal.x * 8;
+                    fy = normalPosY + collision.normal.y * 8;
+                }
+
+                p.line(fx, fy, normalPosX, normalPosY);
+            }
+        }
+        p.pop();
     },
     mousePressed: p=>{
 return;
