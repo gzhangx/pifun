@@ -50,6 +50,12 @@ export const setup= (drawCanv, world, engine, props)=>{
       p.mousePressed = ()=>{
         world.mousePressed(p);            
       }
+      p.mouseDragged = ()=>{
+        world.mouseDragged(p);
+      }
+      p.mouseReleased = ()=>{
+        world.mouseReleased(p);
+      }
   }
   const myP5 = new p5(Sketch, drawCanv);
   return {

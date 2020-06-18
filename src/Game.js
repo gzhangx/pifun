@@ -18,7 +18,7 @@ class Scene extends React.Component {
   componentDidMount() {          
     const engine= createEngine();  
     
-    this.myP5 = setup(this.drawRef.current, opt, engine);
+    this.myP5 = setup(this.drawRef.current, opt, engine, this.props);
   }
 
   render() {

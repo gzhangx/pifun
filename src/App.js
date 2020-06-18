@@ -5,12 +5,20 @@ import keyHandler from "./components/platform/keyHandler";
 import opt from './components/thisworld/world';
 function App() {
   const [curKey, setCurKey] = useState();
+  const [curBuildType, setCurBuildType] = useState();
   keyHandler(key=>{    
     opt.core.curKey = key;
   });
   return (
     <div className="App">
-      <Scene inputs = {{curKey, setCurKey}}/>
+      <div>
+      <Scene inputs = {{
+        curKey, setCurKey, curBuildType, setCurBuildType,
+        }}/>
+      </div>
+      <div>
+        <button onClick={()=>setCurBuildType('wall')}>Wall</button>
+      </div>
     </div>
   );
 }
