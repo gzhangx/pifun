@@ -99,6 +99,7 @@ export default  {
         core.constraints.forEach(cst=>{
             const p1 = addPt(cst,'A');
             const p2 = addPt(cst,'B');
+            p.stroke(0);
             p.line(p1.x, p1.y, p2.x, p2.y);
         });
 
@@ -150,7 +151,7 @@ export default  {
             if (mouse.state === 'pressed') {
                 const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
                 mouse.bodyFound = bodyFound;
-                if (bodyFound) {
+                if (bodyFound && bodyFound.ggParent) {
                     const pos = bodyFound.position;
         
                     p.push();
@@ -159,7 +160,8 @@ export default  {
                     p.stroke('ff0000');
                     p.strokeWeight(4);
                     p.fill('ff00ff');
-                    p.rect(2,2, bodyFound.ggParent.w-4, bodyFound.ggParent.w-4);
+                    p.rotate(bodyFound.angle);
+                    p.rect(2,2, bodyFound.ggParent.w-4, bodyFound.ggParent.h-4);
                     p.pop();
                 }
             }
@@ -200,12 +202,14 @@ export default  {
                     core.constraints.push(cst);
                 };
                 const stiffness = 1;
-                addCst({bodyA: l1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) + w }, pointB:{x:-cx +w, y:0}, stiffness});
-                addCst({bodyA: l1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - w }, pointB:{x:-cx +w, y:0}, stiffness});
+                addCst({bodyA: l1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) +1 }, pointB:{x:-cx +w, y:w-1}, stiffness});
+                addCst({bodyA: l1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - 1 }, pointB:{x:-cx +w, y:-w+1}, stiffness});
 
 
-                addCst({bodyA: r1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) + w }, pointB:{x:cx -w, y:0}, stiffness});
-                addCst({bodyA: r1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - w }, pointB:{x:cx -w, y:0}, stiffness});
+                addCst({bodyA: r1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) + 1 }, pointB:{x:cx -w, y:w-1}, stiffness});
+                addCst({bodyA: r1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - 1 }, pointB:{x:cx -w, y:-w+1}, stiffness});
+
+                addCst({bodyA: l1.body, bodyB: b1.body, pointA:{x:0, y:(-hl1/2)+w}, pointB:{x:cx -w, y:0}, stiffness});
                 //addCst({bodyA: r1.body, bodyB: t1.body, pointA: {x:0, y: -y1y2/2 }, pointB:{x:x1x2/2 , y:w/2}, stiffness});
                 //addCst({bodyA: r1.body, bodyB: b1.body, pointA: {x:0, y: y1y2/2 }, pointB:{x:x1x2/2 , y:-w/2}, stiffness});
 
