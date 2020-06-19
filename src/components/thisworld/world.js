@@ -24,33 +24,34 @@ const core = {
         }
     }
 }
-let engine ;
+let createdEngine ;
 export default  {
     WIDTH,
     HEIGHT,
     core,
-    setup: (p, eng, canvas)=>{
+    setup: (p, engineCreated, canvas)=>{
         p.createCanvas(WIDTH, HEIGHT);
-        engine = eng;
-        const {Mouse, MouseConstraint} = eng.Matter;
-        eng.eventCallbacks.collisionEvent = (e)=>{            
+        createdEngine = engineCreated;
+        const {Mouse, MouseConstraint} = createdEngine.Matter;
+        createdEngine.eventCallbacks.collisionEvent = (e)=>{            
             
             if (e.name === 'collisionActive' || e.pairs.length) {
                 core.collisions = e.pairs;                
             }
         };
         const mouse = Mouse.create(canvas),        
-        mouseConstraint = MouseConstraint.create(engine.engine, {
+        mouseConstraint = MouseConstraint.create(createdEngine.engine, {
             mouse,
             constraint: {
                 stiffness: 0.2,                
             }
         });
 
-        eng.addToWorld(mouseConstraint);
+        createdEngine.addToWorld(mouseConstraint);
 
-        core.addToWorld = eng.addToWorld;        
-        core.Bodies = eng.Bodies;
+        Object.assign(core, createdEngine);
+        //core.addToWorld = eng.addToWorld;        
+        //core.Bodies = eng.Bodies;
         createWorld();
     },
     draw: (p, props)=>{
@@ -75,7 +76,7 @@ export default  {
             //length: 60
             const cst = {bodyA: b1.body, bodyB: b2.body, length: 60, stiffness:0.9};
             //engine.Constraint.create(cst);
-            engine.addConstraint(cst);
+            createdEngine.addConstraint(cst);
             core.constraints.push(cst);            
             return;
         }
@@ -146,12 +147,29 @@ export default  {
         //if (props.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
+            if (mouse.state === 'pressed') {
+                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
+                mouse.bodyFound = bodyFound;
+                if (bodyFound) {
+                    const pos = bodyFound.position;
+        
+                    p.push();
+                    p.translate(pos.x, pos.y);        
+                    p.rectMode(p.CENTER);
+                    p.stroke('ff0000');
+                    p.strokeWeight(4);
+                    p.fill('ff00ff');
+                    p.rect(2,2, bodyFound.ggParent.w-4, bodyFound.ggParent.w-4);
+                    p.pop();
+                }
+            }
             if (mouse.state === 'dragged') {
                 p.stroke(128);
                 p.strokeWeight(2);
                 p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);
             }else  if (mouse.state === 'released') {
                 mouse.state = '';
+                if (mouse.bodyFound) return;
                 let x1 = p.mouseX;
                 let y1 = p.mouseY;
                 let x2 = core.states.mouse.pressLocation.x;
@@ -178,7 +196,7 @@ export default  {
                 const b1 = new SimpleRect({ x: x1 + cx, y: y2 - w, w: x1x2, h: w2, opt }, core);
         
                 const addCst = cst=>{
-                    engine.addConstraint(cst);
+                    createdEngine.addConstraint(cst);
                     core.constraints.push(cst);
                 };
                 const stiffness = 1;
@@ -228,7 +246,7 @@ export function createWorld() {
         r: 30,
         opt: { restitution: 0.5 },
     }, core);
-    const {addToWorld, Bodies} = engine;
+    const {addToWorld, Bodies} = createdEngine;
     addToWorld([
       // walls      
       Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })

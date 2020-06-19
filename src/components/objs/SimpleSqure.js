@@ -8,6 +8,7 @@ export default function SimpleSqure(initInfo, engine) {
     addToWorld(body);
 
     this.body = body;
+    engine.setBodyOuterParent(body, this);
     allBodies.push(this);
     this.show = p => {
         const pos = body.position;

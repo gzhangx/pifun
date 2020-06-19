@@ -1,11 +1,37 @@
 import Matter from "matter-js";
 import p5 from "p5";
+const allCllisionFilter = {
+  category: 0x0001,
+  mask: 0xFFFFFFFF,
+  group: 0
+};
+
+
+function getBodiesUnderPos(eng, position) {
+  const {Bounds, Vertices, Detector, engine} = eng;
+  const bodies = engine.world.bodies;
+  for (var i = 0; i < bodies.length; i++) {
+    const body = bodies[i];
+    if (Bounds.contains(body.bounds, position) 
+            && Detector.canCollide(body.collisionFilter, allCllisionFilter)) {
+        for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
+            const part = body.parts[j];
+            if (Vertices.contains(part.vertices, position)) {
+                return body;
+            }
+        }
+    }
+}
+}
 export function createEngine() {
     const Engine = Matter.Engine,
       //Render = Matter.Render,
       World = Matter.World,
       Bodies = Matter.Bodies,
       Events = Matter.Events,
+      Bounds = Matter.Bounds,
+      Vertices = Matter.Vertices,
+      Detector = Matter.Detector,
       Constraint = Matter.Constraint      
       ;      
     
@@ -28,22 +54,28 @@ export function createEngine() {
       // walls      
     //  Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
     //]);
-    return {
+    const created = {
         World,
         Matter,
         engine,
         Bodies,
+        Bounds,
+        Vertices,
+        Detector,
         Constraint,
         addToWorld: body=>World.add(engine.world, body),
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
         eventCallbacks,
+        setBodyOuterParent: (bdy, parent)=>bdy.ggParent = parent,
     }
+    created.getBodiesUnderPos = pos=>getBodiesUnderPos(created, pos);
+    return created;
 }
 
 
-export const setup= (drawCanv, world, engine, props)=>{ 
+export const setup= (drawCanv, world, createdEngine, props)=>{ 
   const Sketch = p => {
-      p.setup = ()=>world.setup(p, engine, drawCanv);
+      p.setup = ()=>world.setup(p, createdEngine, drawCanv);
 
       p.draw = () => world.draw(p, props);        
 

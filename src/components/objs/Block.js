@@ -5,8 +5,9 @@ export default function Block(initInfo, enging) {
     this.opts = opts;    
     const {World, world, Bodies, p} = engine;
     const body = Bodies.rectangle(x,y,w,h);    
+    this.body = body;
     World.add(world, this.body);
-
+    engine.setBodyOuterParent(body, this);
     this.show = function() {
         const pos = body.position;
         const angle = body.angle;
