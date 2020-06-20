@@ -2,8 +2,8 @@ export default function SimpleRect(initInfo, engine) {
     const {x,y,w,h, opts} = initInfo;
     this.w = w;
     this.h = h;
-    this.opts = opts;
-    this.type = 'SimpleRect';    
+    this.opts = opts || {};
+    this.type = this.opts.label || 'SimpleRect';    
     const {addToWorld, Bodies, allBodies} = engine;
     const body = Bodies.rectangle(x, y, w, h, opts);
     body.label = this.type;

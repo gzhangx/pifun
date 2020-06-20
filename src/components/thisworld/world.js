@@ -38,6 +38,14 @@ export default  {
             if (e.name === 'collisionActive' || e.pairs.length) {
                 core.collisions = e.pairs;                
             }
+            if (e.name === 'collisionStart') {
+                console.log('collisionStart ' + e.pairs.length);
+                console.log(e.source.pairs.list);
+            }
+            if (e.name === 'collisionEnd') {
+                console.log('collisionEnd' + e.source.pairs.list.length);
+                console.log(e);
+            }
         };
         const mouse = Mouse.create(canvas),        
         mouseConstraint = MouseConstraint.create(createdEngine.engine, {
@@ -195,10 +203,11 @@ export default  {
                 const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9 };
 
 
-                const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opt }, core); //tl
-                const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opt }, core); //tr
-                const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opt }, core); //bl
-                const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opt }, core); //br
+                const copt = label=>Object.assign({label}, opt);
+                const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opts: copt('tl') }, core); //tl
+                const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opts: copt('tr') }, core); //tr
+                const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opts: copt('bl') }, core); //bl
+                const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opts: copt('br') }, core); //br
                 const addCst = cst=>{
                     createdEngine.addConstraint(cst);
                     core.constraints.push(cst);
@@ -283,7 +292,7 @@ export function createWorld() {
         y: HEIGHT + GroundHeight/2-10,
         w: WIDTH,
         h: GroundHeight,
-        opts: {isStatic: true}
+        opts: {isStatic: true, label: 'Ground'}
     }, core);
     //addToWorld([
     //  // walls      
