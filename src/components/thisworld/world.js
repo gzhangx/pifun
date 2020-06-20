@@ -69,6 +69,7 @@ export default  {
         createWorld();
     },
     draw: (p, props)=>{
+        const {Body} = createdEngine;
         if (core.curKey) {
             core.curKey = null;
             const b1 = new SimpleSqure({
@@ -120,7 +121,10 @@ export default  {
         if (core.collisionEvent.name) {
          const cname =    core.collisionEvent.name.substr('collision'.length);
          //if (props.inputs.setCurCollisionStart)props.inputs.setCurCollisionStart(cname);
-         props.inputs[`setCurCollision${cname}`](cname);
+         let s = core.collisionEvent.source.pairs.list.map(c=>{
+             return c.collision.depth.toFixed(2);
+         }).join(',');
+         props.inputs[`setCurCollision${cname}`](s);
         }        
         p.push();
         const pairs = core.collisions;
@@ -164,7 +168,7 @@ export default  {
             }
         }
 
-        if (core.inputs.curBuildType === 'wall') 
+        //if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
             if (mouse.state === 'pressed') {
@@ -201,6 +205,16 @@ export default  {
                         r: 10,
                         opts: { restitution: 0.5 },
                     }, core);
+                    const bbody = ball.body;
+                    const forceMagnitude = bbody.mass * 0.05;
+                    const xx = x1-x2;
+                    const yy = y1-y2;                    
+                    if (Math.abs(xx)+Math.abs(yy) > 0) {
+                        Body.applyForce(bbody, bbody.position, {
+                            x: forceMagnitude*xx*0.01, 
+                            y: forceMagnitude*yy*0.01,
+                        });
+                    }
                     return;
                 }                
                 if (mouse.bodyFound) return;
