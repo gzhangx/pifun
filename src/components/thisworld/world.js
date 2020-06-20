@@ -179,11 +179,12 @@ export default  {
                 if (x1 > x2) {
                     [x1,x2] = [x2,x1];
                 }
-                if (x2 - x1 < 10) return;
-                if (y2 - y1 < 10) return;
                 if (y1 > y2) {
                     [y1,y2] = [y2,y1];
                 }                
+                if (x2 - x1 < 10) return;
+                if (y2 - y1 < 10) return;                
+                
                 const x1x2 = x2-x1;
                 const cx = x1x2/2;
                 const y1y2 = y2-y1;
@@ -191,17 +192,42 @@ export default  {
                 const w = 12;
                 const w2 = w*2;
                 const hl1 = y1y2 -w2-w2;
-                const opt = { restitution: 0.5, friction: 0.3 };
+                const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9 };
+
+
+                const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opt }, core); //tl
+                const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opt }, core); //tr
+                const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opt }, core); //bl
+                const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opt }, core); //br
+                const addCst = cst=>{
+                    createdEngine.addConstraint(cst);
+                    core.constraints.push(cst);
+                };
+                const stiffness = .05;
+                const pointA = {x:0,y:0};
+                const pointB = pointA;
+                addCst({bodyA: tl.body, bodyB: tr.body, pointA, pointB, stiffness});
+                addCst({bodyA: tl.body, bodyB: bl.body, pointA, pointB, stiffness});
+
+
+                addCst({bodyA: br.body, bodyB: bl.body, pointA, pointB, stiffness});
+                addCst({bodyA: br.body, bodyB: tr.body, pointA, pointB, stiffness});
+
+                addCst({bodyA: tl.body, bodyB: br.body, pointA, pointB, stiffness});
+
+                return;
+
+
                 const l1 = new SimpleRect({ x: x1 + w, y: y1 + cy, w:w2, h: hl1, opt }, core);
                 const r1 = new SimpleRect({ x: x2 - w, y: y1 + cy, w:w2, h: hl1, opt }, core);
                 const t1 = new SimpleRect({ x: x1 + cx, y: y1 + w , w: x1x2, h: w2, opt }, core);
                 const b1 = new SimpleRect({ x: x1 + cx, y: y2 - w, w: x1x2, h: w2, opt }, core);
         
-                const addCst = cst=>{
+                const addCst1 = cst=>{
                     createdEngine.addConstraint(cst);
                     core.constraints.push(cst);
                 };
-                const stiffness = 1;
+                //const stiffness = 1;
                 addCst({bodyA: l1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) +1 }, pointB:{x:-cx +w, y:w-1}, stiffness});
                 addCst({bodyA: l1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - 1 }, pointB:{x:-cx +w, y:-w+1}, stiffness});
 
@@ -248,11 +274,19 @@ export function createWorld() {
         x: 210,
         y: 100,
         r: 30,
-        opt: { restitution: 0.5 },
+        opts: { restitution: 0.5 },
     }, core);
     const {addToWorld, Bodies} = createdEngine;
-    addToWorld([
-      // walls      
-      Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
-    ])
+    const GroundHeight = 200;
+    new SimpleRect({
+        x: WIDTH/2,
+        y: HEIGHT + GroundHeight/2-10,
+        w: WIDTH,
+        h: GroundHeight,
+        opts: {isStatic: true}
+    }, core);
+    //addToWorld([
+    //  // walls      
+    //  Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
+    //])
 }
