@@ -10,6 +10,7 @@ const core = {
     allBodies,
     constraints: [],
     collisions:[],
+    collisionEvent: {},
     states: {
         mouse: {        
             state: '',
@@ -22,6 +23,10 @@ const core = {
                 y:0,
             }
         }
+    },
+    inputs: {
+        curKey: '',
+        curBuildType: '',
     }
 }
 let createdEngine ;
@@ -30,11 +35,12 @@ export default  {
     HEIGHT,
     core,
     setup: (p, engineCreated, canvas)=>{
-        p.createCanvas(WIDTH, HEIGHT);
+        const convas = p.createCanvas(WIDTH, HEIGHT);
+        convas.parent('p5-parent');
         createdEngine = engineCreated;
         const {Mouse, MouseConstraint} = createdEngine.Matter;
         createdEngine.eventCallbacks.collisionEvent = (e)=>{            
-            
+            core.collisionEvent = e;
             if (e.name === 'collisionActive' || e.pairs.length) {
                 core.collisions = e.pairs;                
             }
@@ -111,6 +117,11 @@ export default  {
             p.line(p1.x, p1.y, p2.x, p2.y);
         });
 
+        if (core.collisionEvent.name) {
+         const cname =    core.collisionEvent.name.substr('collision'.length);
+         //if (props.inputs.setCurCollisionStart)props.inputs.setCurCollisionStart(cname);
+         props.inputs[`setCurCollision${cname}`](cname);
+        }        
         p.push();
         const pairs = core.collisions;
         //console.log(e.pairs);
@@ -153,7 +164,7 @@ export default  {
             }
         }
 
-        //if (props.curBuildType === 'wall') 
+        if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
             if (mouse.state === 'pressed') {
@@ -178,12 +189,22 @@ export default  {
                 p.strokeWeight(2);
                 p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);
             }else  if (mouse.state === 'released') {
-                mouse.state = '';
-                if (mouse.bodyFound) return;
                 let x1 = p.mouseX;
                 let y1 = p.mouseY;
                 let x2 = core.states.mouse.pressLocation.x;
                 let y2 = core.states.mouse.pressLocation.y;
+                mouse.state = '';
+                if (core.inputs.curBuildType === 'fire') {
+                    const ball = new SimpleCircle({
+                        x: x2,
+                        y: y2,
+                        r: 10,
+                        opts: { restitution: 0.5 },
+                    }, core);
+                    return;
+                }                
+                if (mouse.bodyFound) return;
+                
                 if (x1 > x2) {
                     [x1,x2] = [x2,x1];
                 }

@@ -6,18 +6,41 @@ import opt from './components/thisworld/world';
 function App() {
   const [curKey, setCurKey] = useState();
   const [curBuildType, setCurBuildType] = useState();
+  const [curCollisionStart, setCurCollisionStart] = useState();
+  const [curCollisionActive, setCurCollisionActive] = useState();
+  const [curCollisionEnd, setCurCollisionEnd] = useState();
   keyHandler(key=>{    
-    opt.core.curKey = key;
+    opt.core.inputs.curKey = key;
   });
+  const stBuildType = t=>{
+    setCurBuildType(t);
+    opt.core.inputs.curBuildType = t;
+  }
   return (
-    <div className="App">
-      <div>
+    <div className="App" style={{display: 'inline-block', width:1000}}>
+      <div style={{ left:0, top:0, float: 'left',display: 'inline-block'}}>
+        <div id='p5-parent'></div>
       <Scene inputs = {{
         curKey, setCurKey, curBuildType, setCurBuildType,
+        setCurCollisionStart,setCurCollisionActive,setCurCollisionEnd,
         }}/>
       </div>
-      <div>
-        <button onClick={()=>setCurBuildType('wall')}>Wall</button>
+      <div style={{left: 800}}>
+        <table>
+          <tr>
+            <td>
+              <button onClick={()=>stBuildType('wall')}>Wall</button>
+              <button onClick={()=>stBuildType('fire')}>Fire</button>
+            </td><td></td></tr>
+          <tr>
+            <td>Action</td><td>{curBuildType}</td>
+           </tr>
+          <tr>
+            <td>Col Start</td><td>{curCollisionStart}</td>
+            <td>Col Active</td><td>{curCollisionActive}</td>
+            <td>Col End</td><td>{curCollisionEnd}</td>
+          </tr>
+        </table>
       </div>
     </div>
   );
