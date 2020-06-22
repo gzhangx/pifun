@@ -69,7 +69,19 @@ export default  {
         createWorld();
     },
     draw: (p, props)=>{
-        const {Body} = createdEngine;
+        const now = new Date();
+        const toDelete = core.allBodies.map((b,i)=>{
+            if(b.label === 'fireball') {
+                if (now - b.time > 10000) {                    
+                    return {b,i};
+                }
+            }
+        }).filter(x=>x).reverse();
+        const {Body, engine, removeFromWorld} = createdEngine;
+        toDelete.forEach(d=>{
+            removeFromWorld(d.b.body);
+            core.allBodies.splice(d.i,1);
+        });                
         if (core.curKey) {
             core.curKey = null;
             const b1 = new SimpleSqure({
@@ -119,10 +131,16 @@ export default  {
         });
 
         if (core.collisionEvent.name) {
+            if (core.collisionEvent.name === 'collisionStart') {
+                engine.timing.timeScale = 0.1;
+            }
+            if (core.collisionEvent.name === 'collisionEnd') {
+                engine.timing.timeScale = 1;
+            }
          const cname =    core.collisionEvent.name.substr('collision'.length);
          //if (props.inputs.setCurCollisionStart)props.inputs.setCurCollisionStart(cname);
          let s = core.collisionEvent.source.pairs.list.map(c=>{
-             return c.collision.depth.toFixed(2);
+             return parseFloat(c.collision.depth.toFixed(2));
          }).join(',');
          props.inputs[`setCurCollision${cname}`](s);
         }        
@@ -205,7 +223,10 @@ export default  {
                         r: 10,
                         opts: { restitution: 0.5 },
                     }, core);
+                    ball.label = 'fireball';
+                    ball.time = new Date();
                     const bbody = ball.body;
+                    bbody.label = 'fireball';
                     const forceMagnitude = bbody.mass * 0.05;
                     const xx = x1-x2;
                     const yy = y1-y2;                    

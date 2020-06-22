@@ -66,6 +66,7 @@ export function createEngine() {
         Detector,
         Constraint,
         addToWorld: body=>World.add(engine.world, body),
+        removeFromWorld: body=>World.remove(engine.world, body),
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
         eventCallbacks,
         setBodyOuterParent: (bdy, parent)=>bdy.ggParent = parent,
