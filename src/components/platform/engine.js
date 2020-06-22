@@ -7,9 +7,10 @@ const allCllisionFilter = {
 };
 
 
-function getBodiesUnderPos(eng, position) {
+function getBodiesUnderPos(eng, position, returnFirst = true) {
   const {Bounds, Vertices, Detector, engine} = eng;
   const bodies = engine.world.bodies;
+  const all = [];
   for (var i = 0; i < bodies.length; i++) {
     const body = bodies[i];
     if (Bounds.contains(body.bounds, position) 
@@ -17,11 +18,14 @@ function getBodiesUnderPos(eng, position) {
         for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
             const part = body.parts[j];
             if (Vertices.contains(part.vertices, position)) {
+              if (returnFirst)
                 return body;
+              all.push(body);              
             }
         }
     }
-}
+  }
+  return all;
 }
 export function createEngine() {
     const Engine = Matter.Engine,

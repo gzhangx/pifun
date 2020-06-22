@@ -223,11 +223,11 @@ export default  {
                     },{
                         x: mouse.pressLocation.x,
                         y: HEIGHT,
-                    });
+                    }).map(c=>c.bodyA);
                     const drawColls = (collisions, x)=> {
                         for (let i = 0; i < collisions.length; i++) {
                             let collision = collisions[i];
-                            p.rect(collision.bodyA.position.x - 4.5, collision.bodyA.position.y - 4.5, 8, 8);
+                            p.rect(collision.position.x - 4.5, collision.position.y - 4.5, 8, 8);
                             p.line(x,0,x,HEIGHT);
                         }
                     }
@@ -239,7 +239,7 @@ export default  {
                     },{
                         x: mouse.cur.x,
                         y: HEIGHT,
-                    });
+                    }).map(c=>c.bodyA);
                     drawColls(collisionEnd, mouse.cur.x);
                 }
             }else  if (mouse.state === 'released') {
