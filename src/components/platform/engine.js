@@ -29,11 +29,13 @@ export function createEngine() {
       World = Matter.World,
       Bodies = Matter.Bodies,
       Body = Matter.Body,
-      Events = Matter.Events,
       Bounds = Matter.Bounds,
-      Vertices = Matter.Vertices,
+      Composite = Matter.Composite,
+      Constraint = Matter.Constraint,
       Detector = Matter.Detector,
-      Constraint = Matter.Constraint      
+      Events = Matter.Events,      
+      Vertices = Matter.Vertices,      
+      Query = Matter.Query
       ;      
     
     const engine = Engine.create({
@@ -57,19 +59,26 @@ export function createEngine() {
     //]);
     const created = {
         World,
-        Matter,
-        engine,
         Bodies,
         Body,
         Bounds,
-        Vertices,
-        Detector,
+        Composite,
         Constraint,
+        Detector,
+        Events,
+        Matter,
+        Vertices,
+        Query,
+        engine,
         addToWorld: body=>World.add(engine.world, body),
         removeFromWorld: body=>World.remove(engine.world, body),
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
         eventCallbacks,
         setBodyOuterParent: (bdy, parent)=>bdy.ggParent = parent,
+        rayQuery: (startPoint, endPoint, bodies)=>{
+          if (!bodies) bodies = Composite.allBodies(engine.world);
+          return Query.ray(bodies, startPoint, endPoint);
+        },
     }
     created.getBodiesUnderPos = pos=>getBodiesUnderPos(created, pos);
     return created;

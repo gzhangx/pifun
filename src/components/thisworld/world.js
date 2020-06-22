@@ -69,6 +69,9 @@ export default  {
         createWorld();
     },
     draw: (p, props)=>{
+        const {curBuildType} = core.inputs;
+        const isWallMode = curBuildType === 'wall';
+        const isFireMode = curBuildType === 'fire';
         const now = new Date();
         const toDelete = core.allBodies.map((b,i)=>{
             if(b.label === 'fireball') {
@@ -77,7 +80,7 @@ export default  {
                 }
             }
         }).filter(x=>x).reverse();
-        const {Body, engine, removeFromWorld} = createdEngine;
+        const {Body, engine, removeFromWorld, rayQuery} = createdEngine;
         toDelete.forEach(d=>{
             removeFromWorld(d.b.body);
             core.allBodies.splice(d.i,1);
@@ -132,7 +135,7 @@ export default  {
 
         if (core.collisionEvent.name) {
             if (core.collisionEvent.name === 'collisionStart') {
-                engine.timing.timeScale = 0.1;
+                engine.timing.timeScale = 1;
             }
             if (core.collisionEvent.name === 'collisionEnd') {
                 engine.timing.timeScale = 1;
@@ -207,16 +210,45 @@ export default  {
                 }
             }
             if (mouse.state === 'dragged') {
-                p.stroke(128);
-                p.strokeWeight(2);
-                p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);
+                if (isFireMode) {
+                    p.stroke(128);
+                    p.strokeWeight(2);
+                    p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);
+                }
+
+                if (isWallMode) {
+                    const collisionStart = rayQuery({
+                        x: mouse.pressLocation.x, 
+                        y: 0,
+                    },{
+                        x: mouse.pressLocation.x,
+                        y: HEIGHT,
+                    });
+                    const drawColls = (collisions, x)=> {
+                        for (let i = 0; i < collisions.length; i++) {
+                            let collision = collisions[i];
+                            p.rect(collision.bodyA.position.x - 4.5, collision.bodyA.position.y - 4.5, 8, 8);
+                            p.line(x,0,x,HEIGHT);
+                        }
+                    }
+                    drawColls(collisionStart, mouse.pressLocation.x);
+                    
+                    const collisionEnd = rayQuery({
+                        x: mouse.cur.x, 
+                        y: 0,
+                    },{
+                        x: mouse.cur.x,
+                        y: HEIGHT,
+                    });
+                    drawColls(collisionEnd, mouse.cur.x);
+                }
             }else  if (mouse.state === 'released') {
                 let x1 = p.mouseX;
                 let y1 = p.mouseY;
                 let x2 = core.states.mouse.pressLocation.x;
                 let y2 = core.states.mouse.pressLocation.y;
                 mouse.state = '';
-                if (core.inputs.curBuildType === 'fire') {
+                if (isFireMode) {
                     const ball = new SimpleCircle({
                         x: x2,
                         y: y2,
