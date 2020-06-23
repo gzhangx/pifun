@@ -80,7 +80,7 @@ export default  {
                 }
             }
         }).filter(x=>x).reverse();
-        const {Body, engine, removeFromWorld, rayQuery} = createdEngine;
+        const {Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints} = createdEngine;
         toDelete.forEach(d=>{
             removeFromWorld(d.b.body);
             core.allBodies.splice(d.i,1);
@@ -241,6 +241,22 @@ export default  {
                         y: HEIGHT,
                     }).map(c=>c.bodyA);
                     drawColls(collisionEnd, mouse.cur.x);
+
+                    const res = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.cur.x, y: mouse.cur.y});
+                    res.forEach(rrs=>{
+                        rrs.forEach(r=>{
+                        //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
+                                p.push();
+                            p.translate(r.x, r.y);        
+                            p.rectMode(p.CENTER);
+                            p.stroke('ff0000');
+                            p.strokeWeight(2);
+                            p.fill('0000ff');                    
+                            p.rect(2,2, 4, 4);
+                            p.pop();
+                        });
+                    });
+
                 }
             }else  if (mouse.state === 'released') {
                 let x1 = p.mouseX;
@@ -371,6 +387,14 @@ export function createWorld() {
         x: 210,
         y: 100,
         r: 30,
+        opts: { restitution: 0.5 },
+    }, core);
+
+    new SimpleRect({
+        x: 310,
+        y: 100,
+        w: 30,
+        h: 60,
         opts: { restitution: 0.5 },
     }, core);
     const {addToWorld, Bodies} = createdEngine;
