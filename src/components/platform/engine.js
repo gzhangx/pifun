@@ -52,9 +52,11 @@ function getBodiesUnderPos(eng, position, returnFirst = true) {
             }
         }
     }
-  }
+  }  
   return all;
 }
+
+const sortAsc = (a,b)=>a.t-b.t;
 export function createEngine() {
     const Engine = Matter.Engine,
       //Render = Matter.Render,
@@ -112,7 +114,7 @@ export function createEngine() {
           return Query.ray(bodies, startPoint, endPoint);
         },
         getIntersection,
-        rayQueryWithPoints: (startPoint, endPoint, bodies)=>{
+        rayQueryWithPoints: (startPoint, endPoint, bodies, first = true)=>{
           if (!bodies) bodies = Composite.allBodies(engine.world);
           const l1 = {p1: startPoint, p2: endPoint};
           return bodies.map(b=>{
@@ -128,8 +130,12 @@ export function createEngine() {
               acc.last = c;
               return acc;
             }, { last: b.vertices[b.vertices.length - 1], secs: []});
-            if (pts.secs.length) return pts.secs;
-          }).filter(x=>x);
+            if (pts.secs.length) {
+              pts.secs.sort(sortAsc);
+              if (first) return pts.secs[0];
+              return pts.secs;
+            }
+          }).filter(x=>x).sort(sortAsc);
         }
     }
     created.getBodiesUnderPos = pos=>getBodiesUnderPos(created, pos);

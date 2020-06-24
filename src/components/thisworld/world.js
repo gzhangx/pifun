@@ -243,19 +243,25 @@ export default  {
                     drawColls(collisionEnd, mouse.cur.x);
 
                     const res = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.cur.x, y: mouse.cur.y});
-                    res.forEach(rrs=>{
-                        rrs.forEach(r=>{
+                    let dists = '';
+                    res.forEach(r=>{
+                        //rrs.forEach(r=>
+                        {
                         //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
-                                p.push();
-                            p.translate(r.x, r.y);        
+                            p.push();
+                            p.translate(r.x, r.y);
+                            dists += r.t.toFixed(2)+',';
+                            p.text(r.t.toFixed(2), 0,0);        
                             p.rectMode(p.CENTER);
                             p.stroke('ff0000');
                             p.strokeWeight(2);
                             p.fill('0000ff');                    
                             p.rect(2,2, 4, 4);
                             p.pop();
-                        });
+                        };
                     });
+
+                    props.inputs[`setCurCollisionStart`](`${dists} `);
 
                 }
             }else  if (mouse.state === 'released') {
