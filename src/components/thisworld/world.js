@@ -30,6 +30,38 @@ const core = {
     }
 }
 let createdEngine ;
+
+
+function doWallSketch(mouse, p) {
+    const {rayQueryWithPoints} = createdEngine;
+    const start = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
+    start.forEach(r=>{                        
+        //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
+        p.push();
+        p.translate(r.x, r.y);
+        p.text(r.t.toFixed(2), 0,0);        
+        p.rectMode(p.CENTER);
+        p.stroke('ff0000');
+        p.strokeWeight(2);
+        p.fill('0000ff');                    
+        p.rect(2,2, 4, 4);
+        p.pop();                        
+    });
+
+    const endpt = rayQueryWithPoints({x:mouse.cur.x, y:mouse.cur.y},{x: mouse.cur.x, y: HEIGHT});
+    endpt.forEach(r=>{                        
+        //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
+        p.push();
+        p.translate(r.x, r.y);
+        p.text(r.t.toFixed(2), 0,0);        
+        p.rectMode(p.CENTER);
+        p.stroke('ff0000');
+        p.strokeWeight(2);
+        p.fill('0000ff');                    
+        p.rect(2,2, 4, 4);
+        p.pop();                        
+    });
+}
 export default  {
     WIDTH,
     HEIGHT,
@@ -193,7 +225,7 @@ export default  {
         {
             const mouse = core.states.mouse;
             if (mouse.state === 'pressed') {
-                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
+                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY})[0];
                 mouse.bodyFound = bodyFound;
                 if (bodyFound && bodyFound.ggParent) {
                     const pos = bodyFound.position;
@@ -243,26 +275,23 @@ export default  {
                     drawColls(collisionEnd, mouse.cur.x);
 
                     const res = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.cur.x, y: mouse.cur.y});
-                    let dists = '';
-                    res.forEach(r=>{
-                        //rrs.forEach(r=>
-                        {
+                    res.forEach(r=>{                        
                         //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
-                            p.push();
-                            p.translate(r.x, r.y);
-                            dists += r.t.toFixed(2)+',';
-                            p.text(r.t.toFixed(2), 0,0);        
-                            p.rectMode(p.CENTER);
-                            p.stroke('ff0000');
-                            p.strokeWeight(2);
-                            p.fill('0000ff');                    
-                            p.rect(2,2, 4, 4);
-                            p.pop();
-                        };
+                        p.push();
+                        p.translate(r.x, r.y);
+                        p.text(r.t.toFixed(2), 0,0);        
+                        p.rectMode(p.CENTER);
+                        p.stroke('ff0000');
+                        p.strokeWeight(2);
+                        p.fill('0000ff');                    
+                        p.rect(2,2, 4, 4);
+                        p.pop();                        
                     });
 
-                    props.inputs[`setCurCollisionStart`](`${dists} `);
+                    //props.inputs[`setCurCollisionStart`](`${dists} `);
 
+                    doWallSketch(mouse, p);
+                    
                 }
             }else  if (mouse.state === 'released') {
                 let x1 = p.mouseX;
@@ -292,7 +321,10 @@ export default  {
                     }
                     return;
                 }                
-                if (mouse.bodyFound) return;
+                if (mouse.bodyFound) {
+                    //props.inputs[`setCurCollisionEnd`](`BODY FOUND!!!!`);
+                    return;
+                }
                 
                 if (x1 > x2) {
                     [x1,x2] = [x2,x1];
@@ -300,6 +332,8 @@ export default  {
                 if (y1 > y2) {
                     [y1,y2] = [y2,y1];
                 }                
+
+                props.inputs[`setCurCollisionEnd`](`x2-x1=${x2 - x1} y2-y1=${y2-y1}`);
                 if (x2 - x1 < 10) return;
                 if (y2 - y1 < 10) return;                
                 
@@ -313,11 +347,11 @@ export default  {
                 const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9 };
 
 
-                const copt = label=>Object.assign({label}, opt);
-                const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opts: copt('tl') }, core); //tl
-                const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opts: copt('tr') }, core); //tr
-                const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opts: copt('bl') }, core); //bl
-                const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opts: copt('br') }, core); //br
+                const copt = label=>Object.assign({label, isSensor: false}, opt);
+                const tb = new SimpleRect({ x: x1 + cx, y: y1 + w, w:x1x2-w2*2, h: w2, opts: copt('tb') }, core); //tl
+                const bb = new SimpleRect({ x: x1 + cx, y: y2 - w, w:x1x2-w2*2, h: w2, opts: copt('bb') }, core); //tr
+                const lb = new SimpleRect({ x: x1 + w, y: y1 + cy, w: w2, h: y1y2, opts: copt('lb') }, core); //bl
+                const rb = new SimpleRect({ x: x2 - w, y: y1 + cy, w: w2, h: y1y2, opts: copt('rb') }, core); //br
                 const addCst = cst=>{
                     createdEngine.addConstraint(cst);
                     core.constraints.push(cst);
@@ -325,14 +359,33 @@ export default  {
                 const stiffness = .05;
                 const pointA = {x:0,y:0};
                 const pointB = pointA;
-                addCst({bodyA: tl.body, bodyB: tr.body, pointA, pointB, stiffness});
-                addCst({bodyA: tl.body, bodyB: bl.body, pointA, pointB, stiffness});
+                addCst({bodyA: tb.body, bodyB: lb.body, pointA: { x: - cx + w, y: 0 }, pointB: {x: 0, y: -cy+w}, stiffness});
+                addCst({bodyA: tb.body, bodyB: rb.body, pointA: { x: cx - w, y: 0}, pointB : { x:0, y: -cy+w}, stiffness});
 
 
-                addCst({bodyA: br.body, bodyB: bl.body, pointA, pointB, stiffness});
-                addCst({bodyA: br.body, bodyB: tr.body, pointA, pointB, stiffness});
+                addCst({bodyA: bb.body, bodyB: lb.body, pointA:{  x: - cx + w, y: w }, pointB: {x: 0, y: cy-w}, stiffness});
+                addCst({bodyA: bb.body, bodyB: rb.body, pointA:{  x: cx - w, y: w }, pointB: {x: 0, y: cy-w}, stiffness});
 
-                addCst({bodyA: tl.body, bodyB: br.body, pointA, pointB, stiffness});
+                return;
+                //const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opts: copt('tl') }, core); //tl
+                //const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opts: copt('tr') }, core); //tr
+                //const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opts: copt('bl') }, core); //bl
+                //const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opts: copt('br') }, core); //br
+                //const addCst = cst=>{
+                //    createdEngine.addConstraint(cst);
+                //    core.constraints.push(cst);
+                //};
+                //const stiffness = .05;
+                //const pointA = {x:0,y:0};
+                //const pointB = pointA;
+                //addCst({bodyA: tl.body, bodyB: tr.body, pointA, pointB, stiffness});
+                //addCst({bodyA: tl.body, bodyB: bl.body, pointA, pointB, stiffness});
+
+
+                //addCst({bodyA: br.body, bodyB: bl.body, pointA, pointB, stiffness});
+                //addCst({bodyA: br.body, bodyB: tr.body, pointA, pointB, stiffness});
+
+                //addCst({bodyA: tl.body, bodyB: br.body, pointA, pointB, stiffness});
 
                 return;
 
