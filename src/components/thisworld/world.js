@@ -31,6 +31,8 @@ const core = {
 }
 let createdEngine ;
 
+const wallWidth = 20;
+const halfWallWidth = wallWidth / 10;
 
 function doWallSketch(mouse, p) {
     const {rayQueryWithPoints} = createdEngine;
@@ -61,6 +63,12 @@ function doWallSketch(mouse, p) {
         p.rect(2,2, 4, 4);
         p.pop();                        
     });
+
+    return {
+        ok: Math.abs(mouse.cur.x - mouse.pressLocation.x) > wallWidth*2,
+        start: start[0],
+        end: endpt[0],
+    }
 }
 export default  {
     WIDTH,
@@ -112,7 +120,7 @@ export default  {
                 }
             }
         }).filter(x=>x).reverse();
-        const {Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints} = createdEngine;
+        const {Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector} = createdEngine;
         toDelete.forEach(d=>{
             removeFromWorld(d.b.body);
             core.allBodies.splice(d.i,1);
@@ -298,6 +306,8 @@ export default  {
                 let y1 = p.mouseY;
                 let x2 = core.states.mouse.pressLocation.x;
                 let y2 = core.states.mouse.pressLocation.y;
+                const w = halfWallWidth;
+                const w2 = wallWidth;
                 mouse.state = '';
                 if (isFireMode) {
                     const ball = new SimpleCircle({
@@ -325,7 +335,35 @@ export default  {
                     //props.inputs[`setCurCollisionEnd`](`BODY FOUND!!!!`);
                     return;
                 }
+
+                const endPoints = doWallSketch(mouse, p);
+
+                if (!endPoints.ok) return;
+
+                const getRectPos = (startPoint, endPoint) => {
+                    const angle = Vector.angle(startPoint, endPoint),
+                        h = Vector.magnitude(Vector.sub(startPoint, endPoint)),
+                        x = (endPoint.x + startPoint.x) * 0.5,
+                        y = (endPoint.y + startPoint.y) * 0.5;
+                    return {
+                        x, y, w: wallWidth, h,
+                        angle,
+                    }
+                }
                 
+                const makeCell = () => {                    
+                    const p1 = mouse.pressLocation
+                    const p2 = mouse.cur;
+                    const p3 = endPoints.end;
+                    const p4 = endPoints.start;
+                    const r1 = getRectPos(p1, p2);
+                    const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angele: rr.angle } }, core); //tl
+                    const tb = makeRect(r1, 'tb');
+                    const rb = makeRect(getRectPos(p2, p3), 'rb');
+                    const bb = makeRect(getRectPos(p3, p4), 'bb');
+                    const lb = makeRect(getRectPos(p4, p1), 'lb');
+                };
+            //ray = Bodies.rectangle(rayX, rayY, rayLength, rayWidth, { angle: rayAngle }),
                 if (x1 > x2) {
                     [x1,x2] = [x2,x1];
                 }
@@ -337,17 +375,17 @@ export default  {
                 if (x2 - x1 < 10) return;
                 if (y2 - y1 < 10) return;                
                 
+                return makeCell();
                 const x1x2 = x2-x1;
                 const cx = x1x2/2;
                 const y1y2 = y2-y1;
                 const cy = y1y2/2;
-                const w = 12;
-                const w2 = w*2;
+                
                 const hl1 = y1y2 -w2-w2;
-                const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9 };
+                const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9, collisionFilter:{mask:1} };
 
 
-                const copt = label=>Object.assign({label, isSensor: false}, opt);
+                const copt = label=>Object.assign({label, isSensor: true}, opt);
                 const tb = new SimpleRect({ x: x1 + cx, y: y1 + w, w:x1x2-w2*2, h: w2, opts: copt('tb') }, core); //tl
                 const bb = new SimpleRect({ x: x1 + cx, y: y2 - w, w:x1x2-w2*2, h: w2, opts: copt('bb') }, core); //tr
                 const lb = new SimpleRect({ x: x1 + w, y: y1 + cy, w: w2, h: y1y2, opts: copt('lb') }, core); //bl
@@ -363,8 +401,8 @@ export default  {
                 addCst({bodyA: tb.body, bodyB: rb.body, pointA: { x: cx - w, y: 0}, pointB : { x:0, y: -cy+w}, stiffness});
 
 
-                addCst({bodyA: bb.body, bodyB: lb.body, pointA:{  x: - cx + w, y: w }, pointB: {x: 0, y: cy-w}, stiffness});
-                addCst({bodyA: bb.body, bodyB: rb.body, pointA:{  x: cx - w, y: w }, pointB: {x: 0, y: cy-w}, stiffness});
+                addCst({bodyA: bb.body, bodyB: lb.body, pointA:{  x: - cx + w, y: 0 }, pointB: {x: 0, y: cy-w}, stiffness});
+                addCst({bodyA: bb.body, bodyB: rb.body, pointA:{  x: cx - w, y: 0 }, pointB: {x: 0, y: cy-w}, stiffness});
 
                 return;
                 //const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opts: copt('tl') }, core); //tl

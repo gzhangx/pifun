@@ -67,7 +67,8 @@ export function createEngine() {
       Composite = Matter.Composite,
       Constraint = Matter.Constraint,
       Detector = Matter.Detector,
-      Events = Matter.Events,      
+      Events = Matter.Events,    
+      Vector = Matter.Vector,
       Vertices = Matter.Vertices,      
       Query = Matter.Query
       ;      
@@ -101,6 +102,7 @@ export function createEngine() {
         Detector,
         Events,
         Matter,
+        Vector,
         Vertices,
         Query,
         engine,
