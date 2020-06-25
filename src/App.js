@@ -9,6 +9,7 @@ function App() {
   const [curCollisionStart, setCurCollisionStart] = useState();
   const [curCollisionActive, setCurCollisionActive] = useState();
   const [curCollisionEnd, setCurCollisionEnd] = useState();
+  const [curDebugText, setCurDebugText] = useState('');
   keyHandler(key=>{    
     opt.core.inputs.curKey = key;
   });
@@ -22,7 +23,8 @@ function App() {
         <div id='p5-parent'></div>
       <Scene inputs = {{
         curKey, setCurKey, curBuildType, setCurBuildType,
-        setCurCollisionStart,setCurCollisionActive,setCurCollisionEnd,
+          setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
+          setCurDebugText,
         }}/>
       </div>
       <div style={{left: 800}}>
@@ -37,8 +39,11 @@ function App() {
            </tr>
           <tr>
             <td>Col Start</td><td>{curCollisionStart}</td>
-            <td>Col Active</td><td>{curCollisionActive}</td>
             <td>Col End</td><td>{curCollisionEnd}</td>
+            <td>Col Active</td><td>{curCollisionActive}</td>            
+          </tr>
+          <tr>
+            <td>DbgTxt</td><td colSpan='4'>{curDebugText}</td>
           </tr>
         </table>
       </div>
