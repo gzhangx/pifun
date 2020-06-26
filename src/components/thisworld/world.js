@@ -172,9 +172,11 @@ export default  {
         }
         core.constraints.forEach(cst=>{
             const p1 = addPt(cst,'A');
-            const p2 = addPt(cst,'B');
+            const p2 = addPt(cst, 'B');
+            p.push();
             p.stroke(0);
             p.line(p1.x, p1.y, p2.x, p2.y);
+            p.pop();
         });
 
         if (core.collisionEvent.name) {
@@ -259,16 +261,6 @@ export default  {
                 const p4 = endPoints.start;
                 if (!endPoints.end) return;
                 const points = [p1, p2, p3, p4];
-                const bodies = points.reduce((acc, p, i) => {
-                    const connId = (i + 1) % 4;
-                    const bar = getRectPos(p, points[connId]);
-                    bar.id = i;
-                    bar.connId = connId;
-                    showRect(bar);
-                    acc.push(bar);
-                    return acc;
-                },[]);
-
                 const showRect = rr => {
                     p.push();
                     p.translate(rr.x, rr.y);
@@ -281,11 +273,23 @@ export default  {
                     p.pop();
                 };
 
+                const bodies = points.reduce((acc, p, i) => {
+                    const connId = (i + 1) % 4;
+                    const bar = getRectPos(p, points[connId]);
+                    bar.id = i;
+                    bar.connId = connId;
+                    showRect(bar);
+                    acc.push(bar);
+                    return acc;
+                },[]);
+
+                
+
                 const ops = [['+r','-t'],['+t','r'],['-r','+t'],['+t','-r']];
-                const connects = ord.map((b, i) => {                                    
+                const connects = ops.map((pops, i) => {                                    
                     const a = bodies[i];
                     const b = bodies[a.connId];
-                    const pops = ops[i];
+                    //const pops = ops[i];
                     const createOps = (op, obj) => {
                         let x, y;
                         const { angle, h } = obj;
@@ -307,39 +311,34 @@ export default  {
                     };
                     return {
                         a, b,
-                        pa: createOps(pops[0], a),
-                        pb: createOps(pops[1], b),
+                        pointA: createOps(pops[0], a),
+                        pointB: createOps(pops[1], b),
                     };
-                });
-                                
+                });                                
                 return connects;
             };
-            const makeCell = endPoints => {
-                const p1 = mouse.pressLocation
-                const p2 = mouse.cur;
-                const p3 = endPoints.end;
-                const p4 = endPoints.start;
-                if (!endPoints.end) return;
-                const tbp = getRectPos(p1, p2);
+            const makeCell = wallPts => {                                
                 var group = Body.nextGroup(true);
-                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle, collisionFilter: { group } } }, core); //tl
-                const tb = makeRect(tbp, 'tb');
-                const rbp = getRectPos(p2, p3)
-                const rb = makeRect(rbp, 'rb');
-                const bbp = getRectPos(p3, p4);
-                const bb = makeRect(bbp, 'bb');
-                const lbp = getRectPos(p4, p1);
-                const lb = makeRect(lbp, 'lb');
-                //props.inputs[`setCurCollisionEnd`](`p1=${dbgfmtPt(p1)} ${dbgfmtPt(p2)} ${dbgfmtPt(p3)} ${dbgfmtPt(p4)}`);
-                const addCst = cst => {
+                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle, collisionFilter: { group } } }, core); //tl                
+                wallPts.reduce((acc, pt) => {
+                    const { a, b, pointA, pointB } = pt;
+                    const checkAdd = x => {
+                        if (!acc[x.id]) 
+                        {
+                            x.body = makeRect(x, x.id);;
+                            acc[x.id] = x.body;                            
+                        }
+                        return x.body;
+                    }
+                    const bodyA = checkAdd(a).body;
+                    const bodyB = checkAdd(b).body;
+                    const stiffness = .05;
+                    const cst ={ bodyA, bodyB, pointA, pointB, stiffness };
                     createdEngine.addConstraint(cst);
                     core.constraints.push(cst);
-                };
-                const stiffness = .05;                
-                addCst({ bodyA: tb.body, bodyB: rb.body, pointA: { x: tbp.h / 2 , y: 0 }, pointB: { x: 0, y: -rbp.h/2 }, stiffness });
-                addCst({ bodyA: rb.body, bodyB: bb.body, pointA: { x: 0, y: rbp.h / 2 }, pointB: { x: bbp.h / 2, y: 0 }, stiffness });
-                addCst({ bodyA: bb.body, bodyB: lb.body, pointA: { x: -bbp.h / 2, y: 0 }, pointB: { x: 0, y: lbp.h / 2 }, stiffness });
-                addCst({ bodyA: lb.body, bodyB: tb.body, pointA: { x: 0, y: -lbp.h / 2 }, pointB: { x: -tbp.h/2, y: 0 }, stiffness });
+                    return acc;
+                }, {});
+                                
             };
 
             if (mouse.state === 'pressed') {
@@ -386,30 +385,39 @@ export default  {
                 }
                 const endPoints = doWallSketch(mouse, p);
                 if (!endPoints.ok || !endPoints.end) return;
-                const p1 = mouse.pressLocation
-                const p2 = mouse.cur;
-                const p3 = endPoints.end;
-                const p4 = endPoints.start;                
 
+                const wallPts = getDragCellPoints(endPoints);
+                
                 const drawRr = rr => {
                     p.push();
                     p.translate(rr.x, rr.y);                    
                     p.rotate(rr.angle);
                     p.rectMode(p.CENTER);
-                    p.stroke('ff0000');
+                    p.stroke('#ff0000');
                     p.strokeWeight(2);
-                    p.fill('0000ff');
+                    p.fill('#0000ff');
                     p.rect(0, 0, rr.w, rr.h);
                     p.pop();
                 }
 
-                const p1p2 = getRectPos(p1, p2);
-                drawRr(p1p2);
-                setCurDebugText(`${dbgfmtPt(mouse.pressLocation)} ${dbgfmtPt(mouse.cur)} ${fmt2Int(p1p2.x)},${fmt2Int(p1p2.y)} ${fmt2Int(p1p2.angle * 180 / 3.1416)} ${fmt2Int(p1p2.h)}`
-                +` start=${dbgfmtPt(p4)} end=${dbgfmtPt(p3)}`);
-                drawRr(getRectPos(p2, p3));
-                drawRr(getRectPos(p3, p4));
-                drawRr(getRectPos(p4, p1));
+                const drawone = (acc,a) => {
+                    if (!acc[a.id]) {
+                        acc[a.id] = true;
+                        drawRr(a);
+                    }
+                }
+                wallPts.reduce((acc, pt) => {
+                    const { a, b, pointA, pointB } = pt;
+                    drawone(acc, a);
+                    drawone(acc, b);
+                    p.push();
+                    p.stroke('#00ff00');                    
+                    p.strokeWeight(2);
+                    p.line(pointA.x + a.x, pointA.y+a.y, pointB.x+b.x, pointB.y+b.y);
+                    p.pop();
+                    return acc;
+                }, {});
+                
 
             }else  if (mouse.state === 'released') {
                 let x1 = p.mouseX;
@@ -453,7 +461,7 @@ export default  {
                     return;
                 }
                 props.inputs[`setCurCollisionEnd`](`here`);
-                
+                const wallPts = getDragCellPoints(endPoints);
             //ray = Bodies.rectangle(rayX, rayY, rayLength, rayWidth, { angle: rayAngle }),
                 if (x1 > x2) {
                     [x1,x2] = [x2,x1];
@@ -464,7 +472,7 @@ export default  {
 
                 //props.inputs[`setCurCollisionEnd`](`x2-x1=${x2 - x1} y2-y1=${y2-y1}`);                
                 
-                return makeCell(endPoints);
+                return makeCell(wallPts);
                 if (x2 - x1 < 10) return;
                 props.inputs[`setCurCollisionEnd`](`herex`);
                 if (y2 - y1 < 10) return;
