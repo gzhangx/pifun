@@ -252,6 +252,68 @@ export default  {
                 }
             }
 
+            const getDragCellPoints = endPoints => {
+                const p1 = mouse.pressLocation
+                const p2 = mouse.cur;
+                const p3 = endPoints.end;
+                const p4 = endPoints.start;
+                if (!endPoints.end) return;
+                const points = [p1, p2, p3, p4];
+                const bodies = points.reduce((acc, p, i) => {
+                    const connId = (i + 1) % 4;
+                    const bar = getRectPos(p, points[connId]);
+                    bar.id = i;
+                    bar.connId = connId;
+                    showRect(bar);
+                    acc.push(bar);
+                    return acc;
+                },[]);
+
+                const showRect = rr => {
+                    p.push();
+                    p.translate(rr.x, rr.y);
+                    p.rotate(rr.angle);
+                    p.rectMode(p.CENTER);
+                    p.stroke('ff0000');
+                    p.strokeWeight(2);
+                    p.fill('0000ff');
+                    p.rect(0, 0, rr.w, rr.h);
+                    p.pop();
+                };
+
+                const ops = [['+r','-t'],['+t','r'],['-r','+t'],['+t','-r']];
+                const connects = ord.map((b, i) => {                                    
+                    const a = bodies[i];
+                    const b = bodies[a.connId];
+                    const pops = ops[i];
+                    const createOps = (op, obj) => {
+                        let x, y;
+                        const { angle, h } = obj;
+                        const hh = h / 2;
+                        if (op[1] === 'r') {
+                            x = Math.sin(angle);
+                            y = Math.cos(angle);
+                        } else {
+                            x = Math.cos(angle);
+                            y = Math.sin(angle);
+                        }
+                        if (op[0] === '-1') {
+                            x *= -1;
+                            y *= -1;
+                        }
+                        x *= hh;
+                        y *= hh; 
+                        return { x, y };
+                    };
+                    return {
+                        a, b,
+                        pa: createOps(pops[0], a),
+                        pb: createOps(pops[1], b),
+                    };
+                });
+                                
+                return connects;
+            };
             const makeCell = endPoints => {
                 const p1 = mouse.pressLocation
                 const p2 = mouse.cur;
@@ -259,7 +321,8 @@ export default  {
                 const p4 = endPoints.start;
                 if (!endPoints.end) return;
                 const tbp = getRectPos(p1, p2);
-                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle } }, core); //tl
+                var group = Body.nextGroup(true);
+                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle, collisionFilter: { group } } }, core); //tl
                 const tb = makeRect(tbp, 'tb');
                 const rbp = getRectPos(p2, p3)
                 const rb = makeRect(rbp, 'rb');
