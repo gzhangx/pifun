@@ -356,7 +356,7 @@ export default  {
             };
             const makeCell = wallPts => {                                
                 var group = Body.nextGroup(true);
-                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle, collisionFilter: { group } } }, core); //tl                
+                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter: { group } } }, core); //tl                
                 wallPts.reduce((acc, pt) => {
                     const { a, b, pointA, pointB } = pt;
                     const checkAdd = x => {
@@ -370,11 +370,9 @@ export default  {
                     const bodyA = checkAdd(a).body;
                     const bodyB = checkAdd(b).body;
                     const stiffness = .05;
-                    if (a.id === 1) { //debugremove add all
                         const cst = { bodyA, bodyB, pointA, pointB, stiffness };
                         createdEngine.addConstraint(cst);
                         core.constraints.push(cst);
-                    }
                     return acc;
                 }, {});
                                 
