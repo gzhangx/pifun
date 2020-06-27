@@ -74,6 +74,21 @@ function doWallSketch(mouse, p) {
         end: endpt[0],
     }
 }
+
+const getConstraintOffset = (op, obj) => {
+    const { angle, h } = obj;
+    const hh = h / 2;
+
+    let addAng = 0;
+    if (op === '-') {
+        addAng = Math.PI;
+    }
+    const x = Math.cos(angle + addAng) * hh;
+    const y = Math.sin(angle + addAng) * hh;
+
+    return { x, y };
+};
+
 export default  {
     WIDTH,
     HEIGHT,
@@ -284,24 +299,12 @@ export default  {
                     const a = bodies[i];
                     const b = bodies[a.connId];
                     //const pops = ops[i];
-                    const createOps = (op, obj) => {
-                        const { angle, h } = obj;
-                        const hh = h / 2;
-                        
-                        let addAng = 0;
-                        if (op === '-') {
-                            addAng = Math.PI;
-                        }
-                        const x = Math.cos(angle + addAng) * hh;
-                        const y = Math.sin(angle + addAng) * hh;
-                                                
-                        return { x, y };
-                    };
+                    
                     
                     return {
                         a, b,
-                        pointA: createOps(pops[0], a),
-                        pointB: createOps(pops[1], b),
+                        pointA: getConstraintOffset(pops[0], a),
+                        pointB: getConstraintOffset(pops[1], b),
                     };
                 });
 
@@ -352,11 +355,24 @@ export default  {
                     p.pop();
                     return acc;
                 }, {});
+
+
+                connects.push({
+                    a: bodies[0],
+                    b: bodies[2],
+                    pointA: getConstraintOffset('-', bodies[0]),
+                    pointB: getConstraintOffset('-', bodies[2]),
+                });
                 return connects;
             };
-            const makeCell = wallPts => {                                
-                var group = Body.nextGroup(true);
-                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter: { group } } }, core); //tl                
+            const stiffness = .95;
+            const addCst = cst => {
+                cst.stiffness = stiffness;
+                createdEngine.addConstraint(cst);
+                core.constraints.push(cst);
+            };
+            const makeCell = (wallPts, downConns, group, mask) => {                
+                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter: { group, mask } } }, core); //tl                
                 wallPts.reduce((acc, pt) => {
                     const { a, b, pointA, pointB } = pt;
                     const checkAdd = x => {
@@ -369,13 +385,26 @@ export default  {
                     }
                     const bodyA = checkAdd(a).body;
                     const bodyB = checkAdd(b).body;
-                    const stiffness = .05;
-                        const cst = { bodyA, bodyB, pointA, pointB, stiffness };
-                        createdEngine.addConstraint(cst);
-                        core.constraints.push(cst);
+                    
+                    const cst = { bodyA, bodyB, pointA, pointB, stiffness };
+                    addCst(cst);
                     return acc;
                 }, {});
-                                
+
+                const btmBeam = wallPts[2].a;
+                const btmRight = getConstraintOffset('-', btmBeam);
+                const btmLeft = getConstraintOffset('+', btmBeam);
+                const anchorRight = downConns.end.body;
+                const anchorLeft = downConns.start.body;
+                const getAnchorOff = a => {
+                    return {
+                        x: a.x - a.body.position.x,
+                        y: a.y - a.body.position.y,
+                  }  
+                };
+                addCst({ bodyA: anchorRight, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
+                addCst({ bodyA: anchorLeft, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
+
             };
 
             if (mouse.state === 'pressed') {
@@ -467,8 +496,9 @@ export default  {
                     return;
                 }
                 
-                const wallPts = getDragCellPoints(endPoints);            
-                return makeCell(wallPts);                
+                const wallPts = getDragCellPoints(endPoints);     
+                var group = Body.nextGroup(true);
+                return makeCell(wallPts, endPoints, group, 0x0002);
             }        
         }
         p.pop();
@@ -511,10 +541,10 @@ export function createWorld() {
     const GroundHeight = 200;
     new SimpleRect({
         x: WIDTH/2,
-        y: HEIGHT + GroundHeight/2-10,
+        y: HEIGHT - GroundHeight/2,
         w: WIDTH,
         h: GroundHeight,
-        opts: {isStatic: true, label: 'Ground'}
+        opts: { isStatic: true, label: 'Ground', collisionFilter:{ mask: 0x0001}},
     }, core);
     //addToWorld([
     //  // walls      
