@@ -43,7 +43,7 @@ function App() {
             <td>Col Active</td><td>{curCollisionActive}</td>            
           </tr>
           <tr>
-            <td>DbgTxt</td><td colSpan='4'>{curDebugText}</td>
+            <td>DbgTxt</td><td colSpan='8'>{curDebugText}</td>
           </tr>
         </table>
       </div>

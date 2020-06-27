@@ -39,8 +39,8 @@ const fmt2Int = p => parseInt(p);
 
 function doWallSketch(mouse, p) {
     const {rayQueryWithPoints} = createdEngine;
-    const start = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
-    start.forEach(r=>{                        
+    const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
+    startPt.forEach(r=>{                        
         //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
         p.push();
         p.translate(r.x, r.y);
@@ -67,9 +67,10 @@ function doWallSketch(mouse, p) {
         p.pop();                        
     });
 
+    const start = startPt[0];
     return {
-        ok: Math.abs(mouse.cur.x - mouse.pressLocation.x) > wallWidth*2,
-        start: start[0],
+        ok: Math.abs(mouse.cur.x - mouse.pressLocation.x) > wallWidth * 2 && start,
+        start,
         end: endpt[0],
     }
 }
@@ -244,7 +245,7 @@ export default  {
 
             ///====================================================>>>>>>>>
             const getRectPos = (startPoint, endPoint) => {
-                const angle = Vector.angle(startPoint, endPoint) - PId2,
+                const angle = Vector.angle(startPoint, endPoint), // - PId2
                     h = Vector.magnitude(Vector.sub(startPoint, endPoint)),
                     x = (endPoint.x + startPoint.x) * 0.5,
                     y = (endPoint.y + startPoint.y) * 0.5;
@@ -260,61 +261,97 @@ export default  {
                 const p3 = endPoints.end;
                 const p4 = endPoints.start;
                 if (!endPoints.end) return;
-                const points = [p1, p2, p3, p4];
-                const showRect = rr => {
-                    p.push();
-                    p.translate(rr.x, rr.y);
-                    p.rotate(rr.angle);
-                    p.rectMode(p.CENTER);
-                    p.stroke('ff0000');
-                    p.strokeWeight(2);
-                    p.fill('0000ff');
-                    p.rect(0, 0, rr.w, rr.h);
-                    p.pop();
-                };
+                const points = [p1, p2, p3, p4];                
 
                 const bodies = points.reduce((acc, p, i) => {
                     const connId = (i + 1) % 4;
                     const bar = getRectPos(p, points[connId]);
                     bar.id = i;
                     bar.connId = connId;
-                    showRect(bar);
                     acc.push(bar);
+                    if (i === 0) {
+                        const pifmt = p => (p * 180 / Math.PI).toFixed(0);
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;                        
+                    }
                     return acc;
                 },[]);
 
                 
 
-                const ops = [['+r','-t'],['+t','r'],['-r','+t'],['+t','-r']];
+                const ops = [['+','-'],['+','-'],['+','-'],['+','-']];
                 const connects = ops.map((pops, i) => {                                    
                     const a = bodies[i];
                     const b = bodies[a.connId];
                     //const pops = ops[i];
                     const createOps = (op, obj) => {
-                        let x, y;
                         const { angle, h } = obj;
                         const hh = h / 2;
-                        if (op[1] === 'r') {
-                            x = Math.sin(angle);
-                            y = Math.cos(angle);
-                        } else {
-                            x = Math.cos(angle);
-                            y = Math.sin(angle);
+                        
+                        let addAng = 0;
+                        if (op === '-') {
+                            addAng = Math.PI;
                         }
-                        if (op[0] === '-1') {
-                            x *= -1;
-                            y *= -1;
-                        }
-                        x *= hh;
-                        y *= hh; 
+                        const x = Math.cos(angle + addAng) * hh;
+                        const y = Math.sin(angle + addAng) * hh;
+                                                
                         return { x, y };
                     };
+                    
                     return {
                         a, b,
                         pointA: createOps(pops[0], a),
                         pointB: createOps(pops[1], b),
                     };
-                });                                
+                });
+
+                //debug
+                connects.reduce((acc, c) => {
+                    const showRect = (rr, stroke = '#ff0000', fill ='#0000ff') => {
+                        p.push();
+                        p.translate(rr.x, rr.y);
+                        p.rotate((rr.angle || 0) + PId2);
+                        p.rectMode(p.CENTER);
+                        p.stroke(stroke);
+                        p.strokeWeight(2);
+                        p.fill(fill);
+                        p.rect(0, 0, rr.w, rr.h);
+                        p.pop();
+                    };
+
+                    const chkshow = a => {
+                        if (acc[a.id]) return;
+                        acc[a.id] = a;
+                        showRect(a);                        
+                    }
+                    const { a, b } = c;                    
+                    chkshow(a);
+                    chkshow(b);
+
+                    const { pointA, pointB } = c;
+                    p.push();
+                    p.stroke('#00ff00');
+                    p.strokeWeight(2);
+                    const xa = pointA.x + a.x;
+                    const ya = pointA.y + a.y;
+                    const xb = pointB.x + b.x;
+                    const yb = pointB.y + b.y;
+                    //p.line(xa, ya, xb, yb);
+                    showRect({ ...a, w: 20, h: 20 }, '#223344', '#0000ff');
+                    showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
+                    showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
+                    //if (a.id === 1)
+                    {
+                        setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
+                        p.line(xa, ya, xb, yb);
+                    }
+                    //setCurDebugText(`debugremove ===> ax=${dbgfmtPt(a)} pointA is ${dbgfmtPt(pointA)}`);
+                    //showRect({ ...pointB, w: 8, h: 8 }, '#223344', 'ff00ff')
+                    //showRect({ x: xa, y: ya, w: 2, h: 2 });
+                    //showRect({ x: xb, y: yb, w: 2, h: 2 });
+                    p.pop();
+                    return acc;
+                }, {});
                 return connects;
             };
             const makeCell = wallPts => {                                
@@ -333,9 +370,11 @@ export default  {
                     const bodyA = checkAdd(a).body;
                     const bodyB = checkAdd(b).body;
                     const stiffness = .05;
-                    const cst ={ bodyA, bodyB, pointA, pointB, stiffness };
-                    createdEngine.addConstraint(cst);
-                    core.constraints.push(cst);
+                    if (a.id === 1) { //debugremove add all
+                        const cst = { bodyA, bodyB, pointA, pointB, stiffness };
+                        createdEngine.addConstraint(cst);
+                        core.constraints.push(cst);
+                    }
                     return acc;
                 }, {});
                                 
@@ -373,9 +412,9 @@ export default  {
                         p.translate(r.x, r.y);
                         p.text(r.t.toFixed(2), 0,0);        
                         p.rectMode(p.CENTER);
-                        p.stroke('ff0000');
+                        p.stroke('#ff0000');
                         p.strokeWeight(2);
-                        p.fill('0000ff');                    
+                        p.fill('#0000ff');                    
                         p.rect(2,2, 4, 4);
                         p.pop();                        
                     });
@@ -388,46 +427,15 @@ export default  {
 
                 const wallPts = getDragCellPoints(endPoints);
                 
-                const drawRr = rr => {
-                    p.push();
-                    p.translate(rr.x, rr.y);                    
-                    p.rotate(rr.angle);
-                    p.rectMode(p.CENTER);
-                    p.stroke('#ff0000');
-                    p.strokeWeight(2);
-                    p.fill('#0000ff');
-                    p.rect(0, 0, rr.w, rr.h);
-                    p.pop();
-                }
-
-                const drawone = (acc,a) => {
-                    if (!acc[a.id]) {
-                        acc[a.id] = true;
-                        drawRr(a);
-                    }
-                }
-                wallPts.reduce((acc, pt) => {
-                    const { a, b, pointA, pointB } = pt;
-                    drawone(acc, a);
-                    drawone(acc, b);
-                    p.push();
-                    p.stroke('#00ff00');                    
-                    p.strokeWeight(2);
-                    p.line(pointA.x + a.x, pointA.y+a.y, pointB.x+b.x, pointB.y+b.y);
-                    p.pop();
-                    return acc;
-                }, {});
-                
-
-            }else  if (mouse.state === 'released') {
-                let x1 = p.mouseX;
-                let y1 = p.mouseY;
-                let x2 = core.states.mouse.pressLocation.x;
-                let y2 = core.states.mouse.pressLocation.y;
-                const w = halfWallWidth;
-                const w2 = wallWidth;
+            }else  if (mouse.state === 'released') {                
                 mouse.state = '';
                 if (isFireMode) {
+                    const x1 = p.mouseX;
+                    const y1 = p.mouseY;
+                    const x2 = core.states.mouse.pressLocation.x;
+                    const y2 = core.states.mouse.pressLocation.y;
+                    const w = halfWallWidth;
+                    const w2 = wallWidth;
                     const ball = new SimpleCircle({
                         x: x2,
                         y: y2,
@@ -460,103 +468,9 @@ export default  {
                     props.inputs[`setCurCollisionEnd`](`Not ok`);
                     return;
                 }
-                props.inputs[`setCurCollisionEnd`](`here`);
-                const wallPts = getDragCellPoints(endPoints);
-            //ray = Bodies.rectangle(rayX, rayY, rayLength, rayWidth, { angle: rayAngle }),
-                if (x1 > x2) {
-                    [x1,x2] = [x2,x1];
-                }
-                if (y1 > y2) {
-                    [y1,y2] = [y2,y1];
-                }                
-
-                //props.inputs[`setCurCollisionEnd`](`x2-x1=${x2 - x1} y2-y1=${y2-y1}`);                
                 
-                return makeCell(wallPts);
-                if (x2 - x1 < 10) return;
-                props.inputs[`setCurCollisionEnd`](`herex`);
-                if (y2 - y1 < 10) return;
-                props.inputs[`setCurCollisionEnd`](`herey`);
-                const x1x2 = x2-x1;
-                const cx = x1x2/2;
-                const y1y2 = y2-y1;
-                const cy = y1y2/2;
-                
-                const hl1 = y1y2 -w2-w2;
-                const opt = { restitution: 0.5, friction: 0.3, angularStiffness :0.9, collisionFilter:{mask:1} };
-
-
-                const copt = label=>Object.assign({label, isSensor: true}, opt);
-                const tb = new SimpleRect({ x: x1 + cx, y: y1 + w, w:x1x2-w2*2, h: w2, opts: copt('tb') }, core); //tl
-                const bb = new SimpleRect({ x: x1 + cx, y: y2 - w, w:x1x2-w2*2, h: w2, opts: copt('bb') }, core); //tr
-                const lb = new SimpleRect({ x: x1 + w, y: y1 + cy, w: w2, h: y1y2, opts: copt('lb') }, core); //bl
-                const rb = new SimpleRect({ x: x2 - w, y: y1 + cy, w: w2, h: y1y2, opts: copt('rb') }, core); //br
-                const addCst = cst=>{
-                    createdEngine.addConstraint(cst);
-                    core.constraints.push(cst);
-                };
-                const stiffness = .05;
-                const pointA = {x:0,y:0};
-                const pointB = pointA;
-                addCst({bodyA: tb.body, bodyB: lb.body, pointA: { x: - cx + w, y: 0 }, pointB: {x: 0, y: -cy+w}, stiffness});
-                addCst({bodyA: tb.body, bodyB: rb.body, pointA: { x: cx - w, y: 0}, pointB : { x:0, y: -cy+w}, stiffness});
-
-
-                addCst({bodyA: bb.body, bodyB: lb.body, pointA:{  x: - cx + w, y: 0 }, pointB: {x: 0, y: cy-w}, stiffness});
-                addCst({bodyA: bb.body, bodyB: rb.body, pointA:{  x: cx - w, y: 0 }, pointB: {x: 0, y: cy-w}, stiffness});
-
-                return;
-                //const tl = new SimpleRect({ x: x1 + w, y: y1 + w, w:w2, h: w2, opts: copt('tl') }, core); //tl
-                //const tr = new SimpleRect({ x: x2 - w, y: y1 + w, w:w2, h: w2, opts: copt('tr') }, core); //tr
-                //const bl = new SimpleRect({ x: x1 + w, y: y2 - w, w: w2, h: w2, opts: copt('bl') }, core); //bl
-                //const br = new SimpleRect({ x: x2 - w, y: y2 - w, w: w2, h: w2, opts: copt('br') }, core); //br
-                //const addCst = cst=>{
-                //    createdEngine.addConstraint(cst);
-                //    core.constraints.push(cst);
-                //};
-                //const stiffness = .05;
-                //const pointA = {x:0,y:0};
-                //const pointB = pointA;
-                //addCst({bodyA: tl.body, bodyB: tr.body, pointA, pointB, stiffness});
-                //addCst({bodyA: tl.body, bodyB: bl.body, pointA, pointB, stiffness});
-
-
-                //addCst({bodyA: br.body, bodyB: bl.body, pointA, pointB, stiffness});
-                //addCst({bodyA: br.body, bodyB: tr.body, pointA, pointB, stiffness});
-
-                //addCst({bodyA: tl.body, bodyB: br.body, pointA, pointB, stiffness});
-
-                return;
-
-
-                const l1 = new SimpleRect({ x: x1 + w, y: y1 + cy, w:w2, h: hl1, opt }, core);
-                const r1 = new SimpleRect({ x: x2 - w, y: y1 + cy, w:w2, h: hl1, opt }, core);
-                const t1 = new SimpleRect({ x: x1 + cx, y: y1 + w , w: x1x2, h: w2, opt }, core);
-                const b1 = new SimpleRect({ x: x1 + cx, y: y2 - w, w: x1x2, h: w2, opt }, core);
-        
-                const addCst1 = cst=>{
-                    createdEngine.addConstraint(cst);
-                    core.constraints.push(cst);
-                };
-                //const stiffness = 1;
-                addCst({bodyA: l1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) +1 }, pointB:{x:-cx +w, y:w-1}, stiffness});
-                addCst({bodyA: l1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - 1 }, pointB:{x:-cx +w, y:-w+1}, stiffness});
-
-
-                addCst({bodyA: r1.body, bodyB: t1.body, pointA: {x: 0, y: -(hl1/2) + 1 }, pointB:{x:cx -w, y:w-1}, stiffness});
-                addCst({bodyA: r1.body, bodyB: b1.body, pointA: {x: 0, y:   hl1/2  - 1 }, pointB:{x:cx -w, y:-w+1}, stiffness});
-
-                addCst({bodyA: l1.body, bodyB: b1.body, pointA:{x:0, y:(-hl1/2)+w}, pointB:{x:cx -w, y:0}, stiffness});
-                //addCst({bodyA: r1.body, bodyB: t1.body, pointA: {x:0, y: -y1y2/2 }, pointB:{x:x1x2/2 , y:w/2}, stiffness});
-                //addCst({bodyA: r1.body, bodyB: b1.body, pointA: {x:0, y: y1y2/2 }, pointB:{x:x1x2/2 , y:-w/2}, stiffness});
-
-                
-                //addCst({bodyA: l1.body, bodyB: r1.body, pointA: {x:0, y: -y1y2/2 }, pointB:{x:0, y: y1y2/2 }, stiffness});
-                //addCst({bodayA: r1, bodyB: t1, length: w2, stiffness: 0.9});
-        
-                //const cst = {bodyA: b1.body, bodyB: b2.body, length: 60, stiffness:0.9};                
-                //engine.addConstraint(cst);
-                //core.constraints.push(cst);
+                const wallPts = getDragCellPoints(endPoints);            
+                return makeCell(wallPts);                
             }        
         }
         p.pop();
