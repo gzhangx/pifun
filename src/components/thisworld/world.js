@@ -27,6 +27,14 @@ const core = {
     inputs: {
         curKey: '',
         curBuildType: '',
+    },
+    world: {
+        category1: 0,
+        category1Fire: 0,
+        mask1: 0,
+        category2: 0,
+        category2Fire: 0,
+        mask2: 0,
     }
 }
 let createdEngine ;
@@ -125,7 +133,8 @@ export default  {
         Object.assign(core, createdEngine);
         //core.addToWorld = eng.addToWorld;        
         //core.Bodies = eng.Bodies;
-        createWorld();
+        const group = createWorld();
+        core.groupGroup = group;
     },
     draw: (p, props)=>{
         const { curBuildType } = core.inputs;
@@ -210,7 +219,6 @@ export default  {
             if (cname !== 'End')
                 props.inputs[`setCurCollision${cname}`](s);
         }        
-        p.push();
         const pairs = core.collisions;
         //console.log(e.pairs);
         for (let i = 0; i < pairs.length; i++) {
@@ -219,6 +227,7 @@ export default  {
             if (!pair.isActive)
                 continue;
 
+            p.push();
             for (let j = 0; j < pair.activeContacts.length; j++) {
                 const contact = pair.activeContacts[j],
                     vertex = contact.vertex;                                
@@ -226,6 +235,7 @@ export default  {
                 p.strokeWeight(2);
                 p.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
             }
+            p.pop();
         
             // render collision normals                    
             const collision = pair.collision;
@@ -276,7 +286,7 @@ export default  {
                 const p3 = endPoints.end;
                 const p4 = endPoints.start;
                 if (!endPoints.end) return;
-                const points = [p1, p2, p3, p4];                
+                const points = [p1, p2, p3, p4];
 
                 const bodies = points.reduce((acc, p, i) => {
                     const connId = (i + 1) % 4;
@@ -287,15 +297,15 @@ export default  {
                     if (i === 0) {
                         const pifmt = p => (p * 180 / Math.PI).toFixed(0);
                         const dx = p2.x - p1.x;
-                        const dy = p2.y - p1.y;                        
+                        const dy = p2.y - p1.y;
                     }
                     return acc;
-                },[]);
+                }, []);
 
                 
 
-                const ops = [['+','-'],['+','-'],['+','-'],['+','-']];
-                const connects = ops.map((pops, i) => {                                    
+                const ops = [['+', '-'], ['+', '-'], ['+', '-'], ['+', '-']];
+                const connects = ops.map((pops, i) => {
                     const a = bodies[i];
                     const b = bodies[a.connId];
                     //const pops = ops[i];
@@ -310,7 +320,7 @@ export default  {
 
                 //debug
                 connects.reduce((acc, c) => {
-                    const showRect = (rr, stroke = '#ff0000', fill ='#0000ff') => {
+                    const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
                         p.push();
                         p.translate(rr.x, rr.y);
                         p.rotate((rr.angle || 0) + PId2);
@@ -325,9 +335,9 @@ export default  {
                     const chkshow = a => {
                         if (acc[a.id]) return;
                         acc[a.id] = a;
-                        showRect(a);                        
+                        showRect(a);
                     }
-                    const { a, b } = c;                    
+                    const { a, b } = c;
                     chkshow(a);
                     chkshow(b);
 
@@ -343,15 +353,9 @@ export default  {
                     showRect({ ...a, w: 20, h: 20 }, '#223344', '#0000ff');
                     showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
                     showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
-                    //if (a.id === 1)
-                    {
-                        setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
-                        p.line(xa, ya, xb, yb);
-                    }
-                    //setCurDebugText(`debugremove ===> ax=${dbgfmtPt(a)} pointA is ${dbgfmtPt(pointA)}`);
-                    //showRect({ ...pointB, w: 8, h: 8 }, '#223344', 'ff00ff')
-                    //showRect({ x: xa, y: ya, w: 2, h: 2 });
-                    //showRect({ x: xb, y: yb, w: 2, h: 2 });
+                    setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
+                    p.line(xa, ya, xb, yb);
+
                     p.pop();
                     return acc;
                 }, {});
@@ -447,12 +451,11 @@ export default  {
                     });
 
                     //props.inputs[`setCurCollisionStart`](`${dists} `);                    
-                    
-                }
-                const endPoints = doWallSketch(mouse, p);
-                if (!endPoints.ok || !endPoints.end) return;
+                    const endPoints = doWallSketch(mouse, p);
+                    if (!endPoints.ok || !endPoints.end) return;
 
-                const wallPts = getDragCellPoints(endPoints);
+                    const wallPts = getDragCellPoints(endPoints);   
+                }                
                 
             }else  if (mouse.state === 'released') {                
                 mouse.state = '';
@@ -467,7 +470,7 @@ export default  {
                         x: x2,
                         y: y2,
                         r: 10,
-                        opts: { restitution: 0.5 },
+                        opts: { restitution: 0.5, collisionFilter:{mask: 0xffff, group: core.groupGroup} },
                     }, core);
                     ball.label = 'fireball';
                     ball.time = new Date();
@@ -498,10 +501,11 @@ export default  {
                 
                 const wallPts = getDragCellPoints(endPoints);     
                 var group = Body.nextGroup(true);
-                return makeCell(wallPts, endPoints, group, 0x0002);
+                const mask = 0x0002;
+                return makeCell(wallPts, endPoints, group, mask);
             }        
         }
-        p.pop();
+        
     },
     mousePressed: p=>{
         core.states.mouse.state = 'pressed';
@@ -537,11 +541,11 @@ export function createWorld() {
         h: 60,
         opts: { restitution: 0.5 },
     }, core);
-    const {addToWorld, Bodies} = createdEngine;
+    const {addToWorld, Bodies, Body} = createdEngine;
     const GroundHeight = 200;
     new SimpleRect({
         x: WIDTH/2,
-        y: HEIGHT - GroundHeight/2,
+        y: HEIGHT + GroundHeight/2,
         w: WIDTH,
         h: GroundHeight,
         opts: { isStatic: true, label: 'Ground', collisionFilter:{ mask: 0x0001}},

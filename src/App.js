@@ -5,7 +5,7 @@ import keyHandler from "./components/platform/keyHandler";
 import opt from './components/thisworld/world';
 function App() {
   const [curKey, setCurKey] = useState();
-  const [curBuildType, setCurBuildType] = useState();
+  const [curBuildType, setCurBuildType] = useState('wall');
   const [curCollisionStart, setCurCollisionStart] = useState();
   const [curCollisionActive, setCurCollisionActive] = useState();
   const [curCollisionEnd, setCurCollisionEnd] = useState();
