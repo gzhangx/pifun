@@ -107,7 +107,14 @@ export function createEngine() {
         Query,
         engine,
         addToWorld: body=>World.add(engine.world, body),
-        removeFromWorld: body=>World.remove(engine.world, body),
+      removeFromWorld: body => {
+          if (body.ggConstraints) {
+            body.ggConstraints.forEach(c => {
+              World.remove(engine.world, c);
+            })
+          }
+          World.remove(engine.world, body);
+        },
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
         eventCallbacks,
         setBodyOuterParent: (bdy, parent)=>bdy.ggParent = parent,
