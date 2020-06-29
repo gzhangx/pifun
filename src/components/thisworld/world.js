@@ -61,8 +61,12 @@ const core = {
                 getCollisionFilter: null,
             },
         },
-    }
+    },
+
+    debugDeepCollisions: [],
+    deepCurCollisions: { }
 }
+
 let createdEngine ;
 
 const wallWidth = 20;
@@ -84,7 +88,7 @@ function doWallSketch(mouse, p) {
         p.strokeWeight(2);
         p.fill('0000ff');                    
         p.rect(2,2, 4, 4);
-        p.pop();                        
+        p.pop();
     });
 
     const endpt = rayQueryWithPoints({x:mouse.cur.x, y:mouse.cur.y},{x: mouse.cur.x, y: HEIGHT});
@@ -135,15 +139,16 @@ export default  {
         createdEngine.eventCallbacks.collisionEvent = (e)=>{            
             core.collisionEvent = e;
             if (e.name === 'collisionActive' || e.pairs.length) {
-                core.collisions = e.pairs;                
+                //core.collisions = e.pairs;
             }
             if (e.name === 'collisionStart') {
-                console.log('collisionStart ' + e.pairs.length);
-                console.log(e.source.pairs.list);
+                //console.log('collisionStart ' + e.pairs.length);
+                //console.log(e.source.pairs.list);
+                core.collisions = e.pairs;
             }
             if (e.name === 'collisionEnd') {
-                console.log('collisionEnd' + e.source.pairs.list.length);
-                console.log(e);
+                //console.log('collisionEnd' + e.source.pairs.list.length);
+                //console.log(e);
             }
         };
         const mouse = Mouse.create(canvas),        
@@ -173,6 +178,9 @@ export default  {
                 if (now - b.time > 10000) {                    
                     return {b,i};
                 }
+            }
+            if (b.health <= 0) {
+                return { b, i };
             }
         }).filter(x=>x).reverse();
         const {Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector} = createdEngine;
@@ -264,7 +272,7 @@ export default  {
             p.pop();
         
             // render collision normals                    
-            const collision = pair.collision;
+            const collision = pair.collision;            
 
             if (pair.activeContacts.length > 0) {
                 var normalPosX = pair.activeContacts[0].vertex.x,
@@ -285,9 +293,44 @@ export default  {
                 }
 
                 p.line(fx, fy, normalPosX, normalPosY);
+
+                if (collision.depth) {
+                    const { debugDeepCollisions, deepCurCollisions } = core;
+                    if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball')
+                    {
+                        debugDeepCollisions.push({
+                            time: new Date(),
+                            depth: collision.depth,
+                            x: fx,
+                            y: fy,
+                        });
+                        
+                        const fire  = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
+                        const colId = fire.id;
+                        const wall = collision.bodyA.label === 'fireball' ? collision.bodyB : collision.bodyA;
+                        let existing = deepCurCollisions[colId];
+                        if (!existing) {
+                            existing = {
+                                fire,
+                                wall,
+                                depth: collision.depth,
+                            };
+                            deepCurCollisions[colId] = existing;
+                        } else {
+                            if (existing.depth < collision.depth) {
+                                existing.depth = collision.depth;
+                            }
+                        }
+                    }
+                }
             }
         }
             
+        Object.keys(core.deepCurCollisions).forEach(key => {
+            const itm = core.deepCurCollisions[key];
+            delete core.deepCurCollisions[key];
+            itm.wall.ggParent.health -= itm.depth;
+        })
         //if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
@@ -403,13 +446,14 @@ export default  {
             };
             const makeCell = (wallPts, downConns, collisionFilter) => {                
                 const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core); //tl
-                wallPts.reduce((acc, pt) => {
+                const allWalls = wallPts.reduce((acc, pt) => {
                     const { a, b, pointA, pointB } = pt;
                     const checkAdd = x => {
                         if (!acc[x.id]) 
                         {
                             x.body = makeRect(x, x.id);;
-                            acc[x.id] = x.body;                            
+                            acc[x.id] = x.body;
+                            acc.all.push(x.body);
                         }
                         return x.body;
                     }
@@ -419,7 +463,9 @@ export default  {
                     const cst = { bodyA, bodyB, pointA, pointB, stiffness };
                     addCst(cst);
                     return acc;
-                }, {});
+                }, {
+                    all: [],
+                }).all;
 
                 const btmBeam = wallPts[2].a;
                 const btmRight = getConstraintOffset('-', btmBeam);
@@ -434,7 +480,7 @@ export default  {
                 };
                 addCst({ bodyA: anchorRight, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
                 addCst({ bodyA: anchorLeft, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
-
+                return allWalls;
             };
 
             if (mouse.state === 'pressed') {
@@ -526,10 +572,30 @@ export default  {
                 }
                 
                 const wallPts = getDragCellPoints(endPoints);                     
-                return makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
+                const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());                
+                allWalls.forEach(w => w.health = 100);
+                return allWalls;
             }        
         }
         
+
+        p.push();
+        core.debugDeepCollisions.forEach(r => {            
+            p.translate(r.x, r.y);
+            p.text(r.depth.toFixed(2), 0, 0);
+            p.rectMode(p.CENTER);
+            p.stroke('ff0000');
+            p.strokeWeight(2);
+            p.fill('0000ff');
+            p.rect(-2, -2, 4, 4);
+        })
+        p.pop();
+        for (let i = core.debugDeepCollisions.length - 1; i>=0; i--) {
+            const c = core.debugDeepCollisions[i];
+            if (now - c.time > 1000) {
+                core.debugDeepCollisions.splice(i, 1);
+            }
+        }
     },
     mousePressed: p=>{
         core.states.mouse.state = 'pressed';
