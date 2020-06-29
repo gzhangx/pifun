@@ -7,6 +7,8 @@ export const allBodies = [];
 export const WIDTH = 600;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
+const BREAKAWAYSPEED = 10;
+const BREAKAWAYANGSPEED = 0.3;
 const core = {
     allBodies,
     //constraints: [],
@@ -65,7 +67,8 @@ const core = {
     },
 
     debugDeepCollisions: [],
-    deepCurCollisions: { }
+    deepCurCollisions: {},
+    debugInfo: null,
 }
 
 let createdEngine ;
@@ -73,7 +76,7 @@ let createdEngine ;
 const wallWidth = 20;
 const halfWallWidth = wallWidth / 10;
 const PId2 = -Math.PI / 2
-const dbgfmtPt = p => `(${p.x.toFixed(0)}/${p.y.toFixed(0)})`;
+const dbgfmtPt = (p,fixed=0) => p?`(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})`:'NA';
 const fmt2Int = p => parseInt(p);
 
 function doWallSketch(mouse, p) {
@@ -174,20 +177,29 @@ export default  {
         const isWallMode = curBuildType === 'wall';
         const isFireMode = curBuildType === 'fire';
         const now = new Date();
-        const toDelete = core.allBodies.map((b,i)=>{
+        const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
+        const allBodies = Composite.allBodies(engine.world);
+        const toDelete = allBodies.map((bdy, i) => {
+            const b = bdy.ggParent;
+            const killRet = { bdy, i };
+            if (!b)
+                return;
             if(b.label === 'fireball') {
                 if (now - b.time > 10000) {                    
-                    return {b,i};
+                    return killRet;
                 }
+                return;
+            }            
+            if (b.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
+            if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
+                if (b.label === 'wall')
+                    return killRet;
             }
-            if (b.health <= 0) {
-                return { b, i };
-            }
-        }).filter(x=>x).reverse();
-        const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite} = createdEngine;
-        toDelete.forEach(d=>{
-            removeFromWorld(d.b.body);
-            core.allBodies.splice(d.i,1);
+        }).filter(x=>x);
+        
+        toDelete.forEach(b=>{
+            removeFromWorld(b.bdy);
+            //core.allBodies.splice(d.i,1);
         });                
         if (core.curKey) {
             core.curKey = null;
@@ -216,7 +228,9 @@ export default  {
         }
         p.background(56);
         p.fill(255);
-        allBodies.forEach(item=>{
+        allBodies.forEach(itemb => {
+            const item = itemb.ggParent;
+            if (!item) return;
             const {body, type, radius } = item;
             item.show(p);            
         });
@@ -256,8 +270,8 @@ export default  {
             let s = core.collisionEvent.source.pairs.list.map(c => {
                 return parseFloat(c.collision.depth.toFixed(2));
             }).join(',');
-            if (cname !== 'End')
-                props.inputs[`setCurCollision${cname}`](s);
+            //if (cname !== 'End')
+            //    props.inputs[`setCurCollision${cname}`](s);
         }        
         const pairs = core.collisions;
         //console.log(e.pairs);
@@ -428,7 +442,7 @@ export default  {
                     showRect({ ...a, w: 20, h: 20 }, '#223344', '#0000ff');
                     showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
                     showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
-                    setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
+                    //setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
                     p.line(xa, ya, xb, yb);
 
                     p.pop();
@@ -465,7 +479,8 @@ export default  {
                     const checkAdd = x => {
                         if (!acc[x.id]) 
                         {
-                            x.body = makeRect(x, x.id);;
+                            x.body = makeRect(x, x.id);
+                            x.body.label = 'wall';
                             acc[x.id] = x.body;
                             acc.all.push(x.body);
                         }
@@ -494,6 +509,9 @@ export default  {
                 };
                 addCst({ bodyA: anchorRight, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
                 addCst({ bodyA: anchorLeft, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
+                if (!core.debugInfo) {
+                    core.debugInfo = allWalls[0];
+                }
                 return allWalls;
             };
 
@@ -609,6 +627,16 @@ export default  {
             if (now - c.time > 1000) {
                 core.debugDeepCollisions.splice(i, 1);
             }
+        }
+
+        if (core.debugInfo) {
+            const d = core.debugInfo.body;
+            //const dbgval = `dbgval pos=${dbgfmtPt(d.position)} force=${dbgfmtPt(d.force)} positionImpulse=${dbgfmtPt(d.positionImpulse)} constraintImpulse=${dbgfmtPt(d.constraintImpulse)}`;
+            //if (Math.abs(d.constraintImpulse.x) > 0.5)
+            //console.log(`cstImp=${dbgfmtPt(d.constraintImpulse, 2)} speed=${d.speed.toFixed(2)} angularSpeed=${d.angularSpeed.toFixed(2)}`);
+
+            const dbgval = `dbgval bodies=${Composite.allBodies(engine.world).length} csts=${Composite.allConstraints(engine.world).length} ${d.position.y} force=${dbgfmtPt(d.force)} speed=${d.speed.toFixed(2)} angularSpeed=${d.angularSpeed.toFixed(2)}`;
+            setCurDebugText(dbgval);
         }
     },
     mousePressed: p=>{
