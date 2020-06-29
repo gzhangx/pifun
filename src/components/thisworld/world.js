@@ -28,13 +28,39 @@ const core = {
         curKey: '',
         curBuildType: '',
     },
-    world: {
-        category1: 0,
-        category1Fire: 0,
-        mask1: 0,
-        category2: 0,
-        category2Fire: 0,
-        mask2: 0,
+    //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
+    worldCats: {        
+        ground: {
+            structure: {
+                category: 0,
+                mask: 0,
+                getCollisionFilter: null,
+            },            
+        },
+        c1: {
+            structure: {
+                category: 0,
+                mask: 0,
+                getCollisionFilter: null,
+            },
+            fire: {
+                category: 0,
+                mask: 0,
+                getCollisionFilter: null,
+            },
+        },
+        c2: {
+            structure: {
+                category: 0,
+                mask: 0,
+                getCollisionFilter: null,
+            },
+            fire: {
+                category: 0,
+                mask: 0,
+                getCollisionFilter: null,
+            },
+        },
     }
 }
 let createdEngine ;
@@ -375,8 +401,8 @@ export default  {
                 createdEngine.addConstraint(cst);
                 core.constraints.push(cst);
             };
-            const makeCell = (wallPts, downConns, group, mask) => {                
-                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter: { group, mask } } }, core); //tl                
+            const makeCell = (wallPts, downConns, collisionFilter) => {                
+                const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core); //tl
                 wallPts.reduce((acc, pt) => {
                     const { a, b, pointA, pointB } = pt;
                     const checkAdd = x => {
@@ -470,7 +496,7 @@ export default  {
                         x: x2,
                         y: y2,
                         r: 10,
-                        opts: { restitution: 0.5, collisionFilter:{mask: 0xffff, group: core.groupGroup} },
+                        opts: { restitution: 0.5, collisionFilter: core.worldCats.c2.fire.getCollisionFilter() },
                     }, core);
                     ball.label = 'fireball';
                     ball.time = new Date();
@@ -499,10 +525,8 @@ export default  {
                     return;
                 }
                 
-                const wallPts = getDragCellPoints(endPoints);     
-                var group = Body.nextGroup(true);
-                const mask = 0x0002;
-                return makeCell(wallPts, endPoints, group, mask);
+                const wallPts = getDragCellPoints(endPoints);                     
+                return makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
             }        
         }
         
@@ -526,12 +550,45 @@ export default  {
     }
 };
 
-export function createWorld() {    
+export function createWorld() {
+
+    //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0
+    const { addToWorld, Bodies, Body } = createdEngine;
+    const { worldCats } = core;
+    const createCats = c => {
+        if (c.structure) {
+            c.structure.category = Body.nextCategory();
+        }
+        if (c.fire) {
+            c.fire.category = Body.nextCategory();
+        }
+    }
+    createCats(worldCats.ground);
+    createCats(worldCats.c1);
+    createCats(worldCats.c2);
+    
+
+    worldCats.c1.structure.mask = worldCats.c2.structure.category | worldCats.c2.fire.category;
+    worldCats.c1.fire.mask = worldCats.c2.structure.category | worldCats.c2.fire.category | worldCats.ground.structure.category;
+    worldCats.c2.structure.mask = worldCats.c1.structure.category | worldCats.c1.fire.category;
+    worldCats.c2.fire.mask = worldCats.c1.structure.category | worldCats.c1.fire.category | worldCats.ground.structure.category;
+    worldCats.ground.structure.mask = worldCats.c1.fire.category | worldCats.c2.fire.category | worldCats.ground.structure.category;
+
+    const createCollisionFilter = c => ({
+        mask: c.mask,
+        category: c.category
+    });
+    worldCats.ground.structure.getCollisionFilter = () => createCollisionFilter(worldCats.ground.structure);
+    worldCats.c1.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c1.structure);
+    worldCats.c1.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c1.fire);
+    worldCats.c2.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c2.structure);
+    worldCats.c2.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c2.fire);
+
     new SimpleCircle({
         x: 210,
         y: 100,
         r: 30,
-        opts: { restitution: 0.5 },
+        opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, core);
 
     new SimpleRect({
@@ -539,17 +596,19 @@ export function createWorld() {
         y: 100,
         w: 30,
         h: 60,
-        opts: { restitution: 0.5 },
+        opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, core);
-    const {addToWorld, Bodies, Body} = createdEngine;
+    
     const GroundHeight = 200;
     new SimpleRect({
         x: WIDTH/2,
         y: HEIGHT + GroundHeight/2,
         w: WIDTH,
         h: GroundHeight,
-        opts: { isStatic: true, label: 'Ground', collisionFilter:{ mask: 0x0001}},
+        opts: { isStatic: true, label: 'Ground', collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, core);
+
+
     //addToWorld([
     //  // walls      
     //  Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
