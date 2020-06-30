@@ -11,7 +11,7 @@ export default function SimpleRect(initInfo, engine) {
 
     this.body = body;
     engine.setBodyOuterParent(body, this);
-    allBodies.push(this);
+    //allBodies.push(this);
     this.show = p => {
         const pos = body.position;
         const angle = body.angle;

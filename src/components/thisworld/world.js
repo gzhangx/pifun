@@ -2,15 +2,31 @@ import SimpleCircle from '../objs/SimpleCircle';
 import SimpleSqure from '../objs/SimpleSqure';
 import SimpleRect from '../objs/SimpleRect';
 import { World } from 'matter-js';
+import { createConstructor } from './worldConstructor';
 
-export const allBodies = [];
+//export const allBodies = [];
 export const WIDTH = 600;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
 const BREAKAWAYSPEED = 10;
 const BREAKAWAYANGSPEED = 0.3;
+const wallWidth = 20;
+const halfWallWidth = wallWidth / 10;
+const PId2 = -Math.PI / 2
+const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
+const fmt2Int = p => parseInt(p);
+
 const core = {
-    allBodies,
+    consts: {
+        wallWidth,
+        halfWallWidth,
+        PId2,
+        WALLHEALTH,
+        BREAKAWAYSPEED,
+        BREAKAWAYANGSPEED,
+    },
+    createdEngine: null,
+    //allBodies,
     //constraints: [],
     collisions:[],
     collisionEvent: {},
@@ -73,12 +89,9 @@ const core = {
 
 let createdEngine ;
 
-const wallWidth = 20;
-const halfWallWidth = wallWidth / 10;
-const PId2 = -Math.PI / 2
-const dbgfmtPt = (p,fixed=0) => p?`(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})`:'NA';
-const fmt2Int = p => parseInt(p);
 
+
+let worldCon;
 function doWallSketch(mouse, p) {
     const {rayQueryWithPoints} = createdEngine;
     const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
@@ -139,6 +152,7 @@ export default  {
         const convas = p.createCanvas(WIDTH, HEIGHT);
         convas.parent('p5-parent');
         createdEngine = engineCreated;
+        core.createdEngine = engineCreated;        
         const {Mouse, MouseConstraint} = createdEngine.Matter;
         createdEngine.eventCallbacks.collisionEvent = (e)=>{            
             core.collisionEvent = e;
@@ -166,10 +180,9 @@ export default  {
         createdEngine.addToWorld(mouseConstraint);
 
         Object.assign(core, createdEngine);
-        //core.addToWorld = eng.addToWorld;        
-        //core.Bodies = eng.Bodies;
         const group = createWorld();
-        core.groupGroup = group;
+        //core.groupGroup = group;
+        worldCon = createConstructor(core);
     },
     draw: (p, props)=>{
         const { curBuildType } = core.inputs;
@@ -375,56 +388,9 @@ export default  {
             if (!mouse.cur) return;
 
             ///====================================================>>>>>>>>
-            const getRectPos = (startPoint, endPoint) => {
-                const angle = Vector.angle(startPoint, endPoint), // - PId2
-                    h = Vector.magnitude(Vector.sub(startPoint, endPoint)),
-                    x = (endPoint.x + startPoint.x) * 0.5,
-                    y = (endPoint.y + startPoint.y) * 0.5;
-                return {
-                    x, y, w: wallWidth, h,
-                    angle,
-                }
-            }
-
-            const getDragCellPoints = endPoints => {
-                const p1 = mouse.pressLocation
-                const p2 = mouse.cur;
-                const p3 = endPoints.end;
-                const p4 = endPoints.start;
-                if (!endPoints.end) return;
-                const points = [p1, p2, p3, p4];
-
-                const bodies = points.reduce((acc, p, i) => {
-                    const connId = (i + 1) % 4;
-                    const bar = getRectPos(p, points[connId]);
-                    bar.id = i;
-                    bar.connId = connId;
-                    acc.push(bar);
-                    if (i === 0) {
-                        const pifmt = p => (p * 180 / Math.PI).toFixed(0);
-                        const dx = p2.x - p1.x;
-                        const dy = p2.y - p1.y;
-                    }
-                    return acc;
-                }, []);
-
-                
-
-                const ops = [['+', '-'], ['+', '-'], ['+', '-'], ['+', '-']];
-                const connects = ops.map((pops, i) => {
-                    const a = bodies[i];
-                    const b = bodies[a.connId];
-                    //const pops = ops[i];
-                    
-                    
-                    return {
-                        a, b,
-                        pointA: getConstraintOffset(pops[0], a),
-                        pointB: getConstraintOffset(pops[1], b),
-                    };
-                });
-
-                //debug
+            
+            const getDragCellPoints = worldCon.getDragCellPoints;
+            const drawCellPoints = connects=> {
                 connects.reduce((acc, c) => {
                     const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
                         p.push();
@@ -456,7 +422,7 @@ export default  {
                     const xb = pointB.x + b.x;
                     const yb = pointB.y + b.y;
                     //p.line(xa, ya, xb, yb);
-                    showRect(Object.assign({}, a,{ w: 20, h: 20 }), '#223344', '#0000ff');
+                    showRect(Object.assign({}, a, { w: 20, h: 20 }), '#223344', '#0000ff');
                     showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
                     showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
                     //setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
@@ -465,16 +431,8 @@ export default  {
                     p.pop();
                     return acc;
                 }, {});
-
-
-                connects.push({
-                    a: bodies[0],
-                    b: bodies[2],
-                    pointA: getConstraintOffset('-', bodies[0]),
-                    pointB: getConstraintOffset('-', bodies[2]),
-                });
-                return connects;
-            };
+            }
+            
             const stiffness = .95;
             const addCst = cst => {
                 cst.stiffness = stiffness;
@@ -560,6 +518,7 @@ export default  {
                     if (!endPoints.ok || !endPoints.end) return;
 
                     const wallPts = getDragCellPoints(endPoints);   
+                    drawCellPoints(wallPts);
                 }                
                 
             }else  if (mouse.state === 'released') {                
@@ -605,6 +564,7 @@ export default  {
                 }
                 
                 const wallPts = getDragCellPoints(endPoints);                     
+                drawCellPoints(wallPts);
                 const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());                
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
