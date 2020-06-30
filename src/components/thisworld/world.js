@@ -439,7 +439,7 @@ export default  {
                     const xb = pointB.x + b.x;
                     const yb = pointB.y + b.y;
                     //p.line(xa, ya, xb, yb);
-                    showRect({ ...a, w: 20, h: 20 }, '#223344', '#0000ff');
+                    showRect(Object.assign({}, a,{ w: 20, h: 20 }), '#223344', '#0000ff');
                     showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
                     showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
                     //setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
@@ -675,12 +675,15 @@ export function createWorld() {
     createCats(worldCats.c1);
     createCats(worldCats.c2);
     
+    const getStructMask = c=>c.structure.category | c.fire.category | 1;
+    const getStructMaskGnd = c=>getStructMask(c) | worldCats.ground.structure.category;
 
-    worldCats.c1.structure.mask = worldCats.c2.structure.category | worldCats.c2.fire.category;
-    worldCats.c1.fire.mask = worldCats.c2.structure.category | worldCats.c2.fire.category | worldCats.ground.structure.category;
-    worldCats.c2.structure.mask = worldCats.c1.structure.category | worldCats.c1.fire.category;
-    worldCats.c2.fire.mask = worldCats.c1.structure.category | worldCats.c1.fire.category | worldCats.ground.structure.category;
-    worldCats.ground.structure.mask = worldCats.c1.fire.category | worldCats.c2.fire.category | worldCats.ground.structure.category;
+
+    worldCats.c1.structure.mask = getStructMask(worldCats.c2);
+    worldCats.c1.fire.mask = getStructMaskGnd(worldCats.c2);
+    worldCats.c2.structure.mask = getStructMask(worldCats.c1);
+    worldCats.c2.fire.mask = getStructMaskGnd(worldCats.c1);
+    worldCats.ground.structure.mask = worldCats.c1.fire.category | worldCats.c2.fire.category | worldCats.ground.structure.category| 1;
 
     const createCollisionFilter = c => ({
         mask: c.mask,
