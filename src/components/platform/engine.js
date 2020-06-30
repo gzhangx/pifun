@@ -41,8 +41,7 @@ function getBodiesUnderPos(eng, position, returnFirst = true) {
   const all = [];
   for (var i = 0; i < bodies.length; i++) {
     const body = bodies[i];
-    if (Bounds.contains(body.bounds, position) 
-            && Detector.canCollide(body.collisionFilter, allCllisionFilter)) {
+    if (Bounds.contains(body.bounds, position) ) {
         for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
             const part = body.parts[j];
             if (Vertices.contains(part.vertices, position)) {
@@ -53,6 +52,7 @@ function getBodiesUnderPos(eng, position, returnFirst = true) {
         }
     }
   }  
+  if (returnFirst) return all[0];
   return all;
 }
 

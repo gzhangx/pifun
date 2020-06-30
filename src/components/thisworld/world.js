@@ -354,6 +354,23 @@ export default  {
         //if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
+            if (mouse.state === 'pressed') {
+                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
+                mouse.bodyFound = bodyFound;
+                if (bodyFound && bodyFound.ggParent) {
+                    const pos = bodyFound.position;
+        
+                    p.push();
+                    p.translate(pos.x, pos.y);        
+                    p.rectMode(p.CENTER);
+                    p.stroke('ff0000');
+                    p.strokeWeight(4);
+                    p.fill('ff00ff');
+                    p.rotate(bodyFound.angle);
+                    p.rect(2,2, bodyFound.ggParent.w-4, bodyFound.ggParent.h-4);
+                    p.pop();
+                }
+            }
             if (!mouse.pressLocation) return;
             if (!mouse.cur) return;
 
@@ -515,23 +532,7 @@ export default  {
                 return allWalls;
             };
 
-            if (mouse.state === 'pressed') {
-                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY})[0];
-                mouse.bodyFound = bodyFound;
-                if (bodyFound && bodyFound.ggParent) {
-                    const pos = bodyFound.position;
-        
-                    p.push();
-                    p.translate(pos.x, pos.y);        
-                    p.rectMode(p.CENTER);
-                    p.stroke('ff0000');
-                    p.strokeWeight(4);
-                    p.fill('ff00ff');
-                    p.rotate(bodyFound.angle);
-                    p.rect(2,2, bodyFound.ggParent.w-4, bodyFound.ggParent.h-4);
-                    p.pop();
-                }
-            }
+            
             if (mouse.state === 'dragged') {                
                 if (isFireMode) {
                     p.stroke(128);
