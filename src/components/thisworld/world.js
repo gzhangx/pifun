@@ -2,94 +2,22 @@ import SimpleCircle from '../objs/SimpleCircle';
 import SimpleSqure from '../objs/SimpleSqure';
 import SimpleRect from '../objs/SimpleRect';
 import { World } from 'matter-js';
+
+import { core } from './consts';
 import { createConstructor, initCats, processCollisions } from './worldConstructor';
 
 import { debugShowConstraints } from './debug';
 
 //export const allBodies = [];
-export const WIDTH = 600;
-export const HEIGHT = 600;
-const WALLHEALTH = 10;
-const BREAKAWAYSPEED = 10;
-const BREAKAWAYANGSPEED = 0.3;
-const wallWidth = 20;
-const halfWallWidth = wallWidth / 10;
-const PId2 = -Math.PI / 2
-const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
-const fmt2Int = p => parseInt(p);
 
-const core = {
-    consts: {
-        WIDTH,
-        HEIGHT,
-        wallWidth,
-        halfWallWidth,
-        PId2,
-        WALLHEALTH,
-        BREAKAWAYSPEED,
-        BREAKAWAYANGSPEED,
-    },
-    createdEngine: null,
-    //allBodies,
-    //constraints: [],
-    collisions:[],
-    collisionEvent: {},
-    states: {
-        mouse: {        
-            state: '',
-            pressLocation: {
-                x:0,
-                y:0,
-            },
-            cur: {
-                x:0,
-                y:0,
-            }
-        }
-    },
-    inputs: {
-        curKey: '',
-        curBuildType: '',
-    },
-    //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
-    worldCats: {        
-        ground: {
-            structure: {
-                category: 0,
-                mask: 0,
-                getCollisionFilter: null,
-            },            
-        },
-        c1: {
-            structure: {
-                category: 0,
-                mask: 0,
-                getCollisionFilter: null,
-            },
-            fire: {
-                category: 0,
-                mask: 0,
-                getCollisionFilter: null,
-            },
-        },
-        c2: {
-            structure: {
-                category: 0,
-                mask: 0,
-                getCollisionFilter: null,
-            },
-            fire: {
-                category: 0,
-                mask: 0,
-                getCollisionFilter: null,
-            },
-        },
-    },
-    
-    deepCurCollisions: {},
-    debugInfo: null,
-}
-
+const { WIDTH,
+    HEIGHT,
+    wallWidth,
+    halfWallWidth,
+    PId2,
+    WALLHEALTH,
+    BREAKAWAYSPEED,
+    BREAKAWAYANGSPEED, } = core.consts;
 let createdEngine;
 let worldCon;
 
@@ -320,18 +248,7 @@ export default  {
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }        
-        }
-                
-
-        if (core.debugInfo) {
-            const d = core.debugInfo.body;
-            //const dbgval = `dbgval pos=${dbgfmtPt(d.position)} force=${dbgfmtPt(d.force)} positionImpulse=${dbgfmtPt(d.positionImpulse)} constraintImpulse=${dbgfmtPt(d.constraintImpulse)}`;
-            //if (Math.abs(d.constraintImpulse.x) > 0.5)
-            //console.log(`cstImp=${dbgfmtPt(d.constraintImpulse, 2)} speed=${d.speed.toFixed(2)} angularSpeed=${d.angularSpeed.toFixed(2)}`);
-
-            const dbgval = `dbgval bodies=${Composite.allBodies(engine.world).length} csts=${Composite.allConstraints(engine.world).length} ${d.position.y} force=${dbgfmtPt(d.force)} speed=${d.speed.toFixed(2)} angularSpeed=${d.angularSpeed.toFixed(2)}`;
-            setCurDebugText(dbgval);
-        }
+        }                
     },
     mousePressed: p=>{
         core.states.mouse.state = 'pressed';

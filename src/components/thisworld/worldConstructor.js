@@ -39,13 +39,14 @@ export const createConstructor = (core) => {
         }
     }
 
-    const getDragCellPoints = endPoints => {
+    const getDragCellPoints = endPoints => {        
         const p1 = mouse.pressLocation
         const p2 = mouse.cur;
         const p3 = endPoints.end;
         const p4 = endPoints.start;
         if (!endPoints.end) return;
         const points = [p1, p2, p3, p4];
+        if (points.filter(x => x).length != 4) return [];
 
         const bodies = points.reduce((acc, p, i) => {
             const connId = (i + 1) % 4;
