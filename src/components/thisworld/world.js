@@ -83,17 +83,17 @@ const core = {
             },
         },
     },
-
-    debugDeepCollisions: [],
+    
     deepCurCollisions: {},
     debugInfo: null,
 }
 
-let createdEngine ;
-
-
-
+let createdEngine;
 let worldCon;
+
+
+const debugDeepCollisions = [];
+
 function doWallSketch(mouse, p) {
     const {rayQueryWithPoints} = createdEngine;
     const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
@@ -311,7 +311,7 @@ export default  {
                 p.line(fx, fy, normalPosX, normalPosY);
 
                 if (collision.depth) {
-                    const { debugDeepCollisions, deepCurCollisions } = core;
+                    const { deepCurCollisions } = core;
                     if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball')
                     {
                         debugDeepCollisions.push({
@@ -497,7 +497,7 @@ export default  {
         
 
         p.push();
-        core.debugDeepCollisions.forEach(r => {            
+        debugDeepCollisions.forEach(r => {            
             p.translate(r.x, r.y);
             p.text(r.depth.toFixed(2), 0, 0);
             p.rectMode(p.CENTER);
@@ -507,10 +507,10 @@ export default  {
             p.rect(-2, -2, 4, 4);
         })
         p.pop();
-        for (let i = core.debugDeepCollisions.length - 1; i>=0; i--) {
-            const c = core.debugDeepCollisions[i];
+        for (let i = debugDeepCollisions.length - 1; i>=0; i--) {
+            const c = debugDeepCollisions[i];
             if (now - c.time > 1000) {
-                core.debugDeepCollisions.splice(i, 1);
+                debugDeepCollisions.splice(i, 1);
             }
         }
 
