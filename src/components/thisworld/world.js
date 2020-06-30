@@ -4,6 +4,8 @@ import SimpleRect from '../objs/SimpleRect';
 import { World } from 'matter-js';
 import { createConstructor, initCats, processCollisions } from './worldConstructor';
 
+import { debugShowConstraints } from './debug';
+
 //export const allBodies = [];
 export const WIDTH = 600;
 export const HEIGHT = 600;
@@ -132,20 +134,6 @@ function doWallSketch(mouse, p) {
     }
 }
 
-const getConstraintOffset = (op, obj) => {
-    const { angle, h } = obj;
-    const hh = h / 2;
-
-    let addAng = 0;
-    if (op === '-') {
-        addAng = Math.PI;
-    }
-    const x = Math.cos(angle + addAng) * hh;
-    const y = Math.sin(angle + addAng) * hh;
-
-    return { x, y };
-};
-
 export default  {
     WIDTH,
     HEIGHT,
@@ -181,33 +169,9 @@ export default  {
         const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
         const { getDragCellPoints, makeCell, removeBadBodies } = worldCon;
         removeBadBodies();
+        processCollisions(core);
         const allBodies = Composite.allBodies(engine.world);
-        
-        if (core.curKey) {
-            core.curKey = null;
-            const b1 = new SimpleSqure({
-                x: p.mouseX,
-                y: p.mouseY,
-                w: 30,
-                opt: { restitution: 0.5,
-                friction: 0.3 },
-            }, core);
-    
-            const b2 = new SimpleSqure({
-                x: p.mouseX+40,
-                y: p.mouseY+10,
-                w: 30,
-                opt: { restitution: 0.5,
-                friction: 0.3 },
-            }, core);
-    
-            //length: 60
-            const cst = {bodyA: b1.body, bodyB: b2.body, length: 60, stiffness:0.9};
-            //engine.Constraint.create(cst);
-            createdEngine.addConstraint(cst);
-            core.constraints.push(cst);            
-            return;
-        }
+                
         p.background(56);
         p.fill(255);
         allBodies.forEach(itemb => {
@@ -216,101 +180,10 @@ export default  {
             const {body, type, radius } = item;
             item.show(p);            
         });
-        const addPt = (a, who)=>{
-            const ba = `body${who}`;
-            const pa = `point${who}`;
-            const aba = a[ba];
-            if (!aba) return;
-            const bapos = aba.position; //a.bodyA.position
-            const ppos = a[pa]; //a.point
-            return {
-                x: bapos.x + ppos.x,
-                y: bapos.y + ppos.y,
-            }
-        }
-        //core.constraints
-        Composite.allConstraints(engine.world).forEach(cst => {
-            const p1 = addPt(cst,'A');
-            const p2 = addPt(cst, 'B');
-            if (!p1) return;
-            if (!p2) return;
-            p.push();
-            p.stroke(0);
-            p.line(p1.x, p1.y, p2.x, p2.y);
-            p.pop();
-        });
-
-        if (core.collisionEvent.name) {
-            if (core.collisionEvent.name === 'collisionStart') {
-                engine.timing.timeScale = 1;
-            }
-            if (core.collisionEvent.name === 'collisionEnd') {
-                engine.timing.timeScale = 1;
-            }
-            const cname = core.collisionEvent.name.substr('collision'.length);
-            //if (props.inputs.setCurCollisionStart)props.inputs.setCurCollisionStart(cname);
-            let s = core.collisionEvent.source.pairs.list.map(c => {
-                return parseFloat(c.collision.depth.toFixed(2));
-            }).join(',');
-            //if (cname !== 'End')
-            //    props.inputs[`setCurCollision${cname}`](s);
-        }        
-        const pairs = core.collisions;
-        //console.log(e.pairs);
-        for (let i = 0; i < pairs.length; i++) {
-            const pair = pairs[i];
-
-            if (!pair.isActive)
-                continue;
-
-            p.push();
-            for (let j = 0; j < pair.activeContacts.length; j++) {
-                const contact = pair.activeContacts[j],
-                    vertex = contact.vertex;                                
-                p.stroke(128);
-                p.strokeWeight(2);
-                p.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
-            }
-            p.pop();
         
-            // render collision normals                    
-            const collision = pair.collision;            
-
-            if (pair.activeContacts.length > 0) {
-                var normalPosX = pair.activeContacts[0].vertex.x,
-                    normalPosY = pair.activeContacts[0].vertex.y;
-
-                if (pair.activeContacts.length === 2) {
-                    normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
-                    normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
-                }
-
-                let fx, fy;
-                if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
-                    fx = normalPosX - collision.normal.x * 8;
-                    fy = normalPosY - collision.normal.y * 8;
-                } else {
-                    fx = normalPosX + collision.normal.x * 8;
-                    fy = normalPosY + collision.normal.y * 8;
-                }
-
-                p.line(fx, fy, normalPosX, normalPosY);
-
-                if (collision.depth) {                    
-                    if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball')
-                    {
-                        debugDeepCollisions.push({
-                            time: new Date(),
-                            depth: collision.depth,
-                            x: fx,
-                            y: fy,
-                        });                                            
-                    }
-                }
-            }
-        }
+        debugShowConstraints(engine, p, Composite);    
             
-        processCollisions(core);
+        
         //if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
@@ -438,45 +311,17 @@ export default  {
                         });
                     }
                     return;
-                }                
-                if (mouse.bodyFound) {
-                    props.inputs[`setCurCollisionEnd`](`BODY FOUND!!!!`);
-                    return;
-                }
+                }                                
 
-                const endPoints = doWallSketch(mouse, p);
-
-                if (!endPoints.ok) {
-                    props.inputs[`setCurCollisionEnd`](`Not ok`);
-                    return;
-                }
-                
-                const wallPts = getDragCellPoints(endPoints);                     
+                const endPoints = doWallSketch(mouse, p);                                
+                const wallPts = getDragCellPoints(endPoints);
                 drawCellPoints(wallPts);
                 const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());                
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }        
         }
-        
-
-        p.push();
-        debugDeepCollisions.forEach(r => {            
-            p.translate(r.x, r.y);
-            p.text(r.depth.toFixed(2), 0, 0);
-            p.rectMode(p.CENTER);
-            p.stroke('ff0000');
-            p.strokeWeight(2);
-            p.fill('0000ff');
-            p.rect(-2, -2, 4, 4);
-        })
-        p.pop();
-        for (let i = debugDeepCollisions.length - 1; i>=0; i--) {
-            const c = debugDeepCollisions[i];
-            if (now - c.time > 1000) {
-                debugDeepCollisions.splice(i, 1);
-            }
-        }
+                
 
         if (core.debugInfo) {
             const d = core.debugInfo.body;
