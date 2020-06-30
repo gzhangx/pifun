@@ -18,6 +18,8 @@ export const createConstructor = (core) => {
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
 
     const {
+        WIDTH,
+        HEIGHT,
         wallWidth,
         halfWallWidth,
         PId2,
@@ -140,9 +142,72 @@ export const createConstructor = (core) => {
         return allWalls;
     };
 
+    const removeBadBodies = () => {
+        const now = new Date();
+        const allBodies = Composite.allBodies(engine.world);
+        const toDelete = allBodies.map((bdy, i) => {
+            const b = bdy.ggParent;
+            const killRet = { bdy, i };
+            if (!b)
+                return;
+            if (b.label === 'fireball') {
+                if (now - b.time > 10000) {
+                    return killRet;
+                }
+                return;
+            }
+            if (b.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
+            if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
+                if (b.label === 'wall')
+                    return killRet;
+            }
+        }).filter(x => x);
+
+        toDelete.forEach(b => {
+            removeFromWorld(b.bdy);            
+        });
+    }
 
     return {
         getDragCellPoints,
         makeCell,
+        removeBadBodies,
     }
+}
+
+
+export const initCats = (core, Body)=>{
+    //const { addToWorld, Bodies, Body } = createdEngine;
+    const { worldCats } = core;
+    const createCats = c => {
+        if (c.structure) {
+            c.structure.category = Body.nextCategory();
+        }
+        if (c.fire) {
+            c.fire.category = Body.nextCategory();
+        }
+    }
+    createCats(worldCats.ground);
+    createCats(worldCats.c1);
+    createCats(worldCats.c2);
+
+    const getStructMask = c => c.structure.category | c.fire.category | 1;
+    const getStructMaskGnd = c => getStructMask(c) | worldCats.ground.structure.category;
+
+
+    worldCats.c1.structure.mask = getStructMask(worldCats.c2);
+    worldCats.c1.fire.mask = getStructMaskGnd(worldCats.c2);
+    worldCats.c2.structure.mask = getStructMask(worldCats.c1);
+    worldCats.c2.fire.mask = getStructMaskGnd(worldCats.c1);
+    worldCats.ground.structure.mask = worldCats.c1.fire.category | worldCats.c2.fire.category | worldCats.ground.structure.category | 1;
+
+    const createCollisionFilter = c => ({
+        mask: c.mask,
+        category: c.category
+    });
+    worldCats.ground.structure.getCollisionFilter = () => createCollisionFilter(worldCats.ground.structure);
+    worldCats.c1.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c1.structure);
+    worldCats.c1.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c1.fire);
+    worldCats.c2.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c2.structure);
+    worldCats.c2.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c2.fire);
 }

@@ -2,7 +2,7 @@ import SimpleCircle from '../objs/SimpleCircle';
 import SimpleSqure from '../objs/SimpleSqure';
 import SimpleRect from '../objs/SimpleRect';
 import { World } from 'matter-js';
-import { createConstructor } from './worldConstructor';
+import { createConstructor, initCats } from './worldConstructor';
 
 //export const allBodies = [];
 export const WIDTH = 600;
@@ -18,6 +18,8 @@ const fmt2Int = p => parseInt(p);
 
 const core = {
     consts: {
+        WIDTH,
+        HEIGHT,
         wallWidth,
         halfWallWidth,
         PId2,
@@ -191,29 +193,10 @@ export default  {
         const isFireMode = curBuildType === 'fire';
         const now = new Date();
         const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
+        const { getDragCellPoints, makeCell, removeBadBodies } = worldCon;
+        removeBadBodies();
         const allBodies = Composite.allBodies(engine.world);
-        const toDelete = allBodies.map((bdy, i) => {
-            const b = bdy.ggParent;
-            const killRet = { bdy, i };
-            if (!b)
-                return;
-            if(b.label === 'fireball') {
-                if (now - b.time > 10000) {                    
-                    return killRet;
-                }
-                return;
-            }            
-            if (b.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
-            if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
-                if (b.label === 'wall')
-                    return killRet;
-            }
-        }).filter(x=>x);
         
-        toDelete.forEach(b=>{
-            removeFromWorld(b.bdy);
-            //core.allBodies.splice(d.i,1);
-        });                
         if (core.curKey) {
             core.curKey = null;
             const b1 = new SimpleSqure({
@@ -387,9 +370,7 @@ export default  {
             if (!mouse.pressLocation) return;
             if (!mouse.cur) return;
 
-            ///====================================================>>>>>>>>
-            
-            const { getDragCellPoints, makeCell} = worldCon;
+            ///====================================================>>>>>>>>                    
             const drawCellPoints = connects=> {
                 connects.reduce((acc, c) => {
                     const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
@@ -567,38 +548,8 @@ export function createWorld() {
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0
     const { addToWorld, Bodies, Body } = createdEngine;
     const { worldCats } = core;
-    const createCats = c => {
-        if (c.structure) {
-            c.structure.category = Body.nextCategory();
-        }
-        if (c.fire) {
-            c.fire.category = Body.nextCategory();
-        }
-    }
-    createCats(worldCats.ground);
-    createCats(worldCats.c1);
-    createCats(worldCats.c2);
+    initCats(core, Body);
     
-    const getStructMask = c=>c.structure.category | c.fire.category | 1;
-    const getStructMaskGnd = c=>getStructMask(c) | worldCats.ground.structure.category;
-
-
-    worldCats.c1.structure.mask = getStructMask(worldCats.c2);
-    worldCats.c1.fire.mask = getStructMaskGnd(worldCats.c2);
-    worldCats.c2.structure.mask = getStructMask(worldCats.c1);
-    worldCats.c2.fire.mask = getStructMaskGnd(worldCats.c1);
-    worldCats.ground.structure.mask = worldCats.c1.fire.category | worldCats.c2.fire.category | worldCats.ground.structure.category| 1;
-
-    const createCollisionFilter = c => ({
-        mask: c.mask,
-        category: c.category
-    });
-    worldCats.ground.structure.getCollisionFilter = () => createCollisionFilter(worldCats.ground.structure);
-    worldCats.c1.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c1.structure);
-    worldCats.c1.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c1.fire);
-    worldCats.c2.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c2.structure);
-    worldCats.c2.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c2.fire);
-
     new SimpleCircle({
         x: 210,
         y: 100,
