@@ -176,8 +176,8 @@ export const createConstructor = (core) => {
 }
 
 
-export const initCats = (core, Body)=>{
-    //const { addToWorld, Bodies, Body } = createdEngine;
+export const initCats = (core, createdEngine)=>{
+    const { Body } = createdEngine;
     const { worldCats } = core;
     const createCats = c => {
         if (c.structure) {
@@ -210,4 +210,55 @@ export const initCats = (core, Body)=>{
     worldCats.c1.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c1.fire);
     worldCats.c2.structure.getCollisionFilter = () => createCollisionFilter(worldCats.c2.structure);
     worldCats.c2.fire.getCollisionFilter = () => createCollisionFilter(worldCats.c2.fire);
+
+
+    createdEngine.eventCallbacks.collisionEvent = (e) => {
+        core.collisionEvent = e;
+        if (e.name === 'collisionStart') {
+            core.collisions = e.pairs;
+        }
+    };
 }
+
+export const processCollisions = core => {
+    const { collisions, deepCurCollisions } = core;
+    const pairs = core.collisions;
+    for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i];
+
+        if (!pair.isActive)
+            continue;
+
+        // render collision normals                    
+        const collision = pair.collision;
+
+        if (pair.activeContacts.length > 0) {            
+            if (collision.depth) {
+                if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball') {                   
+                    const fire = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
+                    const colId = fire.id;
+                    const wall = collision.bodyA.label === 'fireball' ? collision.bodyB : collision.bodyA;
+                    let existing = deepCurCollisions[colId];
+                    if (!existing) {
+                        existing = {
+                            fire,
+                            wall,
+                            depth: collision.depth,
+                        };
+                        deepCurCollisions[colId] = existing;
+                    } else {
+                        if (existing.depth < collision.depth) {
+                            existing.depth = collision.depth;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Object.keys(deepCurCollisions).forEach(key => {
+        const itm = deepCurCollisions[key];
+        delete deepCurCollisions[key];
+        itm.wall.ggParent.health -= itm.depth;
+    });
+};

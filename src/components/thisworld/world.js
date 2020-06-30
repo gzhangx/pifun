@@ -2,7 +2,7 @@ import SimpleCircle from '../objs/SimpleCircle';
 import SimpleSqure from '../objs/SimpleSqure';
 import SimpleRect from '../objs/SimpleRect';
 import { World } from 'matter-js';
-import { createConstructor, initCats } from './worldConstructor';
+import { createConstructor, initCats, processCollisions } from './worldConstructor';
 
 //export const allBodies = [];
 export const WIDTH = 600;
@@ -156,21 +156,7 @@ export default  {
         createdEngine = engineCreated;
         core.createdEngine = engineCreated;        
         const {Mouse, MouseConstraint} = createdEngine.Matter;
-        createdEngine.eventCallbacks.collisionEvent = (e)=>{            
-            core.collisionEvent = e;
-            if (e.name === 'collisionActive' || e.pairs.length) {
-                //core.collisions = e.pairs;
-            }
-            if (e.name === 'collisionStart') {
-                //console.log('collisionStart ' + e.pairs.length);
-                //console.log(e.source.pairs.list);
-                core.collisions = e.pairs;
-            }
-            if (e.name === 'collisionEnd') {
-                //console.log('collisionEnd' + e.source.pairs.list.length);
-                //console.log(e);
-            }
-        };
+        
         const mouse = Mouse.create(canvas),        
         mouseConstraint = MouseConstraint.create(createdEngine.engine, {
             mouse,
@@ -310,8 +296,7 @@ export default  {
 
                 p.line(fx, fy, normalPosX, normalPosY);
 
-                if (collision.depth) {
-                    const { deepCurCollisions } = core;
+                if (collision.depth) {                    
                     if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball')
                     {
                         debugDeepCollisions.push({
@@ -319,34 +304,13 @@ export default  {
                             depth: collision.depth,
                             x: fx,
                             y: fy,
-                        });
-                        
-                        const fire  = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
-                        const colId = fire.id;
-                        const wall = collision.bodyA.label === 'fireball' ? collision.bodyB : collision.bodyA;
-                        let existing = deepCurCollisions[colId];
-                        if (!existing) {
-                            existing = {
-                                fire,
-                                wall,
-                                depth: collision.depth,
-                            };
-                            deepCurCollisions[colId] = existing;
-                        } else {
-                            if (existing.depth < collision.depth) {
-                                existing.depth = collision.depth;
-                            }
-                        }
+                        });                                            
                     }
                 }
             }
         }
             
-        Object.keys(core.deepCurCollisions).forEach(key => {
-            const itm = core.deepCurCollisions[key];
-            delete core.deepCurCollisions[key];
-            itm.wall.ggParent.health -= itm.depth;
-        })
+        processCollisions(core);
         //if (core.inputs.curBuildType === 'wall') 
         {
             const mouse = core.states.mouse;
@@ -548,7 +512,7 @@ export function createWorld() {
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0
     const { addToWorld, Bodies, Body } = createdEngine;
     const { worldCats } = core;
-    initCats(core, Body);
+    initCats(core, createdEngine);
     
     new SimpleCircle({
         x: 210,
