@@ -1,3 +1,4 @@
+import SimpleRect from '../objs/SimpleRect';
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
     const hh = h / 2;
@@ -83,7 +84,65 @@ export const createConstructor = (core) => {
         return connects;
     }
 
+    const stiffness = .95;
+    const addCst = cst => {
+        cst.stiffness = stiffness;
+        createdEngine.addConstraint(cst);
+        const addCstToBody = (bdy, cst) => {
+            if (!bdy.ggConstraints) {
+                bdy.ggConstraints = [];
+            }
+            bdy.ggConstraints.push(cst);
+        }
+        addCstToBody(cst.bodyA, cst);
+        addCstToBody(cst.bodyB, cst);
+        //core.constraints.push(cst);
+    };
+    const makeCell = (wallPts, downConns, collisionFilter) => {
+        const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core); //tl
+        const allWalls = wallPts.reduce((acc, pt) => {
+            const { a, b, pointA, pointB } = pt;
+            const checkAdd = x => {
+                if (!acc[x.id]) {
+                    x.body = makeRect(x, x.id);
+                    x.body.label = 'wall';
+                    acc[x.id] = x.body;
+                    acc.all.push(x.body);
+                }
+                return x.body;
+            }
+            const bodyA = checkAdd(a).body;
+            const bodyB = checkAdd(b).body;
+
+            const cst = { bodyA, bodyB, pointA, pointB, stiffness };
+            addCst(cst);
+            return acc;
+        }, {
+            all: [],
+        }).all;
+
+        const btmBeam = wallPts[2].a;
+        const btmRight = getConstraintOffset('-', btmBeam);
+        const btmLeft = getConstraintOffset('+', btmBeam);
+        const anchorRight = downConns.end.body;
+        const anchorLeft = downConns.start.body;
+        const getAnchorOff = a => {
+            return {
+                x: a.x - a.body.position.x,
+                y: a.y - a.body.position.y,
+            }
+        };
+        addCst({ bodyA: anchorRight, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
+        addCst({ bodyA: anchorLeft, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
+        if (!core.debugInfo) {
+            core.debugInfo = allWalls[0];
+        }
+        return allWalls;
+    };
+
+
     return {
         getDragCellPoints,
+        makeCell,
     }
 }
