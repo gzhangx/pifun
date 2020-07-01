@@ -60,6 +60,8 @@ function doWallSketch(mouse, p) {
     }
 }
 
+const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
+const fmt2Int = p => parseInt(p);
 export default  {
     WIDTH,
     HEIGHT,
@@ -70,7 +72,7 @@ export default  {
         createWorld();
         
         const createdEngine = core.createdEngine;
-        const {Mouse, MouseConstraint} = createdEngine.Matter;
+        const {Mouse, MouseConstraint, Events} = createdEngine.Matter;
         
         const mouse = Mouse.create(canvas);
         const { engine } = createdEngine;
@@ -82,6 +84,17 @@ export default  {
             }
         });
 
+        Events.on(mouseConstraint, 'mousemove', e => {
+            const p = e.mouse.position;
+            core.states.mouse.state = 'dragged';
+            core.states.mouse.cur = p;
+        });
+        Events.on(mouseConstraint, 'mousedown', e => {
+            const p = e.mouse.position;
+            core.states.mouse.state = 'pressed';
+            core.states.mouse.pressLocation = p;
+            console.log(`mouse down ${dbgfmtPt(p)}`);
+        });
         core.createdEngine.addToWorld(mouseConstraint);                
         core.render = createRender({            
             core,
@@ -119,7 +132,12 @@ export default  {
         });
         
         debugShowConstraints(engine, p, Composite);    
-            
+        if (engine.mouse.sourceEvents.mousemove) {
+            const mm = engine.sourceEvents.mousemove;
+            setCurDebugText("mouse move " + mm.x);
+        } else {
+            setCurDebugText("mouse NOM");
+        }
         
         //if (core.inputs.curBuildType === 'wall') 
         {

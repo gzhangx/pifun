@@ -6,8 +6,6 @@ const BREAKAWAYANGSPEED = 0.3;
 const wallWidth = 20;
 const halfWallWidth = wallWidth / 10;
 const PId2 = -Math.PI / 2
-const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
-const fmt2Int = p => parseInt(p);
 
 export const core = {
     consts: {
