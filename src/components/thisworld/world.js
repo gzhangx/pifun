@@ -1,7 +1,5 @@
 import SimpleCircle from '../objs/SimpleCircle';
-import SimpleSqure from '../objs/SimpleSqure';
 import SimpleRect from '../objs/SimpleRect';
-import { World } from 'matter-js';
 
 import { core } from './consts';
 import { createConstructor, initCats, processCollisions } from './worldConstructor';
@@ -67,15 +65,18 @@ export default  {
     HEIGHT,
     core,
     setup: (p, canvas)=>{
-        const convas = p.createCanvas(WIDTH, HEIGHT);
-        convas.parent('p5-parent');
+        const ggconvas = p.createCanvas(WIDTH, HEIGHT);
+        ggconvas.parent('p5-parent');
         createWorld();
         
-        const {Mouse, MouseConstraint} = core.createdEngine.Matter;
+        const createdEngine = core.createdEngine;
+        const {Mouse, MouseConstraint} = createdEngine.Matter;
         
-        const mouse = Mouse.create(canvas),        
-            mouseConstraint = MouseConstraint.create(core.createdEngine.engine, {
-            mouse,
+        const mouse = Mouse.create(canvas);
+        const { engine } = createdEngine;
+        engine.mouse = mouse;
+        const mouseConstraint = MouseConstraint.create(engine, {
+            element: canvas,
             constraint: {
                 stiffness: 0.2,                
             }
@@ -85,6 +86,10 @@ export default  {
         core.render = createRender({            
             core,
             canvas,
+            options: {
+                width: WIDTH,
+                height: HEIGHT,
+            }
         })
         //core.groupGroup = group;
         worldCon = createConstructor(core);

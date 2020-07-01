@@ -19,7 +19,7 @@ class Scene extends React.Component {
 
   render() {
     return <div>      
-      <canvas ref={this.drawRef} style={{background:'yellow'}}></canvas>
+      <canvas ref={this.drawRef} ></canvas>
     </div>;
   }
 }

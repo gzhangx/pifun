@@ -9,6 +9,8 @@ export const createRender = (opt) => {
     const canvas = opt.canvas;
     const Mouse = opt.Mouse;
     const options = opt.options || {};
+    canvas.width = options.width || canvas.width;
+    canvas.height = options.height || canvas.height;
     const render =
     {
         mouse: opt.mouse,
