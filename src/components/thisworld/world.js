@@ -84,19 +84,38 @@ export default  {
             }
         });
 
+        const getMouse = p=> ({
+            x: p.x,
+            y: p.y,
+        });
+        const outOfBound = e => {
+            const p = e.mouse.absolute;
+            if (p.x < 0) return true;
+            if (p.x > WIDTH) return true;
+            if (p.y < 0) return true;
+            if (p.y > HEIGHT) return true;
+            return false;
+        }
         Events.on(mouseConstraint, 'mousemove', e => {
-            const p = e.mouse.position;
+            if (outOfBound(e)) return;
+            const p = getMouse(e.mouse.position);
             core.states.mouse.state = 'dragged';
             core.states.mouse.cur = p;
         });
         Events.on(mouseConstraint, 'mousedown', e => {
-            const p = e.mouse.position;
+            if (outOfBound(e)) return;
+            const p = getMouse(e.mouse.position);
             core.states.mouse.state = 'pressed';
             core.states.mouse.pressLocation = p;
-            console.log(`mouse down ${dbgfmtPt(p)}`);
         });
-        core.createdEngine.addToWorld(mouseConstraint);                
-        core.render = createRender({            
+        Events.on(mouseConstraint, 'mouseup', e => {            
+            core.states.mouse.state = 'released';
+            if (outOfBound(e)) return;
+            const p = getMouse(e.mouse.position);
+            core.states.mouse.cur = p;
+        });
+        core.createdEngine.addToWorld(mouseConstraint);
+        core.render = createRender({
             core,
             canvas,
             options: {
@@ -132,12 +151,11 @@ export default  {
         });
         
         debugShowConstraints(engine, p, Composite);    
-        if (engine.mouse.sourceEvents.mousemove) {
-            const mm = engine.sourceEvents.mousemove;
-            setCurDebugText("mouse move " + mm.x);
-        } else {
-            setCurDebugText("mouse NOM");
+        
+        if (core.states.mouse.pressLocation) {
+            setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
         }
+        
         
         //if (core.inputs.curBuildType === 'wall') 
         {
@@ -279,12 +297,14 @@ export default  {
             }        
         }                
     },
-    mousePressed: p=>{
+    mousePressed: p => {
+        /*
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = {
             x: p.mouseX,
             y: p.mouseY,
         };
+        */
     },
     mouseDragged: p=>{
         core.states.mouse.state = 'dragged';
