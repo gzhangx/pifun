@@ -152,9 +152,9 @@ export function createEngine() {
 }
 
 
-export const setup= (drawCanv, world, createdEngine, props)=>{ 
+export const setup= (drawCanv, world, props)=>{ 
   const Sketch = p => {
-      p.setup = ()=>world.setup(p, createdEngine, drawCanv);
+      p.setup = ()=>world.setup(p, drawCanv);
 
       p.draw = () => world.draw(p, props);        
 

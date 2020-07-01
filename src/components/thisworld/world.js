@@ -25,7 +25,7 @@ let worldCon;
 const debugDeepCollisions = [];
 
 function doWallSketch(mouse, p) {
-    const {rayQueryWithPoints} = createdEngine;
+    const {rayQueryWithPoints} = core.createdEngine;
     const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
     startPt.forEach(r=>{                        
         //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
@@ -66,25 +66,22 @@ export default  {
     WIDTH,
     HEIGHT,
     core,
-    setup: (p, engineCreated, canvas)=>{
+    setup: (p, canvas)=>{
         const convas = p.createCanvas(WIDTH, HEIGHT);
         convas.parent('p5-parent');
-        createdEngine = engineCreated;
-        core.createdEngine = engineCreated;        
-        const {Mouse, MouseConstraint} = createdEngine.Matter;
+        createWorld();
+        
+        const {Mouse, MouseConstraint} = core.createdEngine.Matter;
         
         const mouse = Mouse.create(canvas),        
-        mouseConstraint = MouseConstraint.create(createdEngine.engine, {
+            mouseConstraint = MouseConstraint.create(core.createdEngine.engine, {
             mouse,
             constraint: {
                 stiffness: 0.2,                
             }
         });
 
-        createdEngine.addToWorld(mouseConstraint);
-
-        Object.assign(core, createdEngine);
-        const group = createWorld();
+        core.createdEngine.addToWorld(mouseConstraint);                
         //core.groupGroup = group;
         worldCon = createConstructor(core);
     },
@@ -94,7 +91,7 @@ export default  {
         const isWallMode = curBuildType === 'wall';
         const isFireMode = curBuildType === 'fire';
         const now = new Date();
-        const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
+        const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
         const { getDragCellPoints, makeCell, removeBadBodies } = worldCon;
         removeBadBodies();
         processCollisions(core);
@@ -116,7 +113,7 @@ export default  {
         {
             const mouse = core.states.mouse;
             if (mouse.state === 'pressed') {
-                const bodyFound = createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
+                const bodyFound = core.createdEngine.getBodiesUnderPos({x:p.mouseX, y: p.mouseY});
                 mouse.bodyFound = bodyFound;
                 if (bodyFound && bodyFound.ggParent) {
                     const pos = bodyFound.position;
@@ -224,7 +221,7 @@ export default  {
                         y: y2,
                         r: 10,
                         opts: { restitution: 0.5, collisionFilter: core.worldCats.c2.fire.getCollisionFilter() },
-                    }, core);
+                    }, core.createdEngine);
                     ball.label = 'fireball';
                     ball.time = new Date();
                     const bbody = ball.body;
@@ -243,10 +240,12 @@ export default  {
 
                 const endPoints = doWallSketch(mouse, p);                                
                 const wallPts = getDragCellPoints(endPoints);
-                drawCellPoints(wallPts);
-                const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());                
-                allWalls.forEach(w => w.health = WALLHEALTH);
-                return allWalls;
+                if (wallPts && wallPts.length) {
+                    drawCellPoints(wallPts);
+                    const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
+                    allWalls.forEach(w => w.health = WALLHEALTH);
+                    return allWalls;
+                }                
             }        
         }                
     },
@@ -269,19 +268,19 @@ export default  {
     }
 };
 
-export function createWorld() {
+function createWorld() {
 
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0
-    const { addToWorld, Bodies, Body } = createdEngine;
-    const { worldCats } = core;
-    initCats(core, createdEngine);
+    initCats(core);
+    //const { addToWorld, Bodies, Body } = core.createdEngine;
+    const { worldCats, createdEngine } = core;    
     
     new SimpleCircle({
         x: 210,
         y: 100,
         r: 30,
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
-    }, core);
+    }, createdEngine);
 
     new SimpleRect({
         x: 310,
@@ -289,7 +288,7 @@ export function createWorld() {
         w: 30,
         h: 60,
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
-    }, core);
+    }, createdEngine);
     
     const GroundHeight = 200;
     new SimpleRect({
@@ -298,7 +297,7 @@ export function createWorld() {
         w: WIDTH,
         h: GroundHeight,
         opts: { isStatic: true, label: 'Ground', collisionFilter: worldCats.ground.structure.getCollisionFilter()},
-    }, core);
+    }, createdEngine);
 
 
     //addToWorld([

@@ -1,3 +1,4 @@
+import { createEngine } from "../platform/engine";
 import SimpleRect from '../objs/SimpleRect';
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -102,7 +103,7 @@ export const createConstructor = (core) => {
         //core.constraints.push(cst);
     };
     const makeCell = (wallPts, downConns, collisionFilter) => {
-        const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core); //tl
+        const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
             const { a, b, pointA, pointB } = pt;
             const checkAdd = x => {
@@ -177,7 +178,9 @@ export const createConstructor = (core) => {
 }
 
 
-export const initCats = (core, createdEngine)=>{
+export const initCats = (core) => {
+    const createdEngine = createEngine();
+    core.createdEngine = createdEngine;
     const { Body } = createdEngine;
     const { worldCats } = core;
     const createCats = c => {
@@ -219,6 +222,8 @@ export const initCats = (core, createdEngine)=>{
             core.collisions = e.pairs;
         }
     };
+
+    return core;
 }
 
 export const processCollisions = core => {
