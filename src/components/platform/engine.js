@@ -169,7 +169,7 @@ export const setup= (drawCanv, world, props)=>{
         world.mouseReleased(p);
       }
   }
-  const myP5 = new p5(Sketch, drawCanv);
+  const myP5 = new p5(Sketch);
   return {
       ref: myP5,
   }

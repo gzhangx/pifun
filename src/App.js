@@ -19,13 +19,13 @@ function App() {
   }
   return (
     <div className="App" style={{display: 'inline-block', width:1000}}>
-      <div style={{ left:0, top:0, float: 'left',display: 'inline-block'}}>
+      <div style={{ left: 0, top: 0, float: 'left', display: 'inline-block' }}>        
         <div id='p5-parent'></div>
-      <Scene inputs = {{
-        curKey, setCurKey, curBuildType, setCurBuildType,
-          setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
-          setCurDebugText,
-        }}/>
+        <Scene inputs = {{
+          curKey, setCurKey, curBuildType, setCurBuildType,
+            setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
+            setCurDebugText,
+          }}/>
       </div>
       <div style={{left: 800}}>
         <table>

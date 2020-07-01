@@ -6,6 +6,7 @@ import { World } from 'matter-js';
 import { core } from './consts';
 import { createConstructor, initCats, processCollisions } from './worldConstructor';
 
+import { createRender } from './ui';
 import { debugShowConstraints } from './debug';
 
 //export const allBodies = [];
@@ -81,6 +82,10 @@ export default  {
         });
 
         core.createdEngine.addToWorld(mouseConstraint);                
+        core.render = createRender({            
+            core,
+            canvas,
+        })
         //core.groupGroup = group;
         worldCon = createConstructor(core);
     },
@@ -98,6 +103,9 @@ export default  {
                 
         p.background(56);
         p.fill(255);
+        if (core.render) {
+            core.render.draw();
+        }
         allBodies.forEach(itemb => {
             const item = itemb.ggParent;
             if (!item) return;
