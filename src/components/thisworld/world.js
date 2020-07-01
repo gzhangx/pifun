@@ -18,7 +18,6 @@ const { WIDTH,
     WALLHEALTH,
     BREAKAWAYSPEED,
     BREAKAWAYANGSPEED, } = core.consts;
-let createdEngine;
 let worldCon;
 
 

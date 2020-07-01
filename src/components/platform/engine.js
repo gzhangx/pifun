@@ -75,6 +75,7 @@ export function createEngine() {
     
     const engine = Engine.create({
       // positionIterations: 20
+      constraintIterations: 5,
     });
 
     const collisionEvents = ['collisionStart','collisionActive','collisionEnd'];
