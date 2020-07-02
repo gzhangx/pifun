@@ -305,8 +305,9 @@ export default  {
             }else  if (mouse.state === 'released') {                
                 mouse.state = '';
                 if (isFireMode) {
-                    const x1 = p.mouseX;
-                    const y1 = p.mouseY;
+                    if (!core.states.mouse.pressLocation) return;
+                    const x1 = core.states.mouse.cur.x;
+                    const y1 = core.states.mouse.cur.y;
                     const x2 = core.states.mouse.pressLocation.x;
                     const y2 = core.states.mouse.pressLocation.y;
                     core.states.mouse.pressLocation = null;
