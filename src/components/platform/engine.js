@@ -153,14 +153,3 @@ export function createEngine() {
     created.getBodiesUnderPos = pos=>getBodiesUnderPos(created, pos);
     return created;
 }
-
-
-export const setup= (drawCanv, world, props)=>{ 
-  const Sketch = p => {
-      p.setup = ()=>world.setup(p, drawCanv);
-  }
-  const myP5 = new p5(Sketch);
-  return {
-      ref: myP5,
-  }
-}

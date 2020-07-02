@@ -56,7 +56,7 @@ export default  {
     WIDTH,
     HEIGHT,
     core,
-    setup: (p, canvas)=>{
+    setup: (canvas, props)=>{
         createWorld();
         
         const createdEngine = core.createdEngine;
@@ -103,7 +103,7 @@ export default  {
         core.render = createRender({
             core,
             canvas,
-            run,
+            run: ()=>run(props),
             options: {
                 width: WIDTH,
                 height: HEIGHT,
@@ -115,10 +115,10 @@ export default  {
     },    
 };
 
-function run(opt) {
+function run(props) {
     //const { props } = opt;
     const { curBuildType } = core.inputs;
-    //const { setCurDebugText } = props.inputs;
+    const { setCurDebugText } = props.inputs;
     const isWallMode = curBuildType === 'wall';
     const isFireMode = curBuildType === 'fire';
     const now = new Date();
@@ -130,9 +130,9 @@ function run(opt) {
 
 
     if (core.states.mouse.pressLocation) {
-        //setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
+        setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
     } else {
-        //setCurDebugText("mouse pressLocation ");
+        setCurDebugText("mouse pressLocation ");
     }
 
 
