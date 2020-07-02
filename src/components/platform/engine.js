@@ -158,18 +158,6 @@ export function createEngine() {
 export const setup= (drawCanv, world, props)=>{ 
   const Sketch = p => {
       p.setup = ()=>world.setup(p, drawCanv);
-
-      p.draw = () => world.draw(p, props);        
-
-      p.mousePressed = ()=>{
-        world.mousePressed(p);            
-      }
-      p.mouseDragged = ()=>{
-        world.mouseDragged(p);
-      }
-      p.mouseReleased = ()=>{
-        world.mouseReleased(p);
-      }
   }
   const myP5 = new p5(Sketch);
   return {

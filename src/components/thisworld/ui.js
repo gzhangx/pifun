@@ -1,6 +1,11 @@
 // Customized from https://raw.githubusercontent.com/liabru/matter-js/master/src/render/Render.js
 // Better than original p5js impl
 // must set opt.core, opt.canvas and opt.mouse
+
+
+let _requestAnimationFrame,
+    _cancelAnimationFrame;
+
 export const createRender = (opt) => {
     const { createdEngine } = opt.core;
     const { Composite, engine, Bounds, Vector, Common} = createdEngine;
@@ -20,7 +25,14 @@ export const createRender = (opt) => {
         options,
         textures: {},
     };
-    
+    if (typeof window !== 'undefined') {
+        _requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame
+            || window.mozRequestAnimationFrame || window.msRequestAnimationFrame
+            || function (callback) { window.setTimeout(function () { callback(Common.now()); }, 1000 / 60); };
+
+        _cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame
+            || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+    }
     function _applyBackground(render, background) {
         let cssBackground = background;
         if (/(jpg|gif|png)$/.test(background))
@@ -31,6 +43,13 @@ export const createRender = (opt) => {
         render.currentBackground = background;
     }
 
+    render.run = function () {
+        (function loop(time) {
+            render.frameRequestId = _requestAnimationFrame(loop);
+            if (opt.run) opt.run();
+            render.draw();
+        })();
+    };
     render.draw = () => {        
         const options = render.options,
             allBodies = Composite.allBodies(world),
