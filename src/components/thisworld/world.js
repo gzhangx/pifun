@@ -267,6 +267,7 @@ function run(props) {
             }
 
             const endPoints = doWallSketch(mouse);
+            if (!endPoints.ok || !endPoints.end) return;
             const wallPts = getDragCellPoints(endPoints);
             if (wallPts && wallPts.length) {
                 drawCellPointsCnv(wallPts);
