@@ -126,7 +126,7 @@ export default  {
         //core.groupGroup = group;
         worldCon = createConstructor(core);
     },
-    draw: (p, props)=>{
+    draw: (p, props) => {        
         const { curBuildType } = core.inputs;
         const { setCurDebugText } = props.inputs;
         const isWallMode = curBuildType === 'wall';
@@ -154,6 +154,8 @@ export default  {
         
         if (core.states.mouse.pressLocation) {
             setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
+        } else {
+            setCurDebugText("mouse pressLocation ");
         }
         
         
@@ -223,6 +225,50 @@ export default  {
                     return acc;
                 }, {});
             }
+
+            const drawCellPointsCnv = connects => {
+                const p = core.render.context;                
+                connects.reduce((acc, c) => {
+                    const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
+                        p.save();
+                        p.translate(rr.x, rr.y);
+                        p.rotate((rr.angle || 0) + PId2);                        
+                        //p.stroke(stroke);
+                        //p.strokeWeight(2);
+                        //p.fill(fill);
+                        p.fillStyle = fill;
+                        p.fillRect(-(rr.w/2), -(rr.h/2), rr.w, rr.h);
+                        p.restore();
+                    };
+
+                    const chkshow = a => {
+                        if (acc[a.id]) return;
+                        acc[a.id] = a;
+                        showRect(a);
+                    }
+                    const { a, b } = c;
+                    chkshow(a);
+                    chkshow(b);
+
+                    const { pointA, pointB } = c;
+                    p.save();
+                    //p.stroke('#00ff00');
+                    //p.strokeWeight(2);
+                    const xa = pointA.x + a.x;
+                    const ya = pointA.y + a.y;
+                    const xb = pointB.x + b.x;
+                    const yb = pointB.y + b.y;
+                    //p.line(xa, ya, xb, yb);
+                    showRect(Object.assign({}, a, { w: 20, h: 20 }), '#223344', '#0000ff');
+                    //showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
+                    //showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
+                    //setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
+                    //p.line(xa, ya, xb, yb);
+
+                    p.restore();
+                    return acc;
+                }, {});
+            }
                     
             
             if (mouse.state === 'dragged') {                
@@ -253,6 +299,7 @@ export default  {
 
                     const wallPts = getDragCellPoints(endPoints);   
                     drawCellPoints(wallPts);
+                    drawCellPointsCnv(wallPts);
                 }                
                 
             }else  if (mouse.state === 'released') {                
@@ -262,6 +309,7 @@ export default  {
                     const y1 = p.mouseY;
                     const x2 = core.states.mouse.pressLocation.x;
                     const y2 = core.states.mouse.pressLocation.y;
+                    core.states.mouse.pressLocation = null;
                     const w = halfWallWidth;
                     const w2 = wallWidth;
                     const ball = new SimpleCircle({
@@ -290,12 +338,18 @@ export default  {
                 const wallPts = getDragCellPoints(endPoints);
                 if (wallPts && wallPts.length) {
                     drawCellPoints(wallPts);
+                    drawCellPointsCnv(wallPts);
                     const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
                     allWalls.forEach(w => w.health = WALLHEALTH);
+                    core.states.mouse.pressLocation = null;
                     return allWalls;
-                }                
-            }        
-        }                
+                }
+                core.states.mouse.pressLocation = null;
+            }
+            
+
+        }
+
     },
     mousePressed: p => {
         /*
