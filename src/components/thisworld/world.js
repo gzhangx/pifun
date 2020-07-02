@@ -6,6 +6,7 @@ import { createConstructor, initCats, processCollisions } from './worldConstruct
 
 import { createRender } from './ui';
 import { debugShowConstraints } from './debug';
+import { render } from 'react-dom';
 
 //export const allBodies = [];
 
@@ -129,6 +130,8 @@ function run(props) {
     const allBodies = Composite.allBodies(engine.world);
 
 
+    const c = core.render.context;    
+    
     if (core.states.mouse.pressLocation) {
         setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
     } else {
@@ -198,6 +201,10 @@ function run(props) {
 
         if (mouse.state === 'dragged') {
             if (isFireMode) {
+                
+                c.lineWidth = 5;
+                c.strokeStyle = 'red';
+                core.render.line(mouse.pressLocation, mouse.cur);
                 //p.stroke(128);
                 //p.strokeWeight(2);
                 //p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);

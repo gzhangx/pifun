@@ -42,12 +42,12 @@ export const createRender = (opt) => {
         render.canvas.style.backgroundSize = "contain";
         render.currentBackground = background;
     }
-
+    
     render.run = function () {
         (function loop(time) {
-            render.frameRequestId = _requestAnimationFrame(loop);
-            if (opt.run) opt.run();
+            render.frameRequestId = _requestAnimationFrame(loop);            
             render.draw();
+            if (opt.run) opt.run();
         })();
     };
     render.draw = () => {        
@@ -330,6 +330,13 @@ export const createRender = (opt) => {
             }
         }
     };
+
+    render.line = (p1, p2) => {
+        context.beginPath();
+        context.moveTo(p1.x, p1.y);
+        context.lineTo(p2.x, p2.y);
+        context.stroke();
+    }
 
     return render;
 }

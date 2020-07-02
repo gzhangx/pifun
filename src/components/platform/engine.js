@@ -1,5 +1,4 @@
 import Matter from "matter-js";
-import p5 from "p5";
 const allCllisionFilter = {
   category: 0x0001,
   mask: 0xFFFFFFFF,
