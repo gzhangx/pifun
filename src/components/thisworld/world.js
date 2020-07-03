@@ -5,8 +5,6 @@ import { core } from './consts';
 import { createConstructor, initCats, processCollisions } from './worldConstructor';
 
 import { createRender } from './ui';
-import { debugShowConstraints } from './debug';
-import { render } from 'react-dom';
 
 //export const allBodies = [];
 
@@ -20,8 +18,6 @@ const { WIDTH,
     BREAKAWAYANGSPEED, } = core.consts;
 let worldCon;
 
-
-const debugDeepCollisions = [];
 const getMouse = p => ({
     x: p.x,
     y: p.y,
