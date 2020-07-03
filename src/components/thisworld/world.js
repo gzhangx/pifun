@@ -2,7 +2,7 @@ import SimpleCircle from '../objs/SimpleCircle';
 import SimpleRect from '../objs/SimpleRect';
 
 import { core } from './consts';
-import { createConstructor, initCats, processCollisions } from './worldConstructor';
+import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
 
@@ -16,12 +16,7 @@ const { WIDTH,
     WALLHEALTH,
     BREAKAWAYSPEED,
     BREAKAWAYANGSPEED, } = core.consts;
-let worldCon;
 
-const getMouse = p => ({
-    x: p.x,
-    y: p.y,
-});
 function doWallSketch(mouse) {
     const {rayQueryWithPoints} = core.createdEngine;
     const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
@@ -53,62 +48,9 @@ export default  {
     WIDTH,
     HEIGHT,
     core,
-    setup: (canvas, props)=>{
+    setup: (canvas, props) => {
+        initWorld(core, { createRender, canvas, run, props });
         createWorld();
-        
-        const createdEngine = core.createdEngine;
-        const {Mouse, MouseConstraint, Events} = createdEngine.Matter;
-        
-        const mouse = Mouse.create(canvas);
-        const { engine } = createdEngine;
-        engine.mouse = mouse;
-        const mouseConstraint = MouseConstraint.create(engine, {
-            element: canvas,
-            constraint: {
-                stiffness: 0.2,                
-            }
-        });
-
-        
-        const outOfBound = e => {
-            const p = e.mouse.absolute;
-            if (p.x < 0) return true;
-            if (p.x > WIDTH) return true;
-            if (p.y < 0) return true;
-            if (p.y > HEIGHT) return true;
-            return false;
-        }
-        Events.on(mouseConstraint, 'mousemove', e => {
-            if (outOfBound(e)) return;
-            const p = getMouse(e.mouse.position);
-            core.states.mouse.state = 'dragged';
-            core.states.mouse.cur = p;
-        });
-        Events.on(mouseConstraint, 'mousedown', e => {
-            if (outOfBound(e)) return;
-            const p = getMouse(e.mouse.position);
-            core.states.mouse.state = 'pressed';
-            core.states.mouse.pressLocation = p;
-        });
-        Events.on(mouseConstraint, 'mouseup', e => {            
-            core.states.mouse.state = 'released';
-            if (outOfBound(e)) return;
-            const p = getMouse(e.mouse.position);
-            core.states.mouse.cur = p;
-        });
-        core.createdEngine.addToWorld(mouseConstraint);
-        core.render = createRender({
-            core,
-            canvas,
-            run: ()=>run(props),
-            options: {
-                width: WIDTH,
-                height: HEIGHT,
-            }
-        })
-        //core.groupGroup = group;
-        worldCon = createConstructor(core);
-        core.render.run();
     },    
 };
 
@@ -120,9 +62,10 @@ function run(props) {
     const isFireMode = curBuildType === 'fire';
     const now = new Date();
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
-    const { getDragCellPoints, makeCell, removeBadBodies } = worldCon;
-    removeBadBodies();
-    processCollisions(core);
+    const { getDragCellPoints, makeCell, removeBadBodies, worldOperations } = core.worldCon;
+    //removeBadBodies();
+    //processCollisions(core);
+    worldOperations();
     const allBodies = Composite.allBodies(engine.world);
 
 
@@ -281,8 +224,7 @@ function run(props) {
 
 function createWorld() {
 
-    //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0
-    initCats(core);
+    //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0    
     //const { addToWorld, Bodies, Body } = core.createdEngine;
     const { worldCats, createdEngine } = core;    
     

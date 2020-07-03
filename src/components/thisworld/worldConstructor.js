@@ -14,6 +14,11 @@ const getConstraintOffset = (op, obj) => {
     return { x, y };
 };
 
+export const getMouse = p => ({
+    x: p.x,
+    y: p.y,
+});
+
 export const createConstructor = (core) => {
     const { createdEngine } = core;
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
@@ -174,11 +179,15 @@ export const createConstructor = (core) => {
         getDragCellPoints,
         makeCell,
         removeBadBodies,
+        worldOperations: () => {
+            removeBadBodies();
+            processCollisions(core);
+        },
     }
 }
 
 
-export const initCats = (core) => {
+const initCats = (core) => {
     const createdEngine = createEngine();
     core.createdEngine = createdEngine;
     const { Body } = createdEngine;
@@ -268,3 +277,65 @@ export const processCollisions = core => {
         itm.wall.ggParent.health -= itm.depth;
     });
 };
+
+
+export const initWorld = (core, { createRender, canvas, run, props }) => {
+    initCats(core);   
+    const {
+        WIDTH,
+        HEIGHT,        
+    } = core.consts;
+    const createdEngine = core.createdEngine;
+    const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
+
+    const mouse = Mouse.create(canvas);
+    const { engine } = createdEngine;
+    engine.mouse = mouse;
+    const mouseConstraint = MouseConstraint.create(engine, {
+        element: canvas,
+        constraint: {
+            stiffness: 0.2,
+        }
+    });
+
+
+    const outOfBound = e => {
+        const p = e.mouse.absolute;
+        if (p.x < 0) return true;
+        if (p.x > WIDTH) return true;
+        if (p.y < 0) return true;
+        if (p.y > HEIGHT) return true;
+        return false;
+    }
+    Events.on(mouseConstraint, 'mousemove', e => {
+        if (outOfBound(e)) return;
+        const p = getMouse(e.mouse.position);
+        core.states.mouse.state = 'dragged';
+        core.states.mouse.cur = p;
+    });
+    Events.on(mouseConstraint, 'mousedown', e => {
+        if (outOfBound(e)) return;
+        const p = getMouse(e.mouse.position);
+        core.states.mouse.state = 'pressed';
+        core.states.mouse.pressLocation = p;
+    });
+    Events.on(mouseConstraint, 'mouseup', e => {
+        core.states.mouse.state = 'released';
+        if (outOfBound(e)) return;
+        const p = getMouse(e.mouse.position);
+        core.states.mouse.cur = p;
+    });
+    core.createdEngine.addToWorld(mouseConstraint);
+    core.render = createRender({
+        core,
+        canvas,
+        run: () => run(props),
+        options: {
+            width: WIDTH,
+            height: HEIGHT,
+        }
+    })
+    //core.groupGroup = group;
+    core.worldCon = createConstructor(core);
+    core.render.run();
+}
