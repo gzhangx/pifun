@@ -49,7 +49,7 @@ export default  {
     HEIGHT,
     core,
     setup: (canvas, props) => {
-        initWorld(core, { createRender, canvas, run, props });
+        initWorld(core, { canvas, run, props });
         createWorld();
     },    
 };

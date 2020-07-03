@@ -1,4 +1,5 @@
 import { createEngine } from "../platform/engine";
+import { createRender } from './ui';
 import SimpleRect from '../objs/SimpleRect';
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -279,7 +280,7 @@ export const processCollisions = core => {
 };
 
 
-export const initWorld = (core, { createRender, canvas, run, props }) => {
+export const initWorld = (core, { canvas, run, props }) => {
     initCats(core);   
     const {
         WIDTH,
