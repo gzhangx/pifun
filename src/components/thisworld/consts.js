@@ -26,19 +26,13 @@ export const core = {
     states: {
         mouse: {
             state: '',
-            pressLocation: {
-                x: 0,
-                y: 0,
-            },
-            cur: {
-                x: 0,
-                y: 0,
-            }
+            pressLocation: null,
+            cur: null,
         }
     },
     inputs: {
         curKey: '',
-        curBuildType: '',
+        curBuildType: 'wall',
     },
     //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
     worldCats: {

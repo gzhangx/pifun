@@ -81,14 +81,7 @@ function run(props) {
     //if (core.inputs.curBuildType === 'wall') 
     {
         const mouse = core.states.mouse;
-        if (mouse.state === 'pressed') {
-            const bodyFound = core.createdEngine.getBodiesUnderPos(getMouse(core.states.mouse.cur));
-            mouse.bodyFound = bodyFound;
-            if (bodyFound && bodyFound.ggParent) {
-                const pos = bodyFound.position;
-                //p.translate(pos.x, pos.y);                
-            }
-        }
+
         if (!mouse.pressLocation) return;
         if (!mouse.cur) return;
 
@@ -205,15 +198,17 @@ function run(props) {
                 return;
             }
 
-            const endPoints = doWallSketch(mouse);
-            if (!endPoints.ok || !endPoints.end) return;
-            const wallPts = getDragCellPoints(endPoints);
-            if (wallPts && wallPts.length) {
-                drawCellPointsCnv(wallPts);
-                const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
-                allWalls.forEach(w => w.health = WALLHEALTH);
-                core.states.mouse.pressLocation = null;
-                return allWalls;
+            if (isWallMode) {
+                const endPoints = doWallSketch(mouse);
+                if (!endPoints.ok || !endPoints.end) return;
+                const wallPts = getDragCellPoints(endPoints);
+                if (wallPts && wallPts.length) {
+                    drawCellPointsCnv(wallPts);
+                    const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
+                    allWalls.forEach(w => w.health = WALLHEALTH);
+                    core.states.mouse.pressLocation = null;
+                    return allWalls;
+                }
             }
             core.states.mouse.pressLocation = null;
         }
