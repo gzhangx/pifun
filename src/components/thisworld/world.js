@@ -71,11 +71,8 @@ function run(props) {
 
     const c = core.render.context;    
     
-    if (core.states.mouse.pressLocation) {
-        setCurDebugText("mouse pressLocation " + dbgfmtPt(core.states.mouse.pressLocation));
-    } else {
-        setCurDebugText("mouse pressLocation ");
-    }
+    setCurDebugText("key=" + core.inputs.curKey);
+    
 
 
     //if (core.inputs.curBuildType === 'wall') 

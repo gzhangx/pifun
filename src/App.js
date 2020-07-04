@@ -33,7 +33,8 @@ function App() {
           <tr>
             <td>
               <button onClick={()=>stBuildType('wall')}>Wall</button>
-              <button onClick={()=>stBuildType('fire')}>Fire</button>
+              <button onClick={() => stBuildType('fire')}>Fire</button>
+              <button onClick={() => stBuildType('cannon')}>Cannon</button>
             </td><td></td></tr>
           <tr>
             <td>Action</td><td>{curBuildType}</td>
