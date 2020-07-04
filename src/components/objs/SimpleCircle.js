@@ -2,13 +2,13 @@ export default function SimpleCircle(initInfo, engine) {
     const {x,y,r, opts} = initInfo;
     this.radius = r;
     this.opts = opts;
-    this.type = 'SimpleCircle';    
+    this.type = initInfo.type | 'SimpleCircle';    
     const {addToWorld, Bodies} = engine;
     const body = Bodies.circle(x, y, r, opts);
     addToWorld(body);
 
     this.body = body;
-    engine.setBodyOuterParent(body, this);
+    engine.setBodyGGInfo(body, { label: body.label });
     //allBodies.push(this);
     this.show = p => {
         const pos = body.position;

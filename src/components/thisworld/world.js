@@ -187,6 +187,7 @@ function run(props) {
                     x: x2,
                     y: y2,
                     r: 10,
+                    label: 'fireball',
                     opts: { restitution: 0.5, collisionFilter: core.worldCats.c2.fire.getCollisionFilter() },
                 }, core.createdEngine);
                 ball.label = 'fireball';
@@ -232,6 +233,9 @@ function createWorld() {
         x: 210,
         y: 100,
         r: 30,
+        ggOpts: {
+            isImmortal: true,
+        },
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
 
@@ -240,6 +244,9 @@ function createWorld() {
         y: 100,
         w: 30,
         h: 60,
+        ggOpts: {
+            isImmortal: true,
+        },
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
     
@@ -249,6 +256,9 @@ function createWorld() {
         y: HEIGHT + GroundHeight/2- 10,
         w: WIDTH,
         h: GroundHeight,
+        ggOpts: {
+            isImmortal: true,
+        },
         opts: { isStatic: true, label: 'Ground', collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
 

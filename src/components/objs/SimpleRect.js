@@ -1,5 +1,5 @@
 export default function SimpleRect(initInfo, engine) {
-    const {x,y,w,h, opts} = initInfo;
+    const {x,y,w,h, opts, ggOpts} = initInfo;
     this.w = w;
     this.h = h;
     this.opts = opts || {};
@@ -10,7 +10,7 @@ export default function SimpleRect(initInfo, engine) {
     addToWorld(body);
 
     this.body = body;
-    engine.setBodyOuterParent(body, this);
+    engine.setBodyGGInfo(body, ggOpts || {health: 0});
     //allBodies.push(this);
     this.show = p => {
         const pos = body.position;

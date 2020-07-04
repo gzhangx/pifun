@@ -109,7 +109,11 @@ export const createConstructor = (core) => {
         //core.constraints.push(cst);
     };
     const makeCell = (wallPts, downConns, collisionFilter) => {
-        const makeRect = (rr, label) => new SimpleRect({ x: rr.x, y: rr.y, w: rr.w, h: rr.h, opts: { label, angle: rr.angle + PId2, collisionFilter, } }, core.createdEngine); //tl
+        const makeRect = (rr, label) => new SimpleRect({
+            x: rr.x, y: rr.y, w: rr.w, h: rr.h,
+            opts: { label, angle: rr.angle + PId2, collisionFilter, },
+            ggOpts: {label, health: 10},
+        }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
             const { a, b, pointA, pointB } = pt;
             const checkAdd = x => {
@@ -154,7 +158,8 @@ export const createConstructor = (core) => {
         const now = new Date();
         const allBodies = Composite.allBodies(engine.world);
         const toDelete = allBodies.map((bdy, i) => {
-            const b = bdy.ggParent;
+            const b = bdy.ggInfo;
+            if (bdy.ggInfo.isImmortal) return;
             const killRet = { bdy, i };
             if (!b)
                 return;
@@ -275,7 +280,8 @@ export const processCollisions = core => {
     Object.keys(deepCurCollisions).forEach(key => {
         const itm = deepCurCollisions[key];
         delete deepCurCollisions[key];
-        itm.wall.ggParent.health -= itm.depth;
+        if (!itm.wall.ggInfo.isImmortal)
+            itm.wall.ggInfo.health -= itm.depth;
     });
 };
 
