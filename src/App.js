@@ -3,9 +3,10 @@ import './App.css';
 import Scene from './Game'
 import keyHandler from "./components/platform/keyHandler";
 import opt from './components/thisworld/world';
+import { core } from './components/thisworld/consts';
 function App() {
   const [curKey, setCurKey] = useState();
-  const [curBuildType, setCurBuildType] = useState('wall');
+  const [curBuildType, setCurBuildType] = useState(core.inputs.curBuildType);
   const [curCollisionStart, setCurCollisionStart] = useState();
   const [curCollisionActive, setCurCollisionActive] = useState();
   const [curCollisionEnd, setCurCollisionEnd] = useState();
