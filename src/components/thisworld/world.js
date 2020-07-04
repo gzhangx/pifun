@@ -189,9 +189,8 @@ function run(props) {
                     r: 10,
                     label: 'fireball',
                     opts: { restitution: 0.5, collisionFilter: core.worldCats.c2.fire.getCollisionFilter() },
+                    ggOpts: {label: 'fireball', time: new Date()},
                 }, core.createdEngine);
-                ball.label = 'fireball';
-                ball.time = new Date();
                 const bbody = ball.body;
                 bbody.label = 'fireball';
                 const forceMagnitude = bbody.mass * 0.05;

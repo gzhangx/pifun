@@ -120,7 +120,7 @@ export function createEngine() {
         addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
         eventCallbacks,
         setBodyOuterParent: (bdy, parent) => bdy.ggParent = parent,
-        setBodyGGInfo: (bdy, info) => bdy.ggInfo = info, //will replace setBodyOuterParent
+        setBodyGGInfo: (bdy, info) => bdy.ggInfo = info || {}, //will replace setBodyOuterParent
         rayQuery: (startPoint, endPoint, bodies)=>{
           if (!bodies) bodies = Composite.allBodies(engine.world);
           return Query.ray(bodies, startPoint, endPoint);

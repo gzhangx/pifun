@@ -158,20 +158,20 @@ export const createConstructor = (core) => {
         const now = new Date();
         const allBodies = Composite.allBodies(engine.world);
         const toDelete = allBodies.map((bdy, i) => {
-            const b = bdy.ggInfo;
-            if (bdy.ggInfo.isImmortal) return;
-            const killRet = { bdy, i };
-            if (!b)
+            const ggInfo = bdy.ggInfo;            
+            if (!ggInfo)
                 return;
-            if (b.label === 'fireball') {
-                if (now - b.time > 10000) {
+            if (ggInfo.isImmortal) return;
+            const killRet = { bdy, i };
+            if (ggInfo && ggInfo.label === 'fireball') {
+                if (now - ggInfo.time > 10000) {
                     return killRet;
                 }
                 return;
             }
-            if (b.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
+            if (ggInfo.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
             if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
-                if (b.label === 'wall')
+                if (ggInfo.label === 'wall')
                     return killRet;
             }
         }).filter(x => x);
@@ -296,7 +296,7 @@ export const initWorld = (core, { canvas, run, props }) => {
     const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
 
     const mouse = Mouse.create(canvas);
-    const { engine } = createdEngine;
+    const { engine, Matter } = createdEngine;
     engine.mouse = mouse;
     const mouseConstraint = MouseConstraint.create(engine, {
         element: canvas,
@@ -305,6 +305,7 @@ export const initWorld = (core, { canvas, run, props }) => {
         }
     });
 
+    resetMouseConstraint(Matter)
 
     const outOfBound = e => {
         const p = e.mouse.absolute;
@@ -325,6 +326,7 @@ export const initWorld = (core, { canvas, run, props }) => {
         const p = getMouse(e.mouse.position);
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = p;
+        mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
     });
     Events.on(mouseConstraint, 'mouseup', e => {
         core.states.mouse.state = 'released';
@@ -345,4 +347,46 @@ export const initWorld = (core, { canvas, run, props }) => {
     //core.groupGroup = group;
     core.worldCon = createConstructor(core);
     core.render.run();
+}
+
+
+function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Events, Sleeping}) {
+    MouseConstraint.update = function (mouseConstraint, bodies) {
+        const mouse = mouseConstraint.mouse,
+            constraint = mouseConstraint.constraint,
+            body = mouseConstraint.body;
+
+        if (mouse.button === 0) {
+            if (!constraint.bodyB) {
+                if (body) {                
+                    if (Bounds.contains(body.bounds, mouse.position)
+                        && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
+                        for (var j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
+                            var part = body.parts[j];
+                            if (Vertices.contains(part.vertices, mouse.position)) {
+                                constraint.pointA = mouse.position;
+                                constraint.bodyB = mouseConstraint.body = body;
+                                constraint.pointB = { x: mouse.position.x - body.position.x, y: mouse.position.y - body.position.y };
+                                constraint.angleB = body.angle;
+
+                                Sleeping.set(body, false);
+                                Events.trigger(mouseConstraint, 'startdrag', { mouse: mouse, body: body });
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                Sleeping.set(constraint.bodyB, false);
+                constraint.pointA = mouse.position;
+            }
+        } else {
+            constraint.bodyB = mouseConstraint.body = null;
+            constraint.pointB = null;
+
+            if (body)
+                Events.trigger(mouseConstraint, 'enddrag', { mouse: mouse, body: body });
+        }
+    };
 }

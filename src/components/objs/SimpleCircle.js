@@ -1,5 +1,5 @@
 export default function SimpleCircle(initInfo, engine) {
-    const {x,y,r, opts} = initInfo;
+    const {x,y,r, opts, ggOpts,} = initInfo;
     this.radius = r;
     this.opts = opts;
     this.type = initInfo.type | 'SimpleCircle';    
@@ -8,7 +8,7 @@ export default function SimpleCircle(initInfo, engine) {
     addToWorld(body);
 
     this.body = body;
-    engine.setBodyGGInfo(body, { label: body.label });
+    engine.setBodyGGInfo(body, ggOpts);
     //allBodies.push(this);
     this.show = p => {
         const pos = body.position;
