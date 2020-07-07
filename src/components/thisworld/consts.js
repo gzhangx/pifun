@@ -76,5 +76,8 @@ export const core = {
         },
     },
 
+    utils: {
+        getDispAng: null,
+    },
     deepCurCollisions: {},
 };

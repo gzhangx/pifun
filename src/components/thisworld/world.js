@@ -5,7 +5,8 @@ import { core } from './consts';
 import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
-
+import { showCannonHolder } from '../objs/Cannon';
+ 
 //export const allBodies = [];
 
 const { WIDTH,
@@ -60,6 +61,7 @@ function run(props) {
     const { setCurDebugText } = props.inputs;
     const isWallMode = curBuildType === 'wall';
     const isFireMode = curBuildType === 'fire';
+    const isCannonMode = curBuildType === 'cannon';
     const now = new Date();
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
     const { getDragCellPoints, makeCell, removeBadBodies, worldOperations } = core.worldCon;
@@ -80,6 +82,12 @@ function run(props) {
     {
         const mouse = core.states.mouse;
 
+        if (isCannonMode && mouse.state === 'dragged') {
+            showCannonHolder({ c, createdEngine: core.createdEngine, allBodies }, {
+                x: mouse.cur.x,
+                y: mouse.cur.y,
+            })
+        }
         if (!mouse.pressLocation) return;
         if (!mouse.cur) return;
 
@@ -161,7 +169,7 @@ function run(props) {
 
                 const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur,endPoints);
                 drawCellPointsCnv(wallPts);
-            }
+            }            
 
         } else if (mouse.state === 'released') {
             mouse.state = '';

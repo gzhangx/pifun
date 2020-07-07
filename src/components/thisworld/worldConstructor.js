@@ -111,7 +111,7 @@ export const createConstructor = (core) => {
     const makeCell = (wallPts, downConns, collisionFilter) => {
         const makeRect = (rr, label) => new SimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
-            opts: { label, angle: rr.angle + PId2, collisionFilter, },
+            opts: { label, angle: core.utils.getDispAng(rr.angle), collisionFilter, },
             ggOpts: {label, health: 10},
         }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
@@ -291,7 +291,9 @@ export const initWorld = (core, { canvas, run, props }) => {
     const {
         WIDTH,
         HEIGHT,        
+        PId2,
     } = core.consts;
+    core.utils.getDispAng = angle => angle + PId2;
     const createdEngine = core.createdEngine;
     const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
 
