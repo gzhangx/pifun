@@ -69,7 +69,8 @@ function run(props) {
     const allBodies = Composite.allBodies(engine.world);
 
 
-    const c = core.render.context;    
+    const c = core.render.context;
+    const side = core.inputs.curSide;
     
     setCurDebugText("key=" + core.inputs.curKey);
     
@@ -178,8 +179,8 @@ function run(props) {
                     y: y2,
                     r: 10,
                     label: 'fireball',
-                    opts: { restitution: 0.5, collisionFilter: core.worldCats.c2.fire.getCollisionFilter() },
-                    ggOpts: {label: 'fireball', time: new Date()},
+                    opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
+                    ggOpts: { label: 'fireball', time: new Date(), side},
                 }, core.createdEngine);
                 const bbody = ball.body;
                 bbody.label = 'fireball';
@@ -201,7 +202,7 @@ function run(props) {
                 const wallPts = getDragCellPoints(endPoints);
                 if (wallPts && wallPts.length) {
                     drawCellPointsCnv(wallPts);
-                    const allWalls = makeCell(wallPts, endPoints, core.worldCats.c1.structure.getCollisionFilter());
+                    const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
                     allWalls.forEach(w => w.health = WALLHEALTH);
                     core.states.mouse.pressLocation = null;
                     return allWalls;

@@ -32,6 +32,7 @@ export const core = {
     },
     inputs: {
         curKey: '',
+        curSide: 'side1',
         curBuildType: 'wall',
     },
     //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
@@ -66,6 +67,12 @@ export const core = {
                 mask: 0,
                 getCollisionFilter: null,
             },
+        },
+        getCat: side => {
+            if (side === 'side1') {
+                return core.worldCats.c1;                
+            }
+            return core.worldCats.c2;
         },
     },
 

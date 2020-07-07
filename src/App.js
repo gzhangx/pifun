@@ -6,6 +6,7 @@ import opt from './components/thisworld/world';
 import { core } from './components/thisworld/consts';
 function App() {
   const [curKey, setCurKey] = useState();
+  const [curSide, setCurSide] = useState('side1');
   const [curBuildType, setCurBuildType] = useState(core.inputs.curBuildType);
   const [curCollisionStart, setCurCollisionStart] = useState();
   const [curCollisionActive, setCurCollisionActive] = useState();
@@ -14,10 +15,15 @@ function App() {
   keyHandler(key=>{    
     opt.core.inputs.curKey = key;
   });
-  const stBuildType = t=>{
+  const stBuildType = t => {
     setCurBuildType(t);
     opt.core.inputs.curBuildType = t;
-  }
+  };
+  const stCurSide = e => {
+    const side = e.target.value;
+    setCurSide(side);
+    opt.core.inputs.curSide = side;
+  };
   return (
     <div className="App" style={{display: 'inline-block', width:1000}}>
       <div style={{ left: 0, top: 0, float: 'left', display: 'inline-block' }}>        
@@ -25,7 +31,8 @@ function App() {
         <Scene inputs = {{
           curKey, setCurKey, curBuildType, setCurBuildType,
             setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
-            setCurDebugText,
+          setCurDebugText,
+          curSide,
           }}/>
       </div>
       <div style={{left: 800}}>
@@ -38,7 +45,11 @@ function App() {
             </td><td></td></tr>
           <tr>
             <td>Action</td><td>{curBuildType}</td>
-           </tr>
+          </tr>
+          <tr>
+            <td>Side</td><td><input type="radio" value="side1" checked={curSide === 'side1'} onChange={stCurSide}></input></td>
+            <td><input type="radio" value="side2" checked={curSide === 'side2'} onChange={stCurSide}></input></td>
+          </tr>
           <tr>
             <td>Col Start</td><td>{curCollisionStart}</td>
             <td>Col End</td><td>{curCollisionEnd}</td>
