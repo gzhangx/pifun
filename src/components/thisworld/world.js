@@ -17,9 +17,9 @@ const { WIDTH,
     BREAKAWAYSPEED,
     BREAKAWAYANGSPEED, } = core.consts;
 
-function doWallSketch(mouse) {
+function doWallSketch(fromPt, cur) {
     const {rayQueryWithPoints} = core.createdEngine;
-    const startPt = rayQueryWithPoints({x:mouse.pressLocation.x, y:mouse.pressLocation.y},{x: mouse.pressLocation.x, y: HEIGHT});
+    const startPt = rayQueryWithPoints({x:fromPt.x, y:fromPt.y},{x: fromPt.x, y: HEIGHT});
     startPt.forEach(r=>{                        
         //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
         //p.push();
@@ -33,10 +33,10 @@ function doWallSketch(mouse) {
         //p.pop();
     });
 
-    const endpt = rayQueryWithPoints({x:mouse.cur.x, y:mouse.cur.y},{x: mouse.cur.x, y: HEIGHT});
+    const endpt = rayQueryWithPoints({x:cur.x, y:cur.y},{x: cur.x, y: HEIGHT});
     const start = startPt[0];
     return {
-        ok: Math.abs(mouse.cur.x - mouse.pressLocation.x) > wallWidth * 2 && start,
+        ok: Math.abs(cur.x - fromPt.x) > wallWidth * 2 && start,
         start,
         end: endpt[0],
     }
@@ -156,24 +156,24 @@ function run(props) {
                 });
 
                 //props.inputs[`setCurCollisionStart`](`${dists} `);                    
-                const endPoints = doWallSketch(mouse);
+                const endPoints = doWallSketch(mouse.pressLocation, mouse.cur);
                 if (!endPoints.ok || !endPoints.end) return;
 
-                const wallPts = getDragCellPoints(endPoints);
+                const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur,endPoints);
                 drawCellPointsCnv(wallPts);
             }
 
         } else if (mouse.state === 'released') {
             mouse.state = '';
+            const mouseFrom = getMouse(mouse.pressLocation);
+            const mouseCur = getMouse(mouse.cur);
+            core.states.mouse.pressLocation = null;
             if (isFireMode) {
-                if (!core.states.mouse.pressLocation) return;
-                const x1 = core.states.mouse.cur.x;
-                const y1 = core.states.mouse.cur.y;
-                const x2 = core.states.mouse.pressLocation.x;
-                const y2 = core.states.mouse.pressLocation.y;
-                core.states.mouse.pressLocation = null;
-                const w = halfWallWidth;
-                const w2 = wallWidth;
+                if (!mouseFrom) return;
+                const x1 = mouseCur.x;
+                const y1 = mouseCur.y;
+                const x2 = mouseFrom.x;
+                const y2 = mouseFrom.y;                
                 const ball = new SimpleCircle({
                     x: x2,
                     y: y2,
@@ -197,18 +197,16 @@ function run(props) {
             }
 
             if (isWallMode) {
-                const endPoints = doWallSketch(mouse);
+                const endPoints = doWallSketch(mouseFrom, mouseCur);
                 if (!endPoints.ok || !endPoints.end) return;
-                const wallPts = getDragCellPoints(endPoints);
-                if (wallPts && wallPts.length) {
+                const wallPts = getDragCellPoints(mouseFrom, mouseCur,endPoints);                
+                if (wallPts && wallPts.length) {                    
                     drawCellPointsCnv(wallPts);
                     const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
                     allWalls.forEach(w => w.health = WALLHEALTH);
-                    core.states.mouse.pressLocation = null;
                     return allWalls;
                 }
             }
-            core.states.mouse.pressLocation = null;
         }
 
 

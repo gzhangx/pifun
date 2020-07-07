@@ -46,9 +46,9 @@ export const createConstructor = (core) => {
         }
     }
 
-    const getDragCellPoints = endPoints => {        
-        const p1 = mouse.pressLocation
-        const p2 = mouse.cur;
+    const getDragCellPoints = (mouseFrom, mouseCur,endPoints) => {        
+        const p1 = mouseFrom;
+        const p2 = mouseCur;
         const p3 = endPoints.end;
         const p4 = endPoints.start;
         if (!endPoints.end) return;
