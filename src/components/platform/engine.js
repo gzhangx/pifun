@@ -1,4 +1,5 @@
 import Matter from "matter-js";
+const Vector = Matter.Vector;
 const allCllisionFilter = {
   category: 0x0001,
   mask: 0xFFFFFFFF,
@@ -55,101 +56,122 @@ function getBodiesUnderPos(eng, position, returnFirst = true) {
   return all;
 }
 
+//line and pp
+function getProjectionPoint(p1, p2, pp) {
+  //http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
+  const e1 = Vector.sub(p2, p1);
+  const e2 = Vector.sub(pp, p1);
+  const dp = Vector.dot(e1, e2);
+  const inRange = dp > 0 && dp < Vector.dot(e1, e1);
+  const e1Len = Vector.magnitude(e1);
+  if (e1Len === 0) {
+    return null;
+  }
+  const e2Len = Vector.magnitude(e2);
+  const cos = dp / (e1Len + e2Len);
+  const projectedLen = cos * e2Len;
+  return {
+    inRange,
+    x: p1.x + ((projectedLen * e1.x) / e1Len),
+    y: p1.y + ((projectedLen * e1.y) / e1Len),
+  };
+}
+
 const sortAsc = (a,b)=>a.t-b.t;
 export function createEngine() {
-    const Engine = Matter.Engine,
-      //Render = Matter.Render,
-      World = Matter.World,
-      Bodies = Matter.Bodies,
-      Body = Matter.Body,
-      Bounds = Matter.Bounds,
-      Composite = Matter.Composite,
-      Common = Matter.Common,
-      Constraint = Matter.Constraint,
-      Detector = Matter.Detector,
-      Events = Matter.Events,    
-      Vector = Matter.Vector,
-      Vertices = Matter.Vertices,      
-      Query = Matter.Query
-      ;      
+  const Engine = Matter.Engine,
+    //Render = Matter.Render,
+    World = Matter.World,
+    Bodies = Matter.Bodies,
+    Body = Matter.Body,
+    Bounds = Matter.Bounds,
+    Composite = Matter.Composite,
+    Common = Matter.Common,
+    Constraint = Matter.Constraint,
+    Detector = Matter.Detector,
+    Events = Matter.Events,    
+    Vertices = Matter.Vertices,
+    Query = Matter.Query
+    ;
     
-    const engine = Engine.create({
-      // positionIterations: 20
-      constraintIterations: 5,
-    });
+  const engine = Engine.create({
+    // positionIterations: 20
+    constraintIterations: 5,
+  });
 
-    const collisionEvents = ['collisionStart','collisionActive','collisionEnd'];
-    const eventCallbacks = {};
-    collisionEvents.forEach(eventName=>{
-      Events.on(engine, eventName, event=> {
-        //event.pairs[i].bodyA/bodyB;
-        const cb = eventCallbacks.collisionEvent;
-        return cb && cb(event);
-      });
+  const collisionEvents = ['collisionStart', 'collisionActive', 'collisionEnd'];
+  const eventCallbacks = {};
+  collisionEvents.forEach(eventName => {
+    Events.on(engine, eventName, event => {
+      //event.pairs[i].bodyA/bodyB;
+      const cb = eventCallbacks.collisionEvent;
+      return cb && cb(event);
     });
+  });
     
-    Engine.run(engine);
-    //World.add(engine.world, [
-      // walls      
-    //  Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
-    //]);
-    const created = {
-        World,
-        Bodies,
-        Body,
-        Bounds,
-        Common,
-        Composite,
-        Constraint,
-        Detector,
-        Events,
-        Matter,
-        Vector,
-        Vertices,
-        Query,
-        engine,
-        addToWorld: body=>World.add(engine.world, body),
-      removeFromWorld: body => {
-          if (body.ggConstraints) {
-            body.ggConstraints.forEach(c => {
-              World.remove(engine.world, c);
-            })
+  Engine.run(engine);
+  //World.add(engine.world, [
+  // walls      
+  //  Bodies.rectangle(WIDTH/2, HEIGHT, WIDTH, 60, { isStatic: true })
+  //]);
+  const created = {
+    World,
+    Bodies,
+    Body,
+    Bounds,
+    Common,
+    Composite,
+    Constraint,
+    Detector,
+    Events,
+    Matter,
+    Vector,
+    Vertices,
+    Query,
+    engine,
+    addToWorld: body => World.add(engine.world, body),
+    removeFromWorld: body => {
+      if (body.ggConstraints) {
+        body.ggConstraints.forEach(c => {
+          World.remove(engine.world, c);
+        })
+      }
+      World.remove(engine.world, body);
+    },
+    addConstraint: cst => World.add(engine.world, Constraint.create(cst)),
+    eventCallbacks,
+    setBodyOuterParent: (bdy, parent) => bdy.ggParent = parent,
+    setBodyGGInfo: (bdy, info) => bdy.ggInfo = info || {}, //will replace setBodyOuterParent
+    rayQuery: (startPoint, endPoint, bodies) => {
+      if (!bodies) bodies = Composite.allBodies(engine.world);
+      return Query.ray(bodies, startPoint, endPoint);
+    },
+    getIntersection,
+    getProjectionPoint,
+    rayQueryWithPoints: (startPoint, endPoint, bodies, first = true) => {
+      if (!bodies) bodies = Composite.allBodies(engine.world);
+      const l1 = { p1: startPoint, p2: endPoint };
+      return bodies.map(b => {
+        const pts = b.vertices.reduce((acc, c) => {
+          const cs = getIntersection(l1, {
+            p1: acc.last,
+            p2: c,
+          });
+          if (cs) {
+            cs.body = b;
+            acc.secs.push(cs);
           }
-          World.remove(engine.world, body);
-        },
-        addConstraint: cst=>World.add(engine.world, Constraint.create(cst)),
-        eventCallbacks,
-        setBodyOuterParent: (bdy, parent) => bdy.ggParent = parent,
-        setBodyGGInfo: (bdy, info) => bdy.ggInfo = info || {}, //will replace setBodyOuterParent
-        rayQuery: (startPoint, endPoint, bodies)=>{
-          if (!bodies) bodies = Composite.allBodies(engine.world);
-          return Query.ray(bodies, startPoint, endPoint);
-        },
-        getIntersection,
-        rayQueryWithPoints: (startPoint, endPoint, bodies, first = true)=>{
-          if (!bodies) bodies = Composite.allBodies(engine.world);
-          const l1 = {p1: startPoint, p2: endPoint};
-          return bodies.map(b=>{
-            const pts = b.vertices.reduce((acc, c)=>{
-              const cs = getIntersection(l1,{
-                p1: acc.last,
-                p2: c,
-              });
-              if (cs) {
-                cs.body = b;
-                acc.secs.push(cs);
-              }
-              acc.last = c;
-              return acc;
-            }, { last: b.vertices[b.vertices.length - 1], secs: []});
-            if (pts.secs.length) {
-              pts.secs.sort(sortAsc);
-              if (first) return pts.secs[0];
-              return pts.secs;
-            }
-          }).filter(x=>x).sort(sortAsc);
+          acc.last = c;
+          return acc;
+        }, { last: b.vertices[b.vertices.length - 1], secs: [] });
+        if (pts.secs.length) {
+          pts.secs.sort(sortAsc);
+          if (first) return pts.secs[0];
+          return pts.secs;
         }
+      }).filter(x => x).sort(sortAsc);
     }
-    created.getBodiesUnderPos = pos=>getBodiesUnderPos(created, pos);
-    return created;
+  }
+  created.getBodiesUnderPos = pos => getBodiesUnderPos(created, pos);
+  return created;
 }
