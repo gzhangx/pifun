@@ -13,6 +13,12 @@ export function createCannon(engine, { x, y, opts, ggOpts }) {
     engine.setBodyOuterParent(body, Object.assign({}, ggOpts));    
 }
 
+//will rotate first one
+function stickRect2Body({x,y,w,h}, body) {
+    const getAngle = ang => !ang ? Math.PI / 2 : ang;
+    //const angle = core.utils.getDispAng(getAngle(centerBody.angle));
+}
+
 export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
     const { Bounds, Bodies, Matter, rayQueryWithPoints } = createdEngine;
     

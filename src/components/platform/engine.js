@@ -77,7 +77,32 @@ export function getProjectionPoint(p1, p2, pp) {
   };
 }
 
-const sortAsc = (a,b)=>a.t-b.t;
+const sortAsc = (a, b) => a.t - b.t;
+
+export function rayQueryOnOneBody(l1, b, first = true) 
+{
+  const { p1, p2 } = l1;
+  const pts = b.vertices.reduce((acc, c) => {
+    const l2 = {
+      p1: acc.last,
+      p2: c,
+    };
+    const cs = getIntersection(l1, l2);
+    if (cs) {
+      cs.body = b;
+      cs.edge = l2;
+      acc.secs.push(cs);
+    }
+    acc.last = c;
+    return acc;
+  }, { last: b.vertices[b.vertices.length - 1], secs: [] });
+  if (pts.secs.length) {
+    pts.secs.sort(sortAsc);
+    if (first) return pts.secs[0];
+    return pts.secs;
+  }
+}
+
 export function createEngine() {
   const Engine = Matter.Engine,
     //Render = Matter.Render,
@@ -152,27 +177,7 @@ export function createEngine() {
     rayQueryWithPoints: (startPoint, endPoint, bodies, first = true) => {
       if (!bodies) bodies = Composite.allBodies(engine.world);
       const l1 = { p1: startPoint, p2: endPoint };
-      return bodies.map(b => {
-        const pts = b.vertices.reduce((acc, c) => {
-          const l2 = {
-            p1: acc.last,
-            p2: c,
-          };
-          const cs = getIntersection(l1, l2);
-          if (cs) {
-            cs.body = b;
-            cs.edge = l2;
-            acc.secs.push(cs);
-          }
-          acc.last = c;
-          return acc;
-        }, { last: b.vertices[b.vertices.length - 1], secs: [] });
-        if (pts.secs.length) {
-          pts.secs.sort(sortAsc);
-          if (first) return pts.secs[0];
-          return pts.secs;
-        }
-      }).filter(x => x).sort(sortAsc);
+      return bodies.map(b => rayQueryOnOneBody(l1, b, first)).filter(x => x).sort(sortAsc);
     }
   }
   created.getBodiesUnderPos = pos => getBodiesUnderPos(created, pos);
