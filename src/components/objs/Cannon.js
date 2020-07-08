@@ -31,8 +31,6 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
         }
     }
 
-    const dx = w2 * Math.cos(angle);
-    const dy = w2 * Math.sin(angle);
     const { p1, p2 } = centerPt.edge;
     const projPt = getProjectionPoint(p1, p2, { x, y });
     if (projPt) {

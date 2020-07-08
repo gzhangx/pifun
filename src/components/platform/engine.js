@@ -68,7 +68,7 @@ export function getProjectionPoint(p1, p2, pp) {
     return null;
   }
   const e2Len = Vector.magnitude(e2);
-  const cos = dp / (e1Len + e2Len);
+  const cos = dp / (e1Len * e2Len);
   const projectedLen = cos * e2Len;
   return {
     inRange,
