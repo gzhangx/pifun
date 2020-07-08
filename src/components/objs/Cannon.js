@@ -1,4 +1,4 @@
-import { Bodies } from "matter-js";
+import { Bodies, Vector } from "matter-js";
 import { core } from '../thisworld/consts';
 import { getProjectionPoint } from "../platform/engine";
 const w = 100;
@@ -22,7 +22,8 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
     const centerPt = rayQueryWithPoints({ x, y: y - w2 }, { x, y: HEIGHT })[0];
     if (!centerPt) return;
     const centerBody = centerPt.body;
-    const angle = core.utils.getDispAng(centerBody.angle);
+    const getAngle = ang => !ang? Math.PI / 2 : ang;    
+    const angle = core.utils.getDispAng(getAngle(centerBody.angle));
     const body = Bodies.rectangle(x, y, w, h, {angle});
     for (let i = 0; i < allBodies.length; i++) {
         if (Bounds.contains(body.bounds, { x, y })) {
@@ -35,7 +36,7 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
     const projPt = getProjectionPoint(p1, p2, { x, y });
     if (projPt) {
         if (projPt.inRange)
-        {
+        {            
             c.save();
             c.strokeStyle = '#0000ff';
             c.strokeWeight = 8;
@@ -53,16 +54,25 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
             c.lineTo(projPt.x, projPt.y);
             c.stroke();
             c.restore();
+            const vc = Vector.sub({ x, y }, projPt);
+            const fullLen = Vector.magnitude(vc);
+            if (fullLen === 0) return;
+            const cr = h2 / fullLen;
+            const newC = {
+                x: projPt.x + (cr * vc.x),
+                y: projPt.y + (cr * vc.y),
+            }
+            c.save();
+            c.translate(newC.x, newC.y);
+            c.rotate(angle || 0);
+            c.strokeStyle = '#bbb';
+            c.strokeWeight = 4;
+            //c.fill(127);
+            c.beginPath();
+            c.rect(-w / 2, -h / 2, w, h);
+            c.stroke();
+            c.restore();
         }
     }
-    c.save();
-    c.translate(x, y);
-    c.rotate(angle || 0);    
-    c.strokeStyle = '#bbb';
-    c.strokeWeight = 4;
-    //c.fill(127);
-    c.beginPath();
-    c.rect(-w/2, -h/2, w, h);
-    c.stroke();
-    c.restore();
+    
 }
