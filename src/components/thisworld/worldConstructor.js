@@ -112,7 +112,7 @@ export const createConstructor = (core) => {
         const makeRect = (rr, label) => new SimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
             opts: { label, angle: core.utils.getDispAng(rr.angle), collisionFilter, },
-            ggOpts: {label, health: 10},
+            ggOpts: {label, health: 10, w: rr.w, h: rr.h},
         }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
             const { a, b, pointA, pointB } = pt;

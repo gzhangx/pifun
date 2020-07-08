@@ -10,7 +10,7 @@ export default function SimpleRect(initInfo, engine) {
     addToWorld(body);
 
     this.body = body;
-    engine.setBodyGGInfo(body, ggOpts || {health: 0});
+    engine.setBodyGGInfo(body, ggOpts || {health: 0, h});
     //allBodies.push(this);
     this.show = p => {
         const pos = body.position;

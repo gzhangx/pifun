@@ -1,6 +1,6 @@
 import { Bodies, Vector } from "matter-js";
 import { core } from '../thisworld/consts';
-import { getProjectionPoint } from "../platform/engine";
+import { getProjectionPoint, rayQueryOnOneBody } from "../platform/engine";
 const w = 100;
 const h = 20;
 const w2 = w / 2;
@@ -16,7 +16,21 @@ export function createCannon(engine, { x, y, opts, ggOpts }) {
 //will rotate first one
 function stickRect2Body({x,y,w,h}, body) {
     const getAngle = ang => !ang ? Math.PI / 2 : ang;
-    //const angle = core.utils.getDispAng(getAngle(centerBody.angle));
+    const angle = core.utils.getDispAng(getAngle(body.angle));
+    const edge = rayQueryOnOneBody({ p1: { x, y }, p2: body.position }, body);
+    if (!edge) return;
+    const {p1, p2} = edge.edge;
+    const projPt = getProjectionPoint(p1, p2, { x, y });
+    if (projPt && projPt.inRange) {
+        const vc = Vector.sub({ x, y }, projPt);
+        const fullLen = Vector.magnitude(vc);
+        if (fullLen === 0) return;
+        const cr = body.ggInfo.h / fullLen;
+        const newC = {
+            x: projPt.x + (cr * vc.x),
+            y: projPt.y + (cr * vc.y),
+        }
+    }
 }
 
 export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
@@ -30,7 +44,8 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
     const centerBody = centerPt.body;
     const getAngle = ang => !ang? Math.PI / 2 : ang;    
     const angle = core.utils.getDispAng(getAngle(centerBody.angle));
-    const body = Bodies.rectangle(x, y, w, h, {angle});
+    const body = Bodies.rectangle(x, y, w, h, { angle });
+    body.ggInfo = { h };
     for (let i = 0; i < allBodies.length; i++) {
         if (Bounds.contains(body.bounds, { x, y })) {
             const collision = Matter.SAT.collides(body, allBodies[i]);
@@ -63,7 +78,7 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
             const vc = Vector.sub({ x, y }, projPt);
             const fullLen = Vector.magnitude(vc);
             if (fullLen === 0) return;
-            const cr = h2 / fullLen;
+            const cr = body.ggInfo.h/2 / fullLen;
             const newC = {
                 x: projPt.x + (cr * vc.x),
                 y: projPt.y + (cr * vc.y),

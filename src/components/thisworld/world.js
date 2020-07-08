@@ -244,6 +244,7 @@ function createWorld() {
         h: 60,
         ggOpts: {
             isImmortal: true,
+            h: 60,
         },
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
@@ -256,6 +257,7 @@ function createWorld() {
         h: GroundHeight,
         ggOpts: {
             isImmortal: true,
+            h: GroundHeight,
         },
         opts: { isStatic: true, label: 'Ground', collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
