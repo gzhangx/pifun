@@ -35,7 +35,7 @@ function getIntersection(l1, l2) {
   return null;
 }
 
-function getBodiesUnderPos(eng, position, returnFirst = true) {
+export function getBodiesUnderPos(eng, position, returnFirst = true) {
   const {Bounds, Vertices, Detector, engine} = eng;
   const bodies = engine.world.bodies;
   const all = [];
@@ -57,7 +57,7 @@ function getBodiesUnderPos(eng, position, returnFirst = true) {
 }
 
 //line and pp
-function getProjectionPoint(p1, p2, pp) {
+export function getProjectionPoint(p1, p2, pp) {
   //http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
   const e1 = Vector.sub(p2, p1);
   const e2 = Vector.sub(pp, p1);
@@ -148,17 +148,20 @@ export function createEngine() {
     },
     getIntersection,
     getProjectionPoint,
+    //returns s, t, x, y , body and edge(p1,p2) that was hit
     rayQueryWithPoints: (startPoint, endPoint, bodies, first = true) => {
       if (!bodies) bodies = Composite.allBodies(engine.world);
       const l1 = { p1: startPoint, p2: endPoint };
       return bodies.map(b => {
         const pts = b.vertices.reduce((acc, c) => {
-          const cs = getIntersection(l1, {
+          const l2 = {
             p1: acc.last,
             p2: c,
-          });
+          };
+          const cs = getIntersection(l1, l2);
           if (cs) {
             cs.body = b;
+            cs.edge = l2;
             acc.secs.push(cs);
           }
           acc.last = c;
