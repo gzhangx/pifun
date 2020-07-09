@@ -5,15 +5,13 @@ const BREAKAWAYSPEED = 10;
 const BREAKAWAYANGSPEED = 0.3;
 const wallWidth = 20;
 const halfWallWidth = wallWidth / 10;
-const PId2 = -Math.PI / 2
 
 export const core = {
     consts: {
         WIDTH,
         HEIGHT,
         wallWidth,
-        halfWallWidth,
-        PId2,
+        halfWallWidth,        
         WALLHEALTH,
         BREAKAWAYSPEED,
         BREAKAWAYANGSPEED,
@@ -76,8 +74,5 @@ export const core = {
         },
     },
 
-    utils: {
-        getDispAng: null,
-    },
     deepCurCollisions: {},
 };

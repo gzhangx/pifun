@@ -6,6 +6,8 @@ const allCllisionFilter = {
   group: 0
 };
 
+export const PId2 = -Math.PI / 2
+export function getDispAng(angle) { return angle + PId2; }
 // Thanks Gavin from https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 function getIntersection(l1, l2) {
   const p0_x = l1.p1.x;
@@ -76,6 +78,78 @@ export function getProjectionPoint(p1, p2, pp) {
     y: p1.y + ((projectedLen * e1.y) / e1Len),
   };
 }
+
+
+export function checkPointBetweenOnLine({ p1, p2 }, pp) {
+  const dl = Vector.sub(p2, p1);
+  const pl = Vector.sub(pp, p1);
+  if (dl.y !== 0) {
+    const d = pl.y / dl.y;
+    if (d < 0 || d > 1) return false;
+  }
+  if (dl.x !== 0) {
+    const d = pl.x / dl.x;
+    if (d < 0 || d > 1) return false;
+  }
+  return true;
+}
+//will rotate first one
+export function stickRect2Body({ x, y, w, h }, body) {
+  const w2 = w / 2;
+  const getAngle = ang => !ang ? -Math.PI / 2 : ang;
+  const angle = getDispAng(getAngle(body.angle));
+  const queryInfo = rayQueryOnOneBody({ p1: { x, y }, p2: body.position }, body);
+  if (!queryInfo) return;
+  const { p1, p2 } = queryInfo.edge;
+  const projPt = getProjectionPoint(p1, p2, { x, y });
+  if (projPt && projPt.inRange) {
+    const vc = Vector.sub({ x, y }, projPt);
+    const fullLen = Vector.magnitude(vc);
+    if (fullLen === 0) return;
+    const cr = h / 2 / fullLen;
+    const newC = {
+      x: projPt.x + (cr * vc.x),
+      y: projPt.y + (cr * vc.y),
+    }
+
+    const fromEnd1 = {
+      x: projPt.x + (w2 * Math.cos(angle)),
+      y: projPt.y + (w2 * Math.sin(angle)),
+    };
+    const fromEnd2 = {
+      x: projPt.x - (w2 * Math.cos(angle)),
+      y: projPt.y - (w2 * Math.sin(angle)),
+    };
+
+    const goodPts = [];
+    const fromLine = {
+      p1: fromEnd1,
+      p2: fromEnd2,
+    };
+    if (checkPointBetweenOnLine(fromLine, p1)) {
+      goodPts.push(p1);
+    }
+    if (checkPointBetweenOnLine(fromLine, p2)) {
+      goodPts.push(p2);
+    }
+    if (checkPointBetweenOnLine(queryInfo.edge, fromEnd1)) {
+      goodPts.push(fromEnd1);
+    }
+    if (checkPointBetweenOnLine(queryInfo.edge, fromEnd2)) {
+      goodPts.push(fromEnd2);
+    }
+
+    return {
+      queryInfo,
+      projPt,
+      newC,
+      fromEnd1,
+      fromEnd2,
+      goodPts,
+    }
+  }
+}
+
 
 const sortAsc = (a, b) => a.t - b.t;
 

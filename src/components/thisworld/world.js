@@ -6,6 +6,7 @@ import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
 import { showCannonHolder } from '../objs/Cannon';
+import { getDispAng } from '../platform/engine';
  
 //export const allBodies = [];
 
@@ -13,7 +14,6 @@ const { WIDTH,
     HEIGHT,
     wallWidth,
     halfWallWidth,
-    PId2,
     WALLHEALTH,
     BREAKAWAYSPEED,
     BREAKAWAYANGSPEED, } = core.consts;
@@ -98,7 +98,7 @@ function run(props) {
                 const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
                     p.save();
                     p.translate(rr.x, rr.y);
-                    p.rotate((rr.angle || 0) + PId2);
+                    p.rotate(getDispAng(rr.angle || 0));
                     //p.stroke(stroke);
                     //p.strokeWeight(2);
                     //p.fill(fill);

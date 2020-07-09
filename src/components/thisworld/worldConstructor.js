@@ -1,4 +1,4 @@
-import { createEngine } from "../platform/engine";
+import { createEngine, getDispAng } from "../platform/engine";
 import { createRender } from './ui';
 import SimpleRect from '../objs/SimpleRect';
 const getConstraintOffset = (op, obj) => {
@@ -29,7 +29,6 @@ export const createConstructor = (core) => {
         HEIGHT,
         wallWidth,
         halfWallWidth,
-        PId2,
         WALLHEALTH,
         BREAKAWAYSPEED,
         BREAKAWAYANGSPEED,
@@ -111,7 +110,7 @@ export const createConstructor = (core) => {
     const makeCell = (wallPts, downConns, collisionFilter) => {
         const makeRect = (rr, label) => new SimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
-            opts: { label, angle: core.utils.getDispAng(rr.angle), collisionFilter, },
+            opts: { label, angle: getDispAng(rr.angle), collisionFilter, },
             ggOpts: {label, health: 10, w: rr.w, h: rr.h},
         }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
@@ -291,9 +290,7 @@ export const initWorld = (core, { canvas, run, props }) => {
     const {
         WIDTH,
         HEIGHT,        
-        PId2,
-    } = core.consts;
-    core.utils.getDispAng = angle => angle + PId2;
+    } = core.consts;    
     const createdEngine = core.createdEngine;
     const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
 
