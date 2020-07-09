@@ -182,6 +182,7 @@ export const createConstructor = (core) => {
 
     return {
         getDragCellPoints,
+        addCst,
         makeCell,
         removeBadBodies,
         worldOperations: () => {

@@ -142,6 +142,7 @@ export function stickRect2Body({ x, y, w, h }, body) {
     }
 
     return {
+      body,
       queryInfo,
       projPt,      
       fromEnd1,

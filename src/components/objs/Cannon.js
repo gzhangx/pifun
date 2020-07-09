@@ -45,7 +45,7 @@ export function createCannon(opt, pos) {
     const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
     const angle = newC.angle;
     const { createdEngine } = opt;
-    new SimpleRect({
+    const rc = new SimpleRect({
         x: newC.x,
         y: newC.y,
         w,
@@ -56,6 +56,13 @@ export function createCannon(opt, pos) {
         },
         opts: { angle, restitution: 0.5, collisionFilter: core.worldCats.ground.structure.getCollisionFilter() },    
     }, createdEngine);
+
+    const stiffness = 0.9;
+    const getCst = who => {
+        return { bodyA: rrr.body, bodyB: rc.body, pointA: Vector.sub(rrr.goodPts[who], rrr.body.position), pointB: Vector.sub(rrr.goodPts[who], rc.body.position), stiffness };
+    };
+    core.worldCon.addCst(getCst(0));
+    core.worldCon.addCst(getCst(1));
 }
 
 export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
