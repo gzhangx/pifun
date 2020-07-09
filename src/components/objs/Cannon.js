@@ -1,28 +1,29 @@
 import { Bodies, Vector } from "matter-js";
 import { core } from '../thisworld/consts';
-import { getProjectionPoint, rayQueryOnOneBody, stickRect2Body, getDispAng } from "../platform/engine";
+import SimpleRect from './SimpleRect';
+import { getProjectionPoint, rayQueryOnOneBody, stickRect2Body, getDispAng, createEngine } from "../platform/engine";
 const w = 100;
 const h = 20;
 const w2 = w / 2;
 const h2 = h / 2;
 
-export function createCannon(engine, { x, y, opts, ggOpts }) {    
+export function createCannonOld(engine, { x, y, opts, ggOpts }) {    
     const { World, world, Bodies } = engine;
     const body = Bodies.rectangle(x, y, w, h, opts);    
     World.add(world, body);
     engine.setBodyOuterParent(body, Object.assign({}, ggOpts));    
 }
 
-export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
+
+function queryCannonPos({ createdEngine, allBodies }, { x, y }) {
     const { Bounds, Bodies, Matter, rayQueryWithPoints } = createdEngine;
-    
-    const { 
+    const {
         HEIGHT,
     } = core.consts;
     const centerPt = rayQueryWithPoints({ x, y: y - w2 }, { x, y: HEIGHT })[0];
     if (!centerPt) return;
     const centerBody = centerPt.body;
-    const getAngle = ang => !ang? Math.PI / 2 : ang;    
+    const getAngle = ang => !ang ? Math.PI / 2 : ang;
     const angle = getDispAng(getAngle(centerBody.angle));
     const body = Bodies.rectangle(x, y, w, h, { angle });
     body.ggInfo = { h };
@@ -34,6 +35,31 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
     }
 
     const rrr = stickRect2Body({ x, y, w, h }, centerPt.body);
+    if (rrr) rrr.newC.angle = angle;
+    return rrr;
+}
+
+export function createCannon(opt, pos) {
+    const rrr = queryCannonPos(opt, pos);
+    if (!rrr) return;
+    const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
+    const angle = newC.angle;
+    const { createdEngine } = opt;
+    new SimpleRect({
+        x: newC.x,
+        y: newC.y,
+        w,
+        h,
+        ggOpts: {
+            label: 'Cannon',
+            h,
+        },
+        opts: { angle, restitution: 0.5, collisionFilter: core.worldCats.ground.structure.getCollisionFilter() },    
+    }, createdEngine);
+}
+
+export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
+    const rrr = queryCannonPos({ c, createdEngine, allBodies }, { x, y });
     if (!rrr) return;
     const { p1, p2 } = rrr.queryInfo.edge;
     const projPt = rrr.projPt; //getProjectionPoint(p1, p2, { x, y });
@@ -57,11 +83,9 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
             c.lineTo(projPt.x, projPt.y);
             c.stroke();
             c.restore();
-            const vc = Vector.sub({ x, y }, projPt);
-            const fullLen = Vector.magnitude(vc);
-            if (fullLen === 0) return;
-            const cr = body.ggInfo.h/2 / fullLen;
+
             const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
+            const angle = newC.angle;
             c.save();
             c.translate(newC.x, newC.y);
             c.rotate(angle || 0);

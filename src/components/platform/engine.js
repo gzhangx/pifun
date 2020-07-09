@@ -110,6 +110,8 @@ export function stickRect2Body({ x, y, w, h }, body) {
     const newC = {
       x: projPt.x + (cr * vc.x),
       y: projPt.y + (cr * vc.y),
+      w,
+      h,
     }
 
     const fromEnd1 = {
@@ -141,10 +143,10 @@ export function stickRect2Body({ x, y, w, h }, body) {
 
     return {
       queryInfo,
-      projPt,
-      newC,
+      projPt,      
       fromEnd1,
       fromEnd2,
+      newC,
       goodPts,
     }
   }

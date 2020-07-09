@@ -5,7 +5,7 @@ import { core } from './consts';
 import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
-import { showCannonHolder } from '../objs/Cannon';
+import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { getDispAng } from '../platform/engine';
  
 //export const allBodies = [];
@@ -176,6 +176,9 @@ function run(props) {
             const mouseFrom = getMouse(mouse.pressLocation);
             const mouseCur = getMouse(mouse.cur);
             core.states.mouse.pressLocation = null;
+            if (isCannonMode) {
+                createCannon({ createdEngine: core.createdEngine, allBodies }, mouseCur);
+            }
             if (isFireMode) {
                 if (!mouseFrom) return;
                 const x1 = mouseCur.x;
