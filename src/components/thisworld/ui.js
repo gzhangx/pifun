@@ -121,28 +121,28 @@ export const createRender = (opt) => {
         render.bodies(bodies);
 
         if (options.showBounds)
-            render.bodyBounds(render, bodies, context);
+            render.bodyBounds(bodies);
 
         if (options.showAxes || options.showAngleIndicator)
-            render.bodyAxes(render, bodies, context);
+            render.bodyAxes(bodies);
 
         if (options.showPositions)
-            render.bodyPositions(render, bodies, context);
+            render.bodyPositions(bodies);
 
         if (options.showVelocity)
-            render.bodyVelocity(render, bodies, context);
+            render.bodyVelocity(bodies);
 
         if (options.showIds)
-            render.bodyIds(render, bodies, context);
+            render.bodyIds(bodies);
 
         if (options.showSeparations)
-            render.separations(render, engine.pairs.list, context);
+            render.separations(engine.pairs.list);
 
         if (options.showCollisions)
-            render.collisions(render, engine.pairs.list, context);
+            render.collisions(engine.pairs.list);
 
         if (options.showMousePosition)
-            render.mousePosition(render, render.mouse, context);
+            render.mousePosition(render.mouse);
 
         render.constraints(constraints, context);
 
@@ -337,6 +337,319 @@ export const createRender = (opt) => {
         context.lineTo(p2.x, p2.y);
         context.stroke();
     }
+
+    /**
+   * Draws body angle indicators and axes
+   * @private
+   * @method bodyAxes
+   * @param {render} render
+   * @param {body[]} bodies
+   * @param {RenderingContext} context
+   */
+    render.bodyAxes = function (bodies) {
+        var c = context,
+            engine = render.engine,
+            options = render.options,
+            part,
+            i,
+            j,
+            k;
+
+        c.beginPath();
+
+        for (i = 0; i < bodies.length; i++) {
+            var body = bodies[i],
+                parts = body.parts;
+
+            if (!body.render.visible)
+                continue;
+
+            if (options.showAxes) {
+                // render all axes
+                for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+                    part = parts[j];
+                    for (k = 0; k < part.axes.length; k++) {
+                        var axis = part.axes[k];
+                        c.moveTo(part.position.x, part.position.y);
+                        c.lineTo(part.position.x + axis.x * 20, part.position.y + axis.y * 20);
+                    }
+                }
+            } else {
+                for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+                    part = parts[j];
+                    for (k = 0; k < part.axes.length; k++) {
+                        // render a single axis indicator
+                        c.moveTo(part.position.x, part.position.y);
+                        c.lineTo((part.vertices[0].x + part.vertices[part.vertices.length - 1].x) / 2,
+                            (part.vertices[0].y + part.vertices[part.vertices.length - 1].y) / 2);
+                    }
+                }
+            }
+        }
+
+        if (options.wireframes) {
+            c.strokeStyle = 'indianred';
+            c.lineWidth = 1;
+        } else {
+            c.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            c.globalCompositeOperation = 'overlay';
+            c.lineWidth = 2;
+        }
+
+        c.stroke();
+        c.globalCompositeOperation = 'source-over';
+    };
+
+    /**
+     * Draws body positions
+     * @private
+     * @method bodyPositions
+     * @param {render} render
+     * @param {body[]} bodies
+     * @param {RenderingContext} context
+     */
+    render.bodyPositions = function (bodies) {
+        var c = context,
+            engine = render.engine,
+            options = render.options,
+            body,
+            part,
+            i,
+            k;
+
+        c.beginPath();
+
+        // render current positions
+        for (i = 0; i < bodies.length; i++) {
+            body = bodies[i];
+
+            if (!body.render.visible)
+                continue;
+
+            // handle compound parts
+            for (k = 0; k < body.parts.length; k++) {
+                part = body.parts[k];
+                c.arc(part.position.x, part.position.y, 3, 0, 2 * Math.PI, false);
+                c.closePath();
+            }
+        }
+
+        if (options.wireframes) {
+            c.fillStyle = 'indianred';
+        } else {
+            c.fillStyle = 'rgba(0,0,0,0.5)';
+        }
+        c.fill();
+
+        c.beginPath();
+
+        // render previous positions
+        for (i = 0; i < bodies.length; i++) {
+            body = bodies[i];
+            if (body.render.visible) {
+                c.arc(body.positionPrev.x, body.positionPrev.y, 2, 0, 2 * Math.PI, false);
+                c.closePath();
+            }
+        }
+
+        c.fillStyle = 'rgba(255,165,0,0.8)';
+        c.fill();
+    };
+
+    /**
+     * Draws body velocity
+     * @private
+     * @method bodyVelocity
+     * @param {render} render
+     * @param {body[]} bodies
+     * @param {RenderingContext} context
+     */
+    render.bodyVelocity = function (bodies) {
+        var c = context;
+
+        c.beginPath();
+
+        for (var i = 0; i < bodies.length; i++) {
+            var body = bodies[i];
+
+            if (!body.render.visible)
+                continue;
+
+            c.moveTo(body.position.x, body.position.y);
+            c.lineTo(body.position.x + (body.position.x - body.positionPrev.x) * 2, body.position.y + (body.position.y - body.positionPrev.y) * 2);
+        }
+
+        c.lineWidth = 3;
+        c.strokeStyle = 'cornflowerblue';
+        c.stroke();
+    };
+
+    /**
+     * Draws body ids
+     * @private
+     * @method bodyIds
+     * @param {render} render
+     * @param {body[]} bodies
+     * @param {RenderingContext} context
+     */
+    render.bodyIds = function (bodies) {
+        var c = context,
+            i,
+            j;
+
+        for (i = 0; i < bodies.length; i++) {
+            if (!bodies[i].render.visible)
+                continue;
+
+            var parts = bodies[i].parts;
+            for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+                var part = parts[j];
+                c.font = "12px Arial";
+                c.fillStyle = 'rgba(255,255,255,0.5)';
+                c.fillText(part.id, part.position.x + 10, part.position.y - 10);
+            }
+        }
+    };
+
+    /**
+     * Description
+     * @private
+     * @method collisions
+     * @param {render} render
+     * @param {pair[]} pairs
+     * @param {RenderingContext} context
+     */
+    render.collisions = function (pairs) {
+        var c = context,
+            options = render.options,
+            pair,
+            collision,
+            corrected,
+            bodyA,
+            bodyB,
+            i,
+            j;
+
+        c.beginPath();
+
+        // render collision positions
+        for (i = 0; i < pairs.length; i++) {
+            pair = pairs[i];
+
+            if (!pair.isActive)
+                continue;
+
+            collision = pair.collision;
+            for (j = 0; j < pair.activeContacts.length; j++) {
+                var contact = pair.activeContacts[j],
+                    vertex = contact.vertex;
+                c.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
+            }
+        }
+
+        if (options.wireframes) {
+            c.fillStyle = 'rgba(255,255,255,0.7)';
+        } else {
+            c.fillStyle = 'orange';
+        }
+        c.fill();
+
+        c.beginPath();
+
+        // render collision normals
+        for (i = 0; i < pairs.length; i++) {
+            pair = pairs[i];
+
+            if (!pair.isActive)
+                continue;
+
+            collision = pair.collision;
+
+            if (pair.activeContacts.length > 0) {
+                var normalPosX = pair.activeContacts[0].vertex.x,
+                    normalPosY = pair.activeContacts[0].vertex.y;
+
+                if (pair.activeContacts.length === 2) {
+                    normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
+                    normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
+                }
+
+                if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
+                    c.moveTo(normalPosX - collision.normal.x * 8, normalPosY - collision.normal.y * 8);
+                } else {
+                    c.moveTo(normalPosX + collision.normal.x * 8, normalPosY + collision.normal.y * 8);
+                }
+
+                c.lineTo(normalPosX, normalPosY);
+            }
+        }
+
+        if (options.wireframes) {
+            c.strokeStyle = 'rgba(255,165,0,0.7)';
+        } else {
+            c.strokeStyle = 'orange';
+        }
+
+        c.lineWidth = 1;
+        c.stroke();
+    };
+
+    /**
+     * Description
+     * @private
+     * @method separations
+     * @param {render} render
+     * @param {pair[]} pairs
+     * @param {RenderingContext} context
+     */
+    render.separations = function (pairs) {
+        var c = context,
+            options = render.options,
+            pair,
+            collision,
+            corrected,
+            bodyA,
+            bodyB,
+            i,
+            j;
+
+        c.beginPath();
+
+        // render separations
+        for (i = 0; i < pairs.length; i++) {
+            pair = pairs[i];
+
+            if (!pair.isActive)
+                continue;
+
+            collision = pair.collision;
+            bodyA = collision.bodyA;
+            bodyB = collision.bodyB;
+
+            var k = 1;
+
+            if (!bodyB.isStatic && !bodyA.isStatic) k = 0.5;
+            if (bodyB.isStatic) k = 0;
+
+            c.moveTo(bodyB.position.x, bodyB.position.y);
+            c.lineTo(bodyB.position.x - collision.penetration.x * k, bodyB.position.y - collision.penetration.y * k);
+
+            k = 1;
+
+            if (!bodyB.isStatic && !bodyA.isStatic) k = 0.5;
+            if (bodyA.isStatic) k = 0;
+
+            c.moveTo(bodyA.position.x, bodyA.position.y);
+            c.lineTo(bodyA.position.x + collision.penetration.x * k, bodyA.position.y + collision.penetration.y * k);
+        }
+
+        if (options.wireframes) {
+            c.strokeStyle = 'rgba(255,165,0,0.5)';
+        } else {
+            c.strokeStyle = 'orange';
+        }
+        c.stroke();
+    };
 
     return render;
 }
