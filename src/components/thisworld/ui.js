@@ -383,6 +383,10 @@ export const createRender = (opt) => {
                         c.stroke();
                     }
                 }
+                c.beginPath();
+                c.fillStyle = '#222222';
+                c.fillText(((body.angle / Math.PI) * 180).toFixed(0), body.position.x, body.position.y);
+                c.stroke();
             } else {
                 for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
                     part = parts[j];
