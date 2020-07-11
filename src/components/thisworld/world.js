@@ -83,7 +83,7 @@ function run(props) {
         const mouse = core.states.mouse;
 
         if (isCannonMode && mouse.state === 'dragged') {
-            showCannonHolder({ c, createdEngine: core.createdEngine, allBodies }, {
+            showCannonHolder({ c, createdEngine: core.createdEngine, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
                 y: mouse.cur.y,
             })

@@ -97,7 +97,7 @@ export function checkPointBetweenOnLine({ p1, p2 }, pp) {
 export function stickRect2Body({ x, y, w, h }, body) {
   const w2 = w / 2;
   const getAngle = ang => !ang ? -Math.PI / 2 : ang;
-  const angle = getDispAng(getAngle(body.angle));
+  const angle = getDispAng((body.angle));
   const queryInfo = rayQueryOnOneBody({ p1: { x, y }, p2: body.position }, body);
   if (!queryInfo) return;
   const { p1, p2 } = queryInfo.edge;

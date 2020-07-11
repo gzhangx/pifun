@@ -15,7 +15,7 @@ export function createCannonOld(engine, { x, y, opts, ggOpts }) {
 }
 
 
-function queryCannonPos({ createdEngine, allBodies }, { x, y }) {
+function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, { x, y }) {
     const { Bounds, Bodies, Matter, rayQueryWithPoints } = createdEngine;
     const {
         HEIGHT,
@@ -24,6 +24,9 @@ function queryCannonPos({ createdEngine, allBodies }, { x, y }) {
     if (!centerPt) return;
     const centerBody = centerPt.body;
     const getAngle = ang => !ang ? Math.PI / 2 : ang;
+    const debugGetDeg = ang => (ang * Math.PI / 180).toFixed(0);
+    if (setCurDebugText)
+        setCurDebugText(`Debug body angle is ${debugGetDeg(centerBody.angle)}`);
     const angle = getDispAng(getAngle(centerBody.angle));
     const body = Bodies.rectangle(x, y, w, h, { angle });
     body.ggInfo = { h };
@@ -65,9 +68,10 @@ export function createCannon(opt, pos) {
     core.worldCon.addCst(getCst(1));
 }
 
-export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
-    const rrr = queryCannonPos({ c, createdEngine, allBodies }, { x, y });
+export function showCannonHolder(opt, { x, y }) {
+    const rrr = queryCannonPos(opt, { x, y });
     if (!rrr) return;
+    const { c, createdEngine, allBodies } = opt;
     const { p1, p2 } = rrr.queryInfo.edge;
     const projPt = rrr.projPt; //getProjectionPoint(p1, p2, { x, y });
     if (projPt) {
