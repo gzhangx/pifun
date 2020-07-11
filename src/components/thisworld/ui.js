@@ -370,8 +370,17 @@ export const createRender = (opt) => {
                     part = parts[j];
                     for (k = 0; k < part.axes.length; k++) {
                         var axis = part.axes[k];
+                        c.beginPath();
+                        if (k === 0) {
+                            c.strokeStyle = '#ff0000';
+                            c.lineWidth = 2;
+                        } else {
+                            c.strokeStyle = 'indianred';
+                            c.lineWidth = 1;
+                        }
                         c.moveTo(part.position.x, part.position.y);
                         c.lineTo(part.position.x + axis.x * 20, part.position.y + axis.y * 20);
+                        c.stroke();
                     }
                 }
             } else {

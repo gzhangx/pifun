@@ -100,6 +100,9 @@ export function showCannonHolder({ c, createdEngine, allBodies }, { x, y }) {
             c.strokeWeight = 4;
             //c.fill(127);
             c.beginPath();
+            c.strokeStyle = '#222222';
+            c.fillStyle = '#222222';
+            c.fillText(((angle/Math.PI)*180).toFixed(0),0,0);
             c.rect(-w / 2, -h / 2, w, h);
             c.stroke();
             
