@@ -120,7 +120,7 @@ export function stickRect2Body({ x, y, w, h }, body, setCurDebugText) {
     if (dx === 0) return null;
     const dxdy2 = Math.sqrt((dx * dx) + (dy * dy));
     const cosa = dx / dxdy2;
-    const sina = -dy / dxdy2;
+    const sina = dy / dxdy2;
 
     const fromEnd1 = {
       x: projPt.x - (w2 * cosa),
@@ -149,12 +149,12 @@ export function stickRect2Body({ x, y, w, h }, body, setCurDebugText) {
       goodPts.push(fromEnd2);
     }
 
-    const angle = Math.acos(cosa);
-    newC.angle = Math.PI - angle;
+    const angle = Math.atan2(dy, dx);
+    newC.angle = angle;
     if (setCurDebugText) {
       const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
       const debugGetDeg = ang => (ang * 180 / Math.PI).toFixed(0);      
-      setCurDebugText(`Debug body angle is ${debugGetDeg(angle)} ${dbgfmtPt(goodPts[0])} ${dbgfmtPt(goodPts[1])} ${dbgfmtPt(fromEnd1)} 2=${dbgfmtPt(fromEnd2)} projPt=${dbgfmtPt(projPt)} newC=${dbgfmtPt(newC)}`);
+      setCurDebugText(`Debug body angle is ${debugGetDeg(angle)} cosa=${cosa.toFixed(2)} p2x=${p2.x.toFixed(2)} p1x=${p1.x.toFixed(2)} ${dbgfmtPt(goodPts[0])} ${dbgfmtPt(goodPts[1])} ${dbgfmtPt(fromEnd1)} 2=${dbgfmtPt(fromEnd2)} projPt=${dbgfmtPt(projPt)} newC=${dbgfmtPt(newC)}`);
     }
 
     return {
