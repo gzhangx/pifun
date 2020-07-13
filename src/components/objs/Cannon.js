@@ -15,13 +15,34 @@ export function createCannonOld(engine, { x, y, opts, ggOpts }) {
 }
 
 
-function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, { x, y }) {
+function getCloserBody(from, bodies) {
+    return bodies.reduce((acc, bdy) => {
+        if (bdy) {
+            const pos = bdy.body.position;
+            const dx = from.x - pos.x;
+            const dy = from.y - pos.y;
+            const dst2 = dx * dx + dy * dy;
+            if (!acc.body || acc.dist > dst2) {
+                acc.dist = dst2;
+                acc.body = bdy;
+            }
+        }
+        return acc;
+    }, {
+        body: null,
+        dist: 0,
+    }).body;
+}
+function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, from) {
+    const { x, y } = from;
     const { Bounds, Bodies, Matter, rayQueryWithPoints } = createdEngine;
     const {
         HEIGHT,
     } = core.consts;
-    const centerPt = rayQueryWithPoints({ x, y: y - w2 }, { x, y: HEIGHT })[0];
-    if (!centerPt) return;    
+    const centerPtBtm = rayQueryWithPoints(from, { x, y: HEIGHT })[0];
+    const centerPtTop = rayQueryWithPoints(from, { x, y: 0 })[0];
+    const centerPt = getCloserBody(from, [centerPtBtm, centerPtTop]);
+    if (!centerPt) return;
     const rrr = stickRect2Body({ x, y, w, h }, centerPt.body);
     if (!rrr) return;
     const { newC } = rrr;
