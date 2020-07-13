@@ -1,5 +1,5 @@
 import { Bodies, Vector } from "matter-js";
-import { core } from '../thisworld/consts';
+import { core, WIDTH } from '../thisworld/consts';
 import SimpleRect from './SimpleRect';
 import { getProjectionPoint, rayQueryOnOneBody, stickRect2Body, getDispAng, createEngine } from "../platform/engine";
 const w = 100;
@@ -41,7 +41,9 @@ function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, from) {
     } = core.consts;
     const centerPtBtm = rayQueryWithPoints(from, { x, y: HEIGHT })[0];
     const centerPtTop = rayQueryWithPoints(from, { x, y: 0 })[0];
-    const centerPt = getCloserBody(from, [centerPtBtm, centerPtTop]);
+    const centerPtRight = rayQueryWithPoints(from, { x: WIDTH, y })[0];
+    const centerPtLeft = rayQueryWithPoints(from, { x: 0, y })[0];
+    const centerPt = getCloserBody(from, [centerPtBtm, centerPtTop, centerPtRight, centerPtLeft]);
     if (!centerPt) return;
     const rrr = stickRect2Body({ x, y, w, h }, centerPt.body);
     if (!rrr) return;
