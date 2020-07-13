@@ -151,11 +151,11 @@ export function stickRect2Body({ x, y, w, h }, body, setCurDebugText) {
 
     const angle = Math.atan2(dy, dx);
     newC.angle = angle;
-    if (setCurDebugText) {
-      const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
-      const debugGetDeg = ang => (ang * 180 / Math.PI).toFixed(0);      
-      setCurDebugText(`Debug body angle is ${debugGetDeg(angle)} cosa=${cosa.toFixed(2)} p2x=${p2.x.toFixed(2)} p1x=${p1.x.toFixed(2)} ${dbgfmtPt(goodPts[0])} ${dbgfmtPt(goodPts[1])} ${dbgfmtPt(fromEnd1)} 2=${dbgfmtPt(fromEnd2)} projPt=${dbgfmtPt(projPt)} newC=${dbgfmtPt(newC)}`);
-    }
+    //if (setCurDebugText) {
+    //  const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
+    //  const debugGetDeg = ang => (ang * 180 / Math.PI).toFixed(0);      
+    //  setCurDebugText(`Debug body angle is ${debugGetDeg(angle)} cosa=${cosa.toFixed(2)} p2x=${p2.x.toFixed(2)} p1x=${p1.x.toFixed(2)} ${dbgfmtPt(goodPts[0])} ${dbgfmtPt(goodPts[1])} ${dbgfmtPt(fromEnd1)} 2=${dbgfmtPt(fromEnd2)} projPt=${dbgfmtPt(projPt)} newC=${dbgfmtPt(newC)}`);
+    //}
 
     return {
       body,

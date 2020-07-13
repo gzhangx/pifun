@@ -22,18 +22,28 @@ function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, { x, y })
     } = core.consts;
     const centerPt = rayQueryWithPoints({ x, y: y - w2 }, { x, y: HEIGHT })[0];
     if (!centerPt) return;    
-    const rrr = stickRect2Body({ x, y, w, h }, centerPt.body, setCurDebugText);
+    const rrr = stickRect2Body({ x, y, w, h }, centerPt.body);
     if (!rrr) return;
-    const angle = rrr.newC.angle;
-    const body = Bodies.rectangle(x, y, w, h, { angle });
+    const { newC } = rrr;
+    const angle = newC.angle;
+    const body = Bodies.rectangle(newC.x, newC.y, w-1, h-1, { angle });
     body.ggInfo = { h };
+    if (setCurDebugText)
+        setCurDebugText(`allBodies ${allBodies.length}`);
     for (let i = 0; i < allBodies.length; i++) {
-        if (Bounds.contains(body.bounds, { x, y })) {
+        //if (Bounds.contains(body.bounds, { x, y }))
+        {
             const collision = Matter.SAT.collides(body, allBodies[i]);
+            //const bi = allBodies[i];
+            //if (bi.ggInfo && bi.ggInfo.label === 'Cannon') {
+            //    const collision2 = Matter.SAT.collides(body, bi);
+            //    if (setCurDebugText)
+            //        setCurDebugText(`found cannon allBodies ${allBodies.length} ${collision.collided} ${x} ${y}- ${bi.position.x.toFixed(0)} ${bi.position.y.toFixed(0)}`);
+            //}
             if (collision.collided) return;
         }
     }
-    
+        
     //if (rrr) rrr.newC.angle = angle;
     return rrr;
 }
