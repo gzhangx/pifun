@@ -94,10 +94,11 @@ export function checkPointBetweenOnLine({ p1, p2 }, pp) {
   return true;
 }
 //will rotate first one
-export function stickRect2Body({ x, y, w, h }, body) {
+export function stickRect2Body({ x, y, w, h }, body, setCurDebugText) {
+  
   const w2 = w / 2;
-  const getAngle = ang => !ang ? -Math.PI / 2 : ang;
-  const angle = getDispAng((body.angle));
+  //const getAngle = ang => !ang ? -Math.PI / 2 : ang;
+  //const angle = ((body.angle));
   const queryInfo = rayQueryOnOneBody({ p1: { x, y }, p2: body.position }, body);
   if (!queryInfo) return;
   const { p1, p2 } = queryInfo.edge;
@@ -114,13 +115,20 @@ export function stickRect2Body({ x, y, w, h }, body) {
       h,
     }
 
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    if (dx === 0) return null;
+    const dxdy2 = Math.sqrt((dx * dx) + (dy * dy));
+    const cosa = dx / dxdy2;
+    const sina = -dy / dxdy2;
+
     const fromEnd1 = {
-      x: projPt.x + (w2 * Math.cos(angle)),
-      y: projPt.y + (w2 * Math.sin(angle)),
+      x: projPt.x - (w2 * cosa),
+      y: projPt.y - (w2 * sina),
     };
     const fromEnd2 = {
-      x: projPt.x - (w2 * Math.cos(angle)),
-      y: projPt.y - (w2 * Math.sin(angle)),
+      x: projPt.x + (w2 * cosa),
+      y: projPt.y + (w2 * sina),
     };
 
     const goodPts = [];
@@ -139,6 +147,14 @@ export function stickRect2Body({ x, y, w, h }, body) {
     }
     if (checkPointBetweenOnLine(queryInfo.edge, fromEnd2)) {
       goodPts.push(fromEnd2);
+    }
+
+    const angle = Math.acos(cosa);
+    newC.angle = Math.PI - angle;
+    if (setCurDebugText) {
+      const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
+      const debugGetDeg = ang => (ang * 180 / Math.PI).toFixed(0);      
+      setCurDebugText(`Debug body angle is ${debugGetDeg(angle)} ${dbgfmtPt(goodPts[0])} ${dbgfmtPt(goodPts[1])} ${dbgfmtPt(fromEnd1)} 2=${dbgfmtPt(fromEnd2)} projPt=${dbgfmtPt(projPt)} newC=${dbgfmtPt(newC)}`);
     }
 
     return {

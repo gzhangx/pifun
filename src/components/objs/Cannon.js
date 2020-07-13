@@ -21,13 +21,10 @@ function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, { x, y })
         HEIGHT,
     } = core.consts;
     const centerPt = rayQueryWithPoints({ x, y: y - w2 }, { x, y: HEIGHT })[0];
-    if (!centerPt) return;
-    const centerBody = centerPt.body;
-    const getAngle = ang => !ang ? Math.PI / 2 : ang;
-    const debugGetDeg = ang => (ang * Math.PI / 180).toFixed(0);
-    if (setCurDebugText)
-        setCurDebugText(`Debug body angle is ${debugGetDeg(centerBody.angle)}`);
-    const angle = getDispAng(getAngle(centerBody.angle));
+    if (!centerPt) return;    
+    const rrr = stickRect2Body({ x, y, w, h }, centerPt.body, setCurDebugText);
+    if (!rrr) return;
+    const angle = rrr.newC.angle;
     const body = Bodies.rectangle(x, y, w, h, { angle });
     body.ggInfo = { h };
     for (let i = 0; i < allBodies.length; i++) {
@@ -36,9 +33,8 @@ function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, { x, y })
             if (collision.collided) return;
         }
     }
-
-    const rrr = stickRect2Body({ x, y, w, h }, centerPt.body);
-    if (rrr) rrr.newC.angle = angle;
+    
+    //if (rrr) rrr.newC.angle = angle;
     return rrr;
 }
 
@@ -86,7 +82,7 @@ export function showCannonHolder(opt, { x, y }) {
             c.moveTo(x, y);
             c.lineTo(p2.x, p2.y);
             c.stroke();
-            c.strokeStyle = '#ff00ff';
+            c.strokeStyle = '#0000ff';
             c.strokeWeight = 4;
             //c.fill(127);
             c.beginPath();
@@ -97,7 +93,17 @@ export function showCannonHolder(opt, { x, y }) {
 
             const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
             const angle = newC.angle;
-            c.save();
+            c.beginPath();
+            c.strokeStyle = '#bbb';
+            c.strokeWeight = 4;
+            c.beginPath();
+            c.arc(fromEnd1.x, fromEnd1.y, 10, 0, 2 * Math.PI);
+            c.stroke();
+            c.strokeStyle = '#222';
+            c.beginPath();
+            c.arc(fromEnd2.x, fromEnd2.y, 10, 0, 2 * Math.PI);            
+            c.stroke();
+            c.save();            
             c.translate(newC.x, newC.y);
             c.rotate(angle || 0);
             c.strokeStyle = '#bbb';
