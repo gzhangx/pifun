@@ -8,7 +8,8 @@ import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { getDispAng, PId2 } from '../platform/engine';
 import { Constraint } from 'matter-js';
- 
+import { Vector} from "matter-js";
+
 //export const allBodies = [];
 
 const { WIDTH,
@@ -81,16 +82,21 @@ function run(props) {
 
     const c = core.render.context;
     const side = core.inputs.curSide;
+    const key = core.inputs.loopKey;    
     
-    setCurDebugText("key=" + core.inputs.curKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
+    setCurDebugText("key=" + core.inputs.lastKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
     
 
 
     //if (core.inputs.curBuildType === 'wall') 
     {
         const mouse = core.states.mouse;
-
-        showSelect({ isSelect ,removeFromWorld, setCurDebugText});
+        if (isSelect) {
+            doSelect({
+                mouseConstraint,
+            });
+        }
+        showSelect({ isSelect, removeFromWorld, mouseConstraint, setCurDebugText});
         if (isCannonMode && mouse.state === 'dragged') {
             showCannonHolder({ c, createdEngine: core.createdEngine, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
@@ -185,12 +191,7 @@ function run(props) {
             const mouseFrom = getMouse(mouse.pressLocation);
             const mouseCur = getMouse(mouse.cur);
             core.states.mouse.pressLocation = null;
-            if (isSelect) {
-                if (mouseConstraint.body) {
-                    core.selectObj.cur = mouseConstraint.body;
-                    core.selectObj.curInd = 0;
-                }
-            }
+            
             if (isCannonMode) {
                 createCannon({ createdEngine: core.createdEngine, allBodies }, mouseCur);
             }
@@ -247,28 +248,86 @@ function run(props) {
     
 }
 
+function doSelect({ 
+    mouseConstraint,
+}) {
+    if (!core.selectObj.cur) {
+        if (mouseConstraint.body) {
+            core.selectObj.curBase = mouseConstraint.body;
+            core.selectObj.cur = mouseConstraint.body;
+            core.selectObj.curInd = -1;
+            core.selectObj.curType = 'selbody';
+        }
+    } else {
+        const key = core.inputs.loopKey;
+        const body = core.selectObj.curBase;
+        if (key === 'a') {
+            const curInd = core.selectObj.curInd + 1;
+            if (!body.ggConstraints || curInd >= body.ggConstraints.length) {                
+                core.selectObj.curBase = mouseConstraint.body;
+                core.selectObj.cur = mouseConstraint.body;
+                core.selectObj.curInd = -1;
+                core.selectObj.curType = 'selbody';
+            } else {
+                core.selectObj.curInd = curInd;
+                core.selectObj.cur = body.ggConstraints[curInd];
+                core.selectObj.curType = 'constraint';
+            }
+        }
+    }
+}
+
 function showSelect({
     isSelect,
     removeFromWorld,
+    mouseConstraint,
     setCurDebugText
 }) {
     if (isSelect) {
         const body = core.selectObj.cur;
         if (!body) return;
-        core.selectObj.curInd = 0;
         const c = core.render.context;
         c.beginPath();
         c.strokeStyle = '#00ff00';
-        c.strokeWeight = 10;
+        c.strokeWeight = 10;        
         c.fillStyle = '#00ff00';
-        c.fillRect(body.position.x-5, body.position.y-5,10,10)
+        if (core.selectObj.curType === 'selbody') {                                    
+            c.fillRect(body.position.x - 5, body.position.y - 5, 10, 10)            
+        } else {
+            const constraint = body;
+            const bodyA = constraint.bodyA,
+                bodyB = constraint.bodyB;
+
+            let start, end;
+
+            if (bodyA) {
+                start = Vector.add(bodyA.position, constraint.pointA);
+            } else {
+                start = constraint.pointA;
+            }
+            
+            if (bodyB) {
+                end = Vector.add(bodyB.position, constraint.pointB);
+            } else {
+                end = constraint.pointB;
+            }
+
+            c.moveTo(start.x, start.y);
+            c.lineTo(end.x + 5, end.y + 5);
+            c.lineWidth = 10;
+        }
         c.stroke();
 
-        if (core.inputs.curKey === 'Delete') {
-            if (body.ggInfo && body.ggInfo.player !== 'groundPerm') {
+        if (core.inputs.loopKey === 'Delete') {
+            const canDel1 = body.ggInfo && body.ggInfo.player !== 'groundPerm';
+            if (canDel1 || body.bodyA || body.bodyB) {
                 removeFromWorld(body);
             }
+            if (mouseConstraint.body === body) {
+                mouseConstraint.body = null;
+            }
             core.selectObj.cur = null;
+            core.selectObj.curInd = -1;
             core.inputs.curKey = '';
         }
     }

@@ -186,6 +186,12 @@ export const createConstructor = (core) => {
         makeCell,
         removeBadBodies,
         worldOperations: () => {
+            const key = core.inputs.curKey;
+            core.inputs.loopKey = key;
+            if (key) {
+                core.inputs.lastKey = key;
+                core.inputs.curKey = null;
+            }
             removeBadBodies();
             processCollisions(core);
         },
@@ -326,6 +332,7 @@ export const initWorld = (core, { canvas, run, props }) => {
         const p = getMouse(e.mouse.position);
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = p;
+        core.selectObj.cur = null;
         mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
     });
     Events.on(mouseConstraint, 'mouseup', e => {

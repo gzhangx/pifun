@@ -78,6 +78,14 @@ export const core = {
     mouseConstraint: null,
     selectObj: {
         cur: null,
-        allLoops: [],
+        curIndex: -1,
+        curType: '',
     }
+};
+
+core.selectObj.reset = () => {
+    core.selectObj.cur = null;  
+    core.selectObj.curBase = null;
+    core.selectObj.curIndex = -1;
+    core.selectObj.curType = '';
 };
