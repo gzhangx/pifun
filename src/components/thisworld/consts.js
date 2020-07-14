@@ -75,4 +75,9 @@ export const core = {
     },
 
     deepCurCollisions: {},
+    mouseConstraint: null,
+    selectObj: {
+        cur: null,
+        allLoops: [],
+    }
 };

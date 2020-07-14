@@ -6,7 +6,7 @@ import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
-import { getDispAng } from '../platform/engine';
+import { getDispAng, PId2 } from '../platform/engine';
  
 //export const allBodies = [];
 
@@ -63,8 +63,9 @@ function run(props) {
     const isFireMode = curBuildType === 'fire';
     const isCannonMode = curBuildType === 'cannon';
     const isConnection = curBuildType === 'connection';
+    const isSelect = curBuildType === 'select';
     const { mouseConstraint } = core;
-    if (isConnection)
+    if (isConnection || isSelect)
         mouseConstraint.disabled = true;
     else
         mouseConstraint.disabled = false;
@@ -88,6 +89,7 @@ function run(props) {
     {
         const mouse = core.states.mouse;
 
+        showSelect({ isSelect ,removeFromWorld, setCurDebugText});
         if (isCannonMode && mouse.state === 'dragged') {
             showCannonHolder({ c, createdEngine: core.createdEngine, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
@@ -182,6 +184,12 @@ function run(props) {
             const mouseFrom = getMouse(mouse.pressLocation);
             const mouseCur = getMouse(mouse.cur);
             core.states.mouse.pressLocation = null;
+            if (isSelect) {
+                if (mouseConstraint.body) {
+                    core.selectObj.cur = mouseConstraint.body;
+                    core.selectObj.curInd = 0;
+                }
+            }
             if (isCannonMode) {
                 createCannon({ createdEngine: core.createdEngine, allBodies }, mouseCur);
             }
@@ -234,6 +242,31 @@ function run(props) {
         }
 
 
+    }
+    
+}
+
+function showSelect({
+    isSelect,
+    removeFromWorld,
+    setCurDebugText
+}) {
+    if (isSelect) {
+        const body = core.selectObj.cur;
+        if (!body) return;
+        core.selectObj.curInd = 0;
+        const c = core.render.context;
+        c.beginPath();
+        c.strokeStyle = '#00ff00';
+        c.strokeWeight = 10;
+        c.fillStyle = '#00ff00';
+        c.fillRect(body.position.x-5, body.position.y-5,10,10)
+        c.stroke();
+
+        if (core.inputs.curKey === 'Delete') {
+            removeFromWorld(core.selectObj.cur);
+            core.selectObj.cur = null;
+        }
     }
 }
 
