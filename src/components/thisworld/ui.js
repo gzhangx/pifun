@@ -366,6 +366,7 @@ export const createRender = (opt) => {
 
             if (options.showAxes) {
                 // render all axes
+                const axeslen = 5; //default 20;
                 for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
                     part = parts[j];
                     for (k = 0; k < part.axes.length; k++) {
@@ -379,7 +380,7 @@ export const createRender = (opt) => {
                             c.lineWidth = 1;
                         }
                         c.moveTo(part.position.x, part.position.y);
-                        c.lineTo(part.position.x + axis.x * 20, part.position.y + axis.y * 20);
+                        c.lineTo(part.position.x + axis.x * axeslen, part.position.y + axis.y * axeslen);
                         c.stroke();
                     }
                 }
@@ -387,6 +388,24 @@ export const createRender = (opt) => {
                 c.fillStyle = '#222222';
                 c.fillText(((body.angle / Math.PI) * 180).toFixed(0), body.position.x, body.position.y);
                 c.stroke();
+                const colors = ['#ff0000', '#000000', '#ff0000', '#000000'];
+                let p1 = null, p2 = null;
+                for (let i = 0; i < body.vertices.length; i++) {
+                    if (i > 2) break;
+                    c.beginPath();
+                    p2 = body.vertices[i];
+                    if (!p1) {
+                        p1 = p2;
+                        continue;
+                    }
+                    
+                    c.moveTo(p1.x, p1.y);
+                    c.lineTo(p2.x, p2.y);
+                    c.strokeStyle = colors[i];
+                    c.lineWidth = 2;
+                    c.stroke();
+                    p1 = p2;
+                }
             } else {
                 for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
                     part = parts[j];
