@@ -251,6 +251,7 @@ function run(props) {
 function doSelect({ 
     mouseConstraint,
 }) {
+    const key = core.inputs.loopKey;
     if (!core.selectObj.cur) {
         if (mouseConstraint.body) {
             core.selectObj.curBase = mouseConstraint.body;
@@ -258,8 +259,7 @@ function doSelect({
             core.selectObj.curInd = -1;
             core.selectObj.curType = 'selbody';
         }
-    } else {
-        const key = core.inputs.loopKey;
+    } else {        
         const body = core.selectObj.curBase;
         if (key === 'a') {
             const curInd = core.selectObj.curInd + 1;
@@ -273,6 +273,15 @@ function doSelect({
                 core.selectObj.cur = body.ggConstraints[curInd];
                 core.selectObj.curType = 'constraint';
             }
+        }
+    }
+
+    const sel = core.selectObj.cur;
+    if (sel && (sel.bodyA || sel.bodyB)) {
+        if (key == '1') {
+            sel.length++;
+        } else if (key == '2'){
+            if (sel.length > 0) sel.length--;
         }
     }
 }
