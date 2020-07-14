@@ -7,6 +7,7 @@ import { initWorld, getMouse } from './worldConstructor';
 import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { getDispAng, PId2 } from '../platform/engine';
+import { Constraint } from 'matter-js';
  
 //export const allBodies = [];
 
@@ -81,7 +82,7 @@ function run(props) {
     const c = core.render.context;
     const side = core.inputs.curSide;
     
-    setCurDebugText("key=" + core.inputs.curKey);
+    setCurDebugText("key=" + core.inputs.curKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
     
 
 
@@ -264,8 +265,11 @@ function showSelect({
         c.stroke();
 
         if (core.inputs.curKey === 'Delete') {
-            removeFromWorld(core.selectObj.cur);
+            if (body.ggInfo && body.ggInfo.player !== 'groundPerm') {
+                removeFromWorld(body);
+            }
             core.selectObj.cur = null;
+            core.inputs.curKey = '';
         }
     }
 }
@@ -307,6 +311,7 @@ function createWorld() {
         ggOpts: {
             isImmortal: true,
             h: GroundHeight,
+            player: 'groundPerm'
         },
         opts: { isStatic: true, label: 'Ground', collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);

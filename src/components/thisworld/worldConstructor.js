@@ -168,7 +168,7 @@ export const createConstructor = (core) => {
                 }
                 return;
             }
-            if (ggInfo.health <= 0 || (bdy.y > (HEIGHT * 2))) return killRet;
+            if (ggInfo.health <= 0 || (bdy.position.y > (HEIGHT * 2))) return killRet;
             if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
                 if (ggInfo.label === 'wall')
                     return killRet;
