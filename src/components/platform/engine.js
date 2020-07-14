@@ -254,6 +254,17 @@ export function createEngine() {
           World.remove(engine.world, c);
         })
       }
+      const rmFromBody = (body, cst) => {
+        if (body) {
+          if (body.ggConstraints) {
+            body.ggConstraints = body.ggConstraints.filter(c => c !== cst);
+          }
+        }
+      }
+      
+      rmFromBody(body.bodyA, body);
+      rmFromBody(body.bodyB, body);
+      
       World.remove(engine.world, body);
     },
     addConstraint: cst => World.add(engine.world, Constraint.create(cst)),

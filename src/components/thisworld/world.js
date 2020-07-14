@@ -329,9 +329,10 @@ function showSelect({
 
         if (core.inputs.loopKey === 'Delete') {
             const canDel1 = body.ggInfo && body.ggInfo.player !== 'groundPerm';
-            if (canDel1 || body.bodyA || body.bodyB) {
+            const isCons = body.bodyA || body.bodyB;
+            if (canDel1 || isCons) {
                 removeFromWorld(body);
-            }
+            }            
             if (mouseConstraint.body === body) {
                 mouseConstraint.body = null;
             }
