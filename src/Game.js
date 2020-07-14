@@ -17,7 +17,7 @@ class Scene extends React.Component {
 
   render() {
     return <div>      
-      <canvas ref={this.drawRef} ></canvas>
+      <canvas ref={this.drawRef} onDragStart={e => e.preventDefault()}></canvas>
     </div>;
   }
 }

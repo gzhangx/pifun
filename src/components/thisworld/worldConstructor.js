@@ -347,12 +347,14 @@ export const initWorld = (core, { canvas, run, props }) => {
     })
     //core.groupGroup = group;
     core.worldCon = createConstructor(core);
+    core.mouseConstraint = mouseConstraint;
     core.render.run();
 }
 
 
 function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Events, Sleeping}) {
     MouseConstraint.update = function (mouseConstraint, bodies) {
+        if (mouseConstraint.disabled) return;
         const mouse = mouseConstraint.mouse,
             constraint = mouseConstraint.constraint,
             body = mouseConstraint.body;

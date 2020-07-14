@@ -62,6 +62,12 @@ function run(props) {
     const isWallMode = curBuildType === 'wall';
     const isFireMode = curBuildType === 'fire';
     const isCannonMode = curBuildType === 'cannon';
+    const isConnection = curBuildType === 'connection';
+    const { mouseConstraint } = core;
+    if (isConnection)
+        mouseConstraint.disabled = true;
+    else
+        mouseConstraint.disabled = false;
     const now = new Date();
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
     const { getDragCellPoints, makeCell, removeBadBodies, worldOperations } = core.worldCon;
@@ -138,7 +144,7 @@ function run(props) {
 
 
         if (mouse.state === 'dragged') {
-            if (isFireMode) {
+            if (isFireMode || isConnection) {
                 
                 c.lineWidth = 5;
                 c.strokeStyle = 'red';
@@ -178,6 +184,13 @@ function run(props) {
             core.states.mouse.pressLocation = null;
             if (isCannonMode) {
                 createCannon({ createdEngine: core.createdEngine, allBodies }, mouseCur);
+            }
+            if (isConnection) {
+                const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
+                if (!bodyA) return;
+                const pointA = { x: mouse.cur.x - bodyA.position.x, y: mouse.cur.y - bodyA.position.y };
+                const pointB = Vector.sub(mouseFrom, mouseConstraint.body.position);
+                core.worldCon.addCst({ bodyB: mouseConstraint.body, bodyA, pointB, pointA});
             }
             if (isFireMode) {
                 if (!mouseFrom) return;
