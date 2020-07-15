@@ -67,10 +67,9 @@ function run(props) {
     const isConnection = curBuildType === 'connection';
     const isSelect = curBuildType === 'select';
     const { mouseConstraint } = core;
-    if (isConnection || isSelect)
-        mouseConstraint.disabled = true;
-    else
-        mouseConstraint.disabled = false;
+    
+    const mouse = core.states.mouse;
+    mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const now = new Date();
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
     const { getDragCellPoints, makeCell, removeBadBodies, worldOperations } = core.worldCon;
@@ -89,8 +88,7 @@ function run(props) {
 
 
     //if (core.inputs.curBuildType === 'wall') 
-    {
-        const mouse = core.states.mouse;
+    {        
         if (isSelect) {
             doSelect({
                 mouseConstraint,
