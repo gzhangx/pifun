@@ -377,10 +377,11 @@ function showSelect({
             const degl2 = deg - limitGrad;            
             const to2 = dovn(degl1, len);
             const to1 = dovn(degl2, len);
-            const dirx = mouse.cur.y - bpy;
-            const diry = mouse.cur.x - bpx;
-            const mdeg = Math.atan2(dirx, diry);
-            if (mdeg >= degl2 && mdeg <= degl1) {
+            const diry = mouse.cur.y - bpy;
+            const dirx = mouse.cur.x - bpx;
+            const mdeg = Math.atan2(diry, dirx);
+            if (mdeg >= degl2 && mdeg <= degl1)
+            {
                 dovn(mdeg, len);                
                 if (key === 'z') {
                     const ball = new SimpleCircle({
