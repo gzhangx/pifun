@@ -8,7 +8,7 @@ import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { getDispAng, PId2 } from '../platform/engine';
 import { Constraint } from 'matter-js';
-import { Vector} from "matter-js";
+import { Vector, Body} from "matter-js";
 
 //export const allBodies = [];
 
@@ -92,9 +92,10 @@ function run(props) {
         if (isSelect) {
             doSelect({
                 mouseConstraint,
+                removeFromWorld,
             });
         }
-        showSelect({ isSelect, removeFromWorld, mouseConstraint, setCurDebugText});
+        showSelect({ isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
         if (isCannonMode && mouse.state === 'dragged') {
             showCannonHolder({ c, createdEngine: core.createdEngine, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
@@ -248,6 +249,7 @@ function run(props) {
 
 function doSelect({ 
     mouseConstraint,
+    removeFromWorld,
 }) {
     const key = core.inputs.loopKey;
     if (!core.selectObj.cur) {
@@ -282,61 +284,132 @@ function doSelect({
             if (sel.length > 0) sel.length--;
         }
     }
+
+    const body = core.selectObj.cur;
+    if (body && core.inputs.loopKey === 'Delete') {
+        const canDel1 = body.ggInfo && body.ggInfo.player !== 'groundPerm';
+        const isCons = body.bodyA || body.bodyB;
+        if (canDel1 || isCons) {
+            removeFromWorld(body);
+        }
+        if (mouseConstraint.body === body) {
+            mouseConstraint.body = null;
+        }
+        core.selectObj.cur = null;
+        core.selectObj.curInd = -1;
+        core.inputs.curKey = '';
+    }
 }
 
 function showSelect({
     isSelect,
     removeFromWorld,
     mouseConstraint,
-    setCurDebugText
+    mouse,
+    key,
+    side,
+    setCurDebugText,
 }) {
-    if (isSelect) {
-        const body = core.selectObj.cur;
-        if (!body) return;
-        const c = core.render.context;
-        c.beginPath();
-        c.strokeStyle = '#00ff00';
-        c.strokeWeight = 10;        
-        c.fillStyle = '#00ff00';
-        if (core.selectObj.curType === 'selbody') {                                    
-            c.fillRect(body.position.x - 5, body.position.y - 5, 10, 10)            
+    if (!isSelect) return;
+    const body = core.selectObj.cur;
+    if (!body) return;
+    const c = core.render.context;
+    c.beginPath();
+    c.strokeStyle = '#00ff00';
+    c.strokeWeight = 10;
+    c.fillStyle = '#00ff00';
+    if (core.selectObj.curType === 'selbody') {
+        c.fillRect(body.position.x - 5, body.position.y - 5, 10, 10)
+    } else {
+        const constraint = body;
+        const bodyA = constraint.bodyA,
+            bodyB = constraint.bodyB;
+
+        let start, end;
+
+        if (bodyA) {
+            start = Vector.add(bodyA.position, constraint.pointA);
         } else {
-            const constraint = body;
-            const bodyA = constraint.bodyA,
-                bodyB = constraint.bodyB;
-
-            let start, end;
-
-            if (bodyA) {
-                start = Vector.add(bodyA.position, constraint.pointA);
-            } else {
-                start = constraint.pointA;
-            }
-            
-            if (bodyB) {
-                end = Vector.add(bodyB.position, constraint.pointB);
-            } else {
-                end = constraint.pointB;
-            }
-
-            c.moveTo(start.x, start.y);
-            c.lineTo(end.x + 5, end.y + 5);
-            c.lineWidth = 10;
+            start = constraint.pointA;
         }
-        c.stroke();
+            
+        if (bodyB) {
+            end = Vector.add(bodyB.position, constraint.pointB);
+        } else {
+            end = constraint.pointB;
+        }
 
-        if (core.inputs.loopKey === 'Delete') {
-            const canDel1 = body.ggInfo && body.ggInfo.player !== 'groundPerm';
-            const isCons = body.bodyA || body.bodyB;
-            if (canDel1 || isCons) {
-                removeFromWorld(body);
-            }            
-            if (mouseConstraint.body === body) {
-                mouseConstraint.body = null;
+        c.moveTo(start.x, start.y);
+        c.lineTo(end.x + 5, end.y + 5);
+        c.lineWidth = 10;
+    }
+    c.stroke();
+
+    if (mouse.cur) {
+        const ggInfo = body.ggInfo;
+        if (ggInfo && ggInfo.label === 'Cannon') {
+            const part = body.parts[0];
+            const p1 = part.vertices[ggInfo.dir[0]];
+            const p2 = part.vertices[ggInfo.dir[1]];
+            const v = Vector.sub(p2, p1);
+            const deg = Math.atan2(v.y, v.x);
+            const limitGrad = 15/180* Math.PI;
+            
+            const bpx = body.position.x;
+            const bpy = body.position.y;
+            const len = 100;            
+            const dovn = (deg, len) => {
+                const x = Math.cos(deg) * len;
+                const y = Math.sin(deg) * len;
+                c.beginPath();
+                c.moveTo(bpx, bpy);
+                const to = {
+                    x: x + bpx,
+                    y: y+ bpy,
+                }
+                c.lineTo(to.x, to.y);
+                c.lineWidth = 3;
+                c.strokeStyle = "rgba(200, 0, 128, 0.2)";;
+                c.stroke();
+                return to;
             }
-            core.selectObj.cur = null;
-            core.selectObj.curInd = -1;
-            core.inputs.curKey = '';
+            const degl1 = deg + limitGrad;
+            const degl2 = deg - limitGrad;            
+            const to2 = dovn(degl1, len);
+            const to1 = dovn(degl2, len);
+            const dirx = mouse.cur.y - bpy;
+            const diry = mouse.cur.x - bpx;
+            const mdeg = Math.atan2(dirx, diry);
+            if (mdeg >= degl2 && mdeg <= degl1) {
+                dovn(mdeg, len);                
+                if (key === 'z') {
+                    const ball = new SimpleCircle({
+                        x: bpx,
+                        y: bpy,
+                        r: 10,
+                        label: 'fireball',
+                        opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
+                        ggOpts: { label: 'fireball', time: new Date(), side },
+                    }, core.createdEngine);
+                    const bbody = ball.body;
+                    //bbody.label = 'fireball';
+                    const forceMagnitude = bbody.mass * 0.05;
+                    {
+                        Body.applyForce(bbody, bbody.position, {
+                            x: forceMagnitude * dirx * 0.01,
+                            y: forceMagnitude * diry * 0.01,
+                        });
+                    }
+                }
+            }
+            c.beginPath();
+            c.fillStyle = "rgba(255, 0, 128, 0.2)";
+            c.moveTo(bpx, bpy);
+            c.lineTo(to1.x ,to1.y);
+            c.arc(bpx, bpy, len, degl2, degl1)
+            c.lineTo(bpx, bpy);
+            c.fill();
+            c.stroke();
         }
     }
 }
