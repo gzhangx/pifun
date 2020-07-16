@@ -251,6 +251,26 @@ export const createRender = (opt) => {
 
                 c.globalAlpha = 1;
             }
+
+            const ggInfo = body.ggInfo;
+            if (ggInfo) {
+                if (ggInfo.label === 'Cannon') {
+                    const part = body.parts[0];
+                    const p1 = part.vertices[ggInfo.dir[0]];
+                    const p2 = part.vertices[ggInfo.dir[1]];
+                    const v = Vector.sub(p2, p1);
+                    const vn = Vector.normalise(v);
+                    vn.x *= 100;
+                    vn.y *= 100;
+                    c.beginPath();
+                    c.moveTo(body.position.x, body.position.y);
+                    const to = Vector.add(vn, body.position);
+                    c.lineTo(to.x, to.y);
+                    c.lineWidth = 3;
+                    c.strokeStyle = '#000';
+                    c.stroke();
+                }
+            }
         }
     };
 

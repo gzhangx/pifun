@@ -85,6 +85,7 @@ export function createCannon(opt, pos) {
         ggOpts: {
             label: 'Cannon',
             h,
+            dir: [0, 1] //from body.parts[0].vertices[a].x = b.x
         },
         opts: { angle, restitution: 0.5, collisionFilter: core.worldCats.ground.structure.getCollisionFilter() },    
     }, createdEngine);
