@@ -192,7 +192,7 @@ function run(props) {
             core.states.mouse.pressLocation = null;
             
             if (isCannonMode) {
-                createCannon({ createdEngine: core.createdEngine, allBodies }, mouseCur);
+                createCannon({ createdEngine: core.createdEngine, allBodies, side }, mouseCur);
             }
             if (isConnection) {
                 const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
@@ -380,9 +380,10 @@ function showSelect({
             const diry = mouse.cur.y - bpy;
             const dirx = mouse.cur.x - bpx;
             const mdeg = Math.atan2(diry, dirx);
+            //setCurDebugText(`dirxy=${dirx.toFixed(0)} ${diry.toFixed(0)}`);
             if (mdeg >= degl2 && mdeg <= degl1)
             {
-                dovn(mdeg, len);                
+                //dovn(mdeg, len);
                 if (key === 'z') {
                     const ball = new SimpleCircle({
                         x: bpx,
@@ -402,6 +403,12 @@ function showSelect({
                         });
                     }
                 }
+                c.beginPath();
+                c.lineWidth = 3;
+                c.strokeStyle = "000";
+                c.moveTo(bpx, bpy);
+                c.lineTo(dirx + bpx, diry + bpy);
+                c.stroke();
             }
             c.beginPath();
             c.fillStyle = "rgba(255, 0, 128, 0.2)";
@@ -411,6 +418,9 @@ function showSelect({
             c.lineTo(bpx, bpy);
             c.fill();
             c.stroke();
+
+
+            
         }
     }
 }

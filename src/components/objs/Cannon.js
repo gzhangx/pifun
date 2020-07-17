@@ -76,7 +76,7 @@ export function createCannon(opt, pos) {
     if (!rrr) return;
     const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
     const angle = newC.angle;
-    const { createdEngine } = opt;
+    const { createdEngine, side } = opt;
     const rc = new SimpleRect({
         x: newC.x,
         y: newC.y,
@@ -87,7 +87,7 @@ export function createCannon(opt, pos) {
             h,
             dir: [0, 1] //from body.parts[0].vertices[a].x = b.x
         },
-        opts: { angle, restitution: 0.5, collisionFilter: core.worldCats.ground.structure.getCollisionFilter() },    
+        opts: { angle, restitution: 0.5, collisionFilter: core.worldCats.getCat(side).structure.getCollisionFilter() },    
     }, createdEngine);
 
     const stiffness = 0.9;
