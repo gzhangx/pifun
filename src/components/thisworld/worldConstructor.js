@@ -247,6 +247,11 @@ const initCats = (core) => {
     return core;
 }
 
+function isFireball(body) {
+    const ggInfo = body.ggInfo;
+    if (!ggInfo) return false;
+    return (ggInfo.label === 'fireball');
+}
 export const processCollisions = core => {
     const { collisions, deepCurCollisions } = core;
     const pairs = core.collisions;
@@ -261,10 +266,12 @@ export const processCollisions = core => {
 
         if (pair.activeContacts.length > 0) {            
             if (collision.depth) {
-                if (collision.bodyA.label === 'fireball' || collision.bodyB.label === 'fireball') {                   
-                    const fire = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
+                const isFireA = isFireball(collision.bodyA) ? collision.bodyA : null;                
+                const fire = isFireA || (isFireball(collision.bodyB) ? collision.bodyB : null);
+                if (fire) {                   
+                    //const fire = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
                     const colId = fire.id;
-                    const wall = collision.bodyA.label === 'fireball' ? collision.bodyB : collision.bodyA;
+                    const wall = isFireA ? collision.bodyB : collision.bodyA;
                     let existing = deepCurCollisions[colId];
                     if (!existing) {
                         existing = {

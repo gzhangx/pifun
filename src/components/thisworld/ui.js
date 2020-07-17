@@ -406,7 +406,13 @@ export const createRender = (opt) => {
                 }
                 c.beginPath();
                 c.fillStyle = '#222222';
-                c.fillText(((body.angle / Math.PI) * 180).toFixed(0), body.position.x, body.position.y);
+                //show angle
+                //c.fillText(((body.angle / Math.PI) * 180).toFixed(0), body.position.x, body.position.y);
+                if (body.ggInfo) {
+                    if (body.ggInfo.health) {
+                        c.fillText((body.ggInfo.health).toFixed(0), body.position.x, body.position.y);
+                    }
+                }
                 c.stroke();
                 const colors = ['#ff0000', '#000000', '#ff0000', '#000000'];
                 let p1 = null, p2 = null;
