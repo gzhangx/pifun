@@ -9,13 +9,4 @@ export default function SimpleCircle(initInfo, engine) {
 
     this.body = body;
     engine.setBodyGGInfo(body, ggOpts);
-    //allBodies.push(this);
-    this.show = p => {
-        const pos = body.position;
-        const angle = body.angle;
-        p.push();
-        p.translate(pos.x, pos.y);
-        p.circle(0,0, r*2);
-        p.pop();
-    }
 }

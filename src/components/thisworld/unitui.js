@@ -24,14 +24,9 @@ const drawCellPointsCnv = (p, dspInfo) => {
         chkshow(a);
         chkshow(b);
 
-        const { pointA, pointB } = c;
         p.save();
         //p.stroke('#00ff00');
-        //p.strokeWeight(2);
-        const xa = pointA.x + a.x;
-        const ya = pointA.y + a.y;
-        const xb = pointB.x + b.x;
-        const yb = pointB.y + b.y;
+        //p.strokeWeight(2);        
         //p.line(xa, ya, xb, yb);
         showRect(Object.assign({}, a, { w: 20, h: 20 }), '#223344', '#0000ff');
         //showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
@@ -117,6 +112,7 @@ export function showCannonHolder(c, dspInfo) {
                 c.strokeStyle = colors[i];
                 c.rect(pt.x - (size / 2), pt.y - (size / 2), size, size);
                 c.stroke();
+                return null;
             })
             c.restore();
         }
@@ -154,45 +150,28 @@ function showSelect(c, dspInfo) {
             len,
             degl2, degl1,
         } = selectInfo.cannonCone;
-        {            
-            const dovn = (deg, len) => {
-                const x = Math.cos(deg) * len;
-                const y = Math.sin(deg) * len;
-                c.beginPath();
-                c.moveTo(bpx, bpy);
-                const to = {
-                    x: x + bpx,
-                    y: y + bpy,
-                }
-                c.lineTo(to.x, to.y);
-                c.lineWidth = 3;
-                c.strokeStyle = "rgba(200, 0, 128, 0.2)";;
-                c.stroke();
-                return to;
-            }
-            
-            //setCurDebugText(`dirxy=${dirx.toFixed(0)} ${diry.toFixed(0)}`);
-            if (selectInfo.cannonDir) {                
                 
-                const {                    
-                    to,
-                } = selectInfo.cannonDir;
-                c.beginPath();
-                c.lineWidth = 3;
-                c.strokeStyle = "000";
-                c.moveTo(bpx, bpy);
-                c.lineTo(to.x, to.y);
-                c.stroke();
-            }
+        //setCurDebugText(`dirxy=${dirx.toFixed(0)} ${diry.toFixed(0)}`);
+        if (selectInfo.cannonDir) {
+                
+            const {
+                to,
+            } = selectInfo.cannonDir;
             c.beginPath();
-            c.fillStyle = "rgba(255, 0, 128, 0.2)";
+            c.lineWidth = 3;
+            c.strokeStyle = "000";
             c.moveTo(bpx, bpy);
-            c.lineTo(to1.x, to1.y);
-            c.arc(bpx, bpy, len, degl2, degl1)
-            c.lineTo(bpx, bpy);
-            c.fill();
-            c.stroke();            
+            c.lineTo(to.x, to.y);
+            c.stroke();
         }
+        c.beginPath();
+        c.fillStyle = "rgba(255, 0, 128, 0.2)";
+        c.moveTo(bpx, bpy);
+        c.lineTo(to1.x, to1.y);
+        c.arc(bpx, bpy, len, degl2, degl1)
+        c.lineTo(bpx, bpy);
+        c.fill();
+        c.stroke();        
     }
 }
 
@@ -216,3 +195,4 @@ export function postRender(c, opts) {
     showCannonHolder(c, dspInfo);
     showSelect(c, dspInfo);    
 }
+

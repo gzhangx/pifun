@@ -2,8 +2,9 @@
 // Better than original p5js impl
 // must set opt.core, opt.canvas and opt.mouse
 
-import { Vector, Body, Bounds, Mouse } from "matter-js";
+//import { Vector, Body, Bounds, Mouse } from "matter-js";
 let _requestAnimationFrame,
+    // eslint-disable-next-line
     _cancelAnimationFrame;
 
 export const createRender = (opt) => {
@@ -437,7 +438,6 @@ export const createRender = (opt) => {
    */
     render.bodyAxes = function (bodies) {
         var c = context,
-            engine = render.engine,
             options = render.options,
             part,
             i,
@@ -537,7 +537,6 @@ export const createRender = (opt) => {
      */
     render.bodyPositions = function (bodies) {
         var c = context,
-            engine = render.engine,
             options = render.options,
             body,
             part,
@@ -647,13 +646,10 @@ export const createRender = (opt) => {
      * @param {RenderingContext} context
      */
     render.collisions = function (pairs) {
-        var c = context,
+        let c = context,
             options = render.options,
             pair,
-            collision,
-            corrected,
-            bodyA,
-            bodyB,
+            collision,            
             i,
             j;
 
@@ -734,11 +730,9 @@ export const createRender = (opt) => {
             options = render.options,
             pair,
             collision,
-            corrected,
             bodyA,
             bodyB,
-            i,
-            j;
+            i;
 
         c.beginPath();
 

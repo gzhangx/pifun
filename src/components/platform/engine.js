@@ -1,10 +1,5 @@
 import Matter from "matter-js";
 const Vector = Matter.Vector;
-const allCllisionFilter = {
-  category: 0x0001,
-  mask: 0xFFFFFFFF,
-  group: 0
-};
 
 export const PId2 = -Math.PI / 2
 export function getDispAng(angle) { return angle + PId2; }
@@ -38,7 +33,7 @@ function getIntersection(l1, l2) {
 }
 
 export function getBodiesUnderPos(eng, position, returnFirst = true) {
-  const {Bounds, Vertices, Detector, engine} = eng;
+  const {Bounds, Vertices, engine} = eng;
   const bodies = engine.world.bodies;
   const all = [];
   for (var i = 0; i < bodies.length; i++) {
@@ -174,7 +169,6 @@ const sortAsc = (a, b) => a.t - b.t;
 
 export function rayQueryOnOneBody(l1, b, first = true) 
 {
-  const { p1, p2 } = l1;
   const pts = b.vertices.reduce((acc, c) => {
     const l2 = {
       p1: acc.last,

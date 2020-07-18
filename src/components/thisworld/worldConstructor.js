@@ -25,18 +25,14 @@ export const getMouse = p => ({
 
 export const createConstructor = (core) => {
     const { createdEngine } = core;
-    const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = createdEngine;
+    const { engine, removeFromWorld, Vector, Composite } = createdEngine;
 
     const {
-        WIDTH,
         HEIGHT,
-        wallWidth,
-        halfWallWidth,
-        WALLHEALTH,
+        wallWidth,        
         BREAKAWAYSPEED,
         BREAKAWAYANGSPEED,
     } = core.consts;
-    const mouse = core.states.mouse;
     const getRectPos = (startPoint, endPoint) => {
         const angle = Vector.angle(startPoint, endPoint), // - PId2
             h = Vector.magnitude(Vector.sub(startPoint, endPoint)),
@@ -55,19 +51,14 @@ export const createConstructor = (core) => {
         const p4 = endPoints.start;
         if (!endPoints.end) return;
         const points = [p1, p2, p3, p4];
-        if (points.filter(x => x).length != 4) return [];
+        if (points.filter(x => x).length !== 4) return [];
 
         const bodies = points.reduce((acc, p, i) => {
             const connId = (i + 1) % 4;
             const bar = getRectPos(p, points[connId]);
             bar.id = i;
             bar.connId = connId;
-            acc.push(bar);
-            if (i === 0) {
-                const pifmt = p => (p * 180 / Math.PI).toFixed(0);
-                const dx = p2.x - p1.x;
-                const dy = p2.y - p1.y;
-            }
+            acc.push(bar);            
             return acc;
         }, []);
 
@@ -162,20 +153,21 @@ export const createConstructor = (core) => {
         const toDelete = allBodies.map((bdy, i) => {
             const ggInfo = bdy.ggInfo;            
             if (!ggInfo)
-                return;
-            if (ggInfo.isImmortal) return;
+                return null;
+            if (ggInfo.isImmortal) return null;
             const killRet = { bdy, i };
             if (ggInfo && ggInfo.label === 'fireball') {
                 if (now - ggInfo.time > 10000) {
                     return killRet;
                 }
-                return;
+                return null;
             }
             if (ggInfo.health <= 0 || (bdy.position.y > (HEIGHT * 2))) return killRet;
             if (bdy.speed > BREAKAWAYSPEED || bdy.angularSpeed > BREAKAWAYANGSPEED) {
                 if (ggInfo.label === 'wall')
                     return killRet;
             }
+            return null;
         }).filter(x => x);
 
         toDelete.forEach(b => {
@@ -267,7 +259,7 @@ function isFireball(body) {
     return (ggInfo.label === 'fireball');
 }
 export const processCollisions = core => {
-    const { collisions, deepCurCollisions } = core;
+    const { deepCurCollisions } = core;
     const pairs = core.collisions;
     for (let i = 0; i < pairs.length; i++) {
         const pair = pairs[i];
@@ -457,9 +449,9 @@ function doSelect({
 
     const sel = core.selectObj.cur;
     if (sel && (sel.bodyA || sel.bodyB)) {
-        if (key == '1') {
+        if (key === '1') {
             sel.length++;
-        } else if (key == '2') {
+        } else if (key === '2') {
             if (sel.length > 0) sel.length--;
         }
     }
@@ -544,7 +536,7 @@ function showSelect({
             }
             const degl1 = deg + limitGrad;
             const degl2 = deg - limitGrad;
-            const to2 = dovn(degl1, len);
+            //const to2 = dovn(degl1, len);
             const to1 = dovn(degl2, len);
             const diry = mouse.cur.y - bpy;
             const dirx = mouse.cur.x - bpx;

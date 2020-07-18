@@ -9,7 +9,7 @@ import { postRender } from './unitui';
 //export const allBodies = [];
 
 function doWallSketch(core, fromPt, cur) {
-    const { HEIGHT, wallWidth, WIDTH } = core.consts;
+    const { HEIGHT, wallWidth } = core.consts;
     const {rayQueryWithPoints} = core.createdEngine;
     const startPt = rayQueryWithPoints({x:fromPt.x, y:fromPt.y},{x: fromPt.x, y: HEIGHT});
     startPt.forEach(r=>{                        
@@ -34,8 +34,6 @@ function doWallSketch(core, fromPt, cur) {
     }
 }
 
-const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
-const fmt2Int = p => parseInt(p);
 export default  {
     //WIDTH,
     //HEIGHT,
@@ -62,9 +60,7 @@ const screenOff = {
     y: 0,
 }
 function run(core, props) {
-    const { WIDTH,
-        HEIGHT,
-        wallWidth,
+    const {
         WALLHEALTH,
     } = core.consts;
     //const { props } = opt;
@@ -79,8 +75,7 @@ function run(core, props) {
     
     const mouse = core.states.mouse;
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
-    const now = new Date();
-    const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
+    const { engine, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,
         doSelect,
         showSelect,
@@ -95,88 +90,85 @@ function run(core, props) {
 
     const c = core.render.context;
     const side = core.inputs.curSide;
-    const key = core.inputs.loopKey;    
+    const key = core.inputs.loopKey;
     
     setCurDebugText("key=" + core.inputs.lastKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
     
 
     
     if (key === 'c' || key === 'v') {
-        if (key === 'c') screenOff.y+=10;
+        if (key === 'c') screenOff.y += 10;
         if (key === 'v') screenOff.y -= 10;
         core.inputs.loopKey = '';
         doTranslate(screenOff);
     }
     //if (core.inputs.curBuildType === 'wall') 
-    {        
-        if (isSelect) {
-            doSelect();
+
+    if (isSelect) {
+        doSelect();
+    }
+    core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
+    if (isCannonMode && mouse.state === 'dragged') {
+        core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
+            x: mouse.cur.x,
+            y: mouse.cur.y,
+        })
+    }
+    if (!mouse.pressLocation) return;
+    if (!mouse.cur) return;
+
+    if (mouse.state === 'dragged') {
+        if (isFireMode || isConnection) {
+            core.uiDspInfo.fireDirInfo = {
+                from: getMouse(mouse.pressLocation),
+                to: getMouse(mouse.cur),
+            };
         }
-        core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side});
-        if (isCannonMode && mouse.state === 'dragged') {
-            core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
-                x: mouse.cur.x,
-                y: mouse.cur.y,
-            })
+
+        if (isWallMode) {
+            rayQueryWithPoints({ x: mouse.pressLocation.x, y: mouse.pressLocation.y }, { x: mouse.cur.x, y: mouse.cur.y });
+            //props.inputs[`setCurCollisionStart`](`${dists} `);                    
+            const endPoints = doWallSketch(core, mouse.pressLocation, mouse.cur);
+            if (!endPoints.ok || !endPoints.end) return;
+
+            const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur, endPoints);
+            core.uiDspInfo.wallPts = wallPts;
+            //drawCellPointsCnv(wallPts);
         }
-        if (!mouse.pressLocation) return;
-        if (!mouse.cur) return;
 
-        if (mouse.state === 'dragged') {
-            if (isFireMode || isConnection) {
-                core.uiDspInfo.fireDirInfo = {
-                    from: getMouse(mouse.pressLocation),
-                    to: getMouse(mouse.cur),
-                };
-            }
+    } else if (mouse.state === 'released') {
+        mouse.state = '';
+        const mouseFrom = getMouse(mouse.pressLocation);
+        const mouseCur = getMouse(mouse.cur);
+        core.states.mouse.pressLocation = null;
+            
+        if (isCannonMode) {
+            createCannon({ core, allBodies, side }, mouseCur);
+        }
+        if (isConnection) {
+            const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
+            if (!bodyA) return;
+            const pointA = { x: mouse.cur.x - bodyA.position.x, y: mouse.cur.y - bodyA.position.y };
+            const pointB = Vector.sub(mouseFrom, mouseConstraint.body.position);
+            core.worldCon.addCst({ bodyB: mouseConstraint.body, bodyA, pointB, pointA });
+        }
+        if (isFireMode) {
+            if (!mouseFrom) return;
+            return doFireBall(mouseFrom, mouseCur, side);
+        }
 
-            if (isWallMode) {
-                const res = rayQueryWithPoints({ x: mouse.pressLocation.x, y: mouse.pressLocation.y }, { x: mouse.cur.x, y: mouse.cur.y });
-                //props.inputs[`setCurCollisionStart`](`${dists} `);                    
-                const endPoints = doWallSketch(core, mouse.pressLocation, mouse.cur);
-                if (!endPoints.ok || !endPoints.end) return;
-
-                const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur, endPoints);
+        if (isWallMode) {
+            const endPoints = doWallSketch(core, mouseFrom, mouseCur);
+            if (!endPoints.ok || !endPoints.end) return;
+            const wallPts = getDragCellPoints(mouseFrom, mouseCur, endPoints);
+            if (wallPts && wallPts.length) {
                 core.uiDspInfo.wallPts = wallPts;
                 //drawCellPointsCnv(wallPts);
-            }            
-
-        } else if (mouse.state === 'released') {
-            mouse.state = '';
-            const mouseFrom = getMouse(mouse.pressLocation);
-            const mouseCur = getMouse(mouse.cur);
-            core.states.mouse.pressLocation = null;
-            
-            if (isCannonMode) {
-                createCannon({ core, allBodies, side }, mouseCur);
-            }
-            if (isConnection) {
-                const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
-                if (!bodyA) return;
-                const pointA = { x: mouse.cur.x - bodyA.position.x, y: mouse.cur.y - bodyA.position.y };
-                const pointB = Vector.sub(mouseFrom, mouseConstraint.body.position);
-                core.worldCon.addCst({ bodyB: mouseConstraint.body, bodyA, pointB, pointA});
-            }
-            if (isFireMode) {
-                if (!mouseFrom) return;
-                return doFireBall(mouseFrom, mouseCur, side);                
-            }
-
-            if (isWallMode) {
-                const endPoints = doWallSketch(core, mouseFrom, mouseCur);
-                if (!endPoints.ok || !endPoints.end) return;
-                const wallPts = getDragCellPoints(mouseFrom, mouseCur,endPoints);                
-                if (wallPts && wallPts.length) {                    
-                    core.uiDspInfo.wallPts = wallPts;
-                    //drawCellPointsCnv(wallPts);
-                    const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
-                    allWalls.forEach(w => w.health = WALLHEALTH);
-                    return allWalls;
-                }
+                const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
+                allWalls.forEach(w => w.health = WALLHEALTH);
+                return allWalls;
             }
         }
-
-
     }
     
 }
