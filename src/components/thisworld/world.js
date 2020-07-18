@@ -117,7 +117,7 @@ function run(core, props) {
         }
         showSelect({ core, isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
         if (isCannonMode && mouse.state === 'dragged') {
-            showCannonHolder({ c, core, allBodies, setCurDebugText }, {
+            core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
                 y: mouse.cur.y,
             })

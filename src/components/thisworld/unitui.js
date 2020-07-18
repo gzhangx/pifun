@@ -44,7 +44,88 @@ const drawCellPointsCnv = (p, dspInfo) => {
     }, {});
 }
 
+
+
+export function showCannonHolder(c, dspInfo) {
+    if (!dspInfo.cannonHolder) return;
+    const { x, y, w, h, cannonInfo: rrr } = dspInfo.cannonHolder;
+    if (!rrr) return;
+    dspInfo.cannonHolder = null;
+    const { p1, p2 } = rrr.queryInfo.edge;
+    const { newC, fromEnd1, fromEnd2, goodPts } = rrr;
+    const projPt = rrr.projPt; //getProjectionPoint(p1, p2, { x, y });
+    if (projPt) {
+        if (projPt.inRange) {            
+            c.save();
+            c.strokeStyle = '#0000ff';
+            c.strokeWeight = 8;
+            c.beginPath();
+            c.moveTo(x, y);
+            c.lineTo(p1.x, p1.y);
+            c.moveTo(x, y);
+            c.lineTo(p2.x, p2.y);
+            c.stroke();
+            c.strokeStyle = '#0000ff';
+            c.strokeWeight = 4;
+            //c.fill(127);
+            c.beginPath();
+            c.moveTo(x, y);
+            c.lineTo(projPt.x, projPt.y);
+            c.stroke();
+            c.restore();
+
+            const angle = newC.angle;
+            c.beginPath();
+            c.strokeStyle = '#bbb';
+            c.strokeWeight = 4;
+            c.beginPath();
+            c.arc(fromEnd1.x, fromEnd1.y, 10, 0, 2 * Math.PI);
+            c.stroke();
+            c.strokeStyle = '#222';
+            c.beginPath();
+            c.arc(fromEnd2.x, fromEnd2.y, 10, 0, 2 * Math.PI);
+            c.stroke();
+            c.save();
+            c.translate(newC.x, newC.y);
+            c.rotate(angle || 0);
+            c.strokeStyle = '#bbb';
+            c.strokeWeight = 4;
+            //c.fill(127);
+            c.beginPath();
+            c.strokeStyle = '#222222';
+            c.fillStyle = '#222222';
+            c.fillText(((angle / Math.PI) * 180).toFixed(0), 0, 0);
+            c.rect(-w / 2, -h / 2, w, h);
+            c.stroke();
+
+            c.restore();
+            c.save();
+            c.beginPath();
+            c.strokeStyle = '#bbb';
+            c.strokeWeight = 4;
+            //c.translate(fromEnd1.x, fromEnd1.y);
+            c.beginPath();
+            c.rect(fromEnd1.x - 5, fromEnd1.y - 5, 10, 10);
+            c.stroke();
+            c.beginPath();
+            c.rect(fromEnd2.x - 5, fromEnd2.y - 5, 10, 10);
+            c.stroke();
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffaaff']
+            goodPts.map((pt, i) => {
+                const size = 20 - i * 3;
+                c.beginPath();
+                c.strokeStyle = colors[i];
+                c.rect(pt.x - (size / 2), pt.y - (size / 2), size, size);
+                c.stroke();
+            })
+            c.restore();
+        }
+    }
+
+}
+
 export function postRender(c, opts) {
     const dspInfo = opts.core.uiDspInfo;
     drawCellPointsCnv(c, dspInfo);
+    showCannonHolder(c, dspInfo);
 }

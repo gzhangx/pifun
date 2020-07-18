@@ -96,12 +96,19 @@ export function createCannon(opt, pos) {
 export function showCannonHolder(opt, { x, y }) {
     const rrr = queryCannonPos(opt, { x, y });
     if (!rrr) return;
-    const { c, createdEngine, allBodies } = opt;
+    const { c, } = opt;
     const { p1, p2 } = rrr.queryInfo.edge;
     const projPt = rrr.projPt; //getProjectionPoint(p1, p2, { x, y });
     if (projPt) {
         if (projPt.inRange)
-        {            
+        {
+            return {
+                cannonInfo: rrr,
+                x,
+                y,
+                w,
+                h,
+            }
             c.save();
             c.strokeStyle = '#0000ff';
             c.strokeWeight = 8;
