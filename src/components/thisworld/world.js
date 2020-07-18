@@ -4,7 +4,6 @@ import SimpleRect from '../objs/SimpleRect';
 import { initWorld, getMouse } from './worldConstructor';
 
 import { showCannonHolder, createCannon } from '../objs/Cannon';
-import { Vector, Body, Bounds, Mouse } from "matter-js";
 import { postRender } from './unitui';
 
 //export const allBodies = [];
@@ -82,7 +81,11 @@ function run(core, props) {
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const now = new Date();
     const { Body, engine, removeFromWorld, rayQuery, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
-    const { getDragCellPoints, makeCell, removeBadBodies, worldOperations } = core.worldCon;
+    const { getDragCellPoints, makeCell, worldOperations,
+        doSelect,
+        showSelect,
+        doTranslate,
+    } = core.worldCon;
     //removeBadBodies();
     //processCollisions(core);
     worldOperations();
@@ -101,21 +104,14 @@ function run(core, props) {
         if (key === 'c') screenOff.y+=10;
         if (key === 'v') screenOff.y -= 10;
         core.inputs.loopKey = '';
-        doTranslate({
-            render: core.render, mouse: engine.mouse, translate: screenOff,
-            world: engine.world,
-        });
+        doTranslate(screenOff);
     }
     //if (core.inputs.curBuildType === 'wall') 
     {        
         if (isSelect) {
-            doSelect({
-                core,
-                mouseConstraint,
-                removeFromWorld,
-            });
+            doSelect();
         }
-        core.uiDspInfo.selectInfo = showSelect({ core, isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
+        core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side});
         if (isCannonMode && mouse.state === 'dragged') {
             core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
@@ -223,198 +219,7 @@ function run(core, props) {
     
 }
 
-function doSelect({ 
-    core,
-    mouseConstraint,
-    removeFromWorld,
-}) {
-    const key = core.inputs.loopKey;
-    if (!core.selectObj.cur) {
-        if (mouseConstraint.body) {
-            core.selectObj.curBase = mouseConstraint.body;
-            core.selectObj.cur = mouseConstraint.body;
-            core.selectObj.curInd = -1;
-            core.selectObj.curType = 'selbody';
-        }
-    } else {        
-        const body = core.selectObj.curBase;
-        if (key === 'a') {
-            const curInd = core.selectObj.curInd + 1;
-            if (!body.ggConstraints || curInd >= body.ggConstraints.length) {                
-                core.selectObj.curBase = mouseConstraint.body;
-                core.selectObj.cur = mouseConstraint.body;
-                core.selectObj.curInd = -1;
-                core.selectObj.curType = 'selbody';
-            } else {
-                core.selectObj.curInd = curInd;
-                core.selectObj.cur = body.ggConstraints[curInd];
-                core.selectObj.curType = 'constraint';
-            }
-        }
-    }
 
-    const sel = core.selectObj.cur;
-    if (sel && (sel.bodyA || sel.bodyB)) {
-        if (key == '1') {
-            sel.length++;
-        } else if (key == '2'){
-            if (sel.length > 0) sel.length--;
-        }
-    }
-
-    const body = core.selectObj.cur;
-    if (body && core.inputs.loopKey === 'Delete') {
-        const canDel1 = body.ggInfo && body.ggInfo.player !== 'groundPerm';
-        const isCons = body.bodyA || body.bodyB;
-        if (canDel1 || isCons) {
-            removeFromWorld(body);
-        }
-        if (mouseConstraint.body === body) {
-            mouseConstraint.body = null;
-        }
-        core.selectObj.cur = null;
-        core.selectObj.curInd = -1;
-        core.inputs.curKey = '';
-    }
-}
-
-function showSelect({
-    core,
-    isSelect,    
-    mouse,
-    key,
-    side,
-}) {
-    if (!isSelect) return;
-    const body = core.selectObj.cur;
-    if (!body) return;
-    const selectInfo = {};
-
-    if (core.selectObj.curType === 'selbody') {
-        selectInfo.bodyPos = body.position;
-    } else {
-        const constraint = body;
-        const bodyA = constraint.bodyA,
-            bodyB = constraint.bodyB;
-
-        let start, end;
-
-        if (bodyA) {
-            start = Vector.add(bodyA.position, constraint.pointA);
-        } else {
-            start = constraint.pointA;
-        }
-            
-        if (bodyB) {
-            end = Vector.add(bodyB.position, constraint.pointB);
-        } else {
-            end = constraint.pointB;
-        }
-
-        selectInfo.constraint = {
-            start,
-            end,
-        };
-    }
-
-    if (mouse.cur) {
-        const ggInfo = body.ggInfo;
-        if (ggInfo && ggInfo.label === 'Cannon') {
-            const part = body.parts[0];
-            const p1 = part.vertices[ggInfo.dir[0]];
-            const p2 = part.vertices[ggInfo.dir[1]];
-            const v = Vector.sub(p2, p1);
-            const deg = Math.atan2(v.y, v.x);
-            const limitGrad = 15/180* Math.PI;
-            
-            const bpx = body.position.x;
-            const bpy = body.position.y;
-            const len = 100;            
-            const dovn = (deg, len) => {
-                const x = Math.cos(deg) * len;
-                const y = Math.sin(deg) * len;
-                const to = {
-                    x: x + bpx,
-                    y: y+ bpy,
-                }
-                return to;
-            }
-            const degl1 = deg + limitGrad;
-            const degl2 = deg - limitGrad;            
-            const to2 = dovn(degl1, len);
-            const to1 = dovn(degl2, len);
-            const diry = mouse.cur.y - bpy;
-            const dirx = mouse.cur.x - bpx;
-            const mdeg = Math.atan2(diry, dirx);
-            //setCurDebugText(`dirxy=${dirx.toFixed(0)} ${diry.toFixed(0)}`);
-            if (mdeg >= degl2 && mdeg <= degl1)
-            {
-                //dovn(mdeg, len);
-                if (key === 'z') {
-                    const ball = new SimpleCircle({
-                        x: bpx,
-                        y: bpy,
-                        r: 10,
-                        label: 'fireball',
-                        opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
-                        ggOpts: { label: 'fireball', time: new Date(), side },
-                    }, core.createdEngine);
-                    const bbody = ball.body;
-                    //bbody.label = 'fireball';
-                    const forceMagnitude = bbody.mass * 0.05;
-                    {
-                        Body.applyForce(bbody, bbody.position, {
-                            x: forceMagnitude * dirx * 0.01,
-                            y: forceMagnitude * diry * 0.01,
-                        });
-                    }
-                }
-                const to = {
-                    x: dirx + bpx,
-                    y: diry + bpy,
-                }
-                selectInfo.cannonDir = {
-                    bpx,
-                    bpy,
-                    to,
-                }
-            }
-
-            selectInfo.cannonCone = {
-                bpx,
-                bpy,
-                to1,
-                len,
-                degl2, degl1,
-            }
-            
-        }
-    }
-    return selectInfo;
-}
-
-
-function doTranslate({ render, mouse, translate, world }) {    
-
-    // prevent the view moving outside the world bounds
-    if (render.bounds.min.x + translate.x < world.bounds.min.x)
-        translate.x = world.bounds.min.x - render.bounds.min.x;
-
-    if (render.bounds.max.x + translate.x > world.bounds.max.x)
-        translate.x = world.bounds.max.x - render.bounds.max.x;
-
-    if (render.bounds.min.y + translate.y < world.bounds.min.y)
-        translate.y = world.bounds.min.y - render.bounds.min.y;
-
-    if (render.bounds.max.y + translate.y > world.bounds.max.y)
-        translate.y = world.bounds.max.y - render.bounds.max.y;
-
-    // move the view
-    Bounds.translate(render.bounds, translate);
-
-    // we must update the mouse too
-    Mouse.setOffset(mouse, render.bounds.min);
-}
 function createWorld(core) {
 
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0    
