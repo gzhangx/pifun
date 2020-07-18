@@ -80,6 +80,10 @@ export const core = {
         cur: null,
         curIndex: -1,
         curType: '',
+    },
+
+    uiDspInfo: {
+        wallPts: [],
     }
 };
 

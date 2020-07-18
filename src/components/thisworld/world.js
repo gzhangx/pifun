@@ -4,11 +4,10 @@ import SimpleRect from '../objs/SimpleRect';
 import { core } from './consts';
 import { initWorld, getMouse } from './worldConstructor';
 
-import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { getDispAng, PId2, createEngine } from '../platform/engine';
-import { Constraint } from 'matter-js';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
+import { postRender } from './unitui';
 
 //export const allBodies = [];
 
@@ -48,11 +47,21 @@ function doWallSketch(fromPt, cur) {
 const dbgfmtPt = (p, fixed = 0) => p ? `(${p.x.toFixed(fixed)}/${p.y.toFixed(0)})` : 'NA';
 const fmt2Int = p => parseInt(p);
 export default  {
-    WIDTH,
-    HEIGHT,
+    //WIDTH,
+    //HEIGHT,
     core,
     setup: (canvas, props) => {
-        initWorld(core, { canvas, run, props });
+        initWorld(core, {
+            canvas, run, props,
+            renderOpts: {
+                showAxes: true,
+                hasBounds: true,
+                width: WIDTH,
+                height: HEIGHT,
+                postRender,
+                core,
+            },
+        });
         createWorld();
     },    
 };
@@ -118,52 +127,6 @@ function run(props) {
         if (!mouse.pressLocation) return;
         if (!mouse.cur) return;
 
-
-        const drawCellPointsCnv = connects => {
-            const p = core.render.context;
-            connects.reduce((acc, c) => {
-                const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
-                    p.save();
-                    p.translate(rr.x, rr.y);
-                    p.rotate(getDispAng(rr.angle || 0));
-                    //p.stroke(stroke);
-                    //p.strokeWeight(2);
-                    //p.fill(fill);
-                    p.fillStyle = fill;
-                    p.fillRect(-(rr.w / 2), -(rr.h / 2), rr.w, rr.h);
-                    p.restore();
-                };
-
-                const chkshow = a => {
-                    if (acc[a.id]) return;
-                    acc[a.id] = a;
-                    showRect(a);
-                }
-                const { a, b } = c;
-                chkshow(a);
-                chkshow(b);
-
-                const { pointA, pointB } = c;
-                p.save();
-                //p.stroke('#00ff00');
-                //p.strokeWeight(2);
-                const xa = pointA.x + a.x;
-                const ya = pointA.y + a.y;
-                const xb = pointB.x + b.x;
-                const yb = pointB.y + b.y;
-                //p.line(xa, ya, xb, yb);
-                showRect(Object.assign({}, a, { w: 20, h: 20 }), '#223344', '#0000ff');
-                //showRect({ x: a.x + pointA.x, y: a.y + pointA.y, w: 10, h: 10 }, '#223344', '#00ff00');
-                //showRect({ x: b.x + pointB.x + 10, y: b.y + pointB.y, w: 10, h: 10 }, '#223344', '#ff0000');
-                //setCurDebugText(`debugremove ===> ${dbgfmtPt(mouse.cur)} ax=${dbgfmtPt(a)} da=${dbgfmtPt(pointA)} bx is ${dbgfmtPt(b)} db=da=${dbgfmtPt(pointB)}`);
-                //p.line(xa, ya, xb, yb);
-
-                p.restore();
-                return acc;
-            }, {});
-        }
-
-
         if (mouse.state === 'dragged') {
             if (isFireMode || isConnection) {
                 
@@ -194,8 +157,9 @@ function run(props) {
                 const endPoints = doWallSketch(mouse.pressLocation, mouse.cur);
                 if (!endPoints.ok || !endPoints.end) return;
 
-                const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur,endPoints);
-                drawCellPointsCnv(wallPts);
+                const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur, endPoints);
+                core.uiDspInfo.wallPts = wallPts;
+                //drawCellPointsCnv(wallPts);
             }            
 
         } else if (mouse.state === 'released') {
@@ -247,7 +211,8 @@ function run(props) {
                 if (!endPoints.ok || !endPoints.end) return;
                 const wallPts = getDragCellPoints(mouseFrom, mouseCur,endPoints);                
                 if (wallPts && wallPts.length) {                    
-                    drawCellPointsCnv(wallPts);
+                    core.uiDspInfo.wallPts = wallPts;
+                    //drawCellPointsCnv(wallPts);
                     const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
                     allWalls.forEach(w => w.health = WALLHEALTH);
                     return allWalls;

@@ -299,7 +299,7 @@ export const processCollisions = core => {
 };
 
 
-export const initWorld = (core, { canvas, run, props }) => {
+export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     initCats(core);   
     const {
         WIDTH,
@@ -353,11 +353,12 @@ export const initWorld = (core, { canvas, run, props }) => {
         core,
         canvas,
         run: () => run(props),
-        options: {
+        options: renderOpts || {
             showAxes: true,
             hasBounds: true,
             width: WIDTH,
             height: HEIGHT,
+            postRender: (ctx, opt) => { },
         }
     })
     //core.groupGroup = group;

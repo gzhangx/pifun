@@ -214,6 +214,7 @@ export const createRender = (opt) => {
 
         render.constraints(constraints, context);
 
+        options.postRender(context, options);
         if (options.hasBounds) {
             // revert view transforms
             render.endViewTransform(render);
