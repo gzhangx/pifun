@@ -1,4 +1,4 @@
-export const WIDTH = 600;
+export const WIDTH = 800;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
 const BREAKAWAYSPEED = 10;

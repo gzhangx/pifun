@@ -2,7 +2,7 @@
 // Better than original p5js impl
 // must set opt.core, opt.canvas and opt.mouse
 
-
+import { Vector, Body, Bounds, Mouse } from "matter-js";
 let _requestAnimationFrame,
     _cancelAnimationFrame;
 
@@ -16,6 +16,8 @@ export const createRender = (opt) => {
     const options = opt.options || {};
     canvas.width = options.width || canvas.width;
     canvas.height = options.height || canvas.height;
+    options.width = canvas.width;
+    options.height = canvas.height;
     const render =
     {
         mouse: opt.mouse,
@@ -25,6 +27,44 @@ export const createRender = (opt) => {
         options,
         textures: {},
     };
+
+    render.bounds = opt.bounds || {
+        min: {
+            x: 0,
+            y: 0
+        },
+        max: {
+            x: canvas.width,
+            y: canvas.height
+        }
+    };
+
+    function _getPixelRatio(canvas) {
+        var context = canvas.getContext('2d'),
+            devicePixelRatio = window.devicePixelRatio || 1,
+            backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio
+                || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio
+                || context.backingStorePixelRatio || 1;
+
+        return devicePixelRatio / backingStorePixelRatio;
+    };
+    function setPixelRatio(pixelRatio) {        
+        if (pixelRatio === 'auto') {
+            pixelRatio = _getPixelRatio(canvas);
+        }
+
+        options.pixelRatio = pixelRatio;
+        canvas.setAttribute('data-pixel-ratio', pixelRatio);
+        canvas.width = options.width * pixelRatio;
+        canvas.height = options.height * pixelRatio;
+        canvas.style.width = options.width + 'px';
+        canvas.style.height = options.height + 'px';
+    };
+
+    if (render.options.pixelRatio !== 1) {
+        setPixelRatio(options.pixelRatio || 1);
+    }
+
     if (typeof window !== 'undefined') {
         _requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame
             || window.mozRequestAnimationFrame || window.msRequestAnimationFrame
@@ -42,6 +82,34 @@ export const createRender = (opt) => {
         render.canvas.style.backgroundSize = "contain";
         render.currentBackground = background;
     }
+
+    /**
+    * Applies viewport transforms based on `render.bounds` to a render context.
+    * @method startViewTransform
+    * @param {render} render
+    */
+    render.startViewTransform = function () {
+        var boundsWidth = render.bounds.max.x - render.bounds.min.x,
+            boundsHeight = render.bounds.max.y - render.bounds.min.y,
+            boundsScaleX = boundsWidth / render.options.width,
+            boundsScaleY = boundsHeight / render.options.height;
+
+        render.context.setTransform(
+            render.options.pixelRatio / boundsScaleX, 0, 0,
+            render.options.pixelRatio / boundsScaleY, 0, 0
+        );
+
+        render.context.translate(-render.bounds.min.x, -render.bounds.min.y);
+    };
+
+    /**
+     * Resets all transforms on the render context.
+     * @method endViewTransform
+     * @param {render} render
+     */
+    render.endViewTransform = function () {
+        render.context.setTransform(render.options.pixelRatio, 0, 0, render.options.pixelRatio, 0, 0);
+    };
     
     render.run = function () {
         (function loop(time) {

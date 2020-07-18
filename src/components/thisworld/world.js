@@ -6,9 +6,9 @@ import { initWorld, getMouse } from './worldConstructor';
 
 import { createRender } from './ui';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
-import { getDispAng, PId2 } from '../platform/engine';
+import { getDispAng, PId2, createEngine } from '../platform/engine';
 import { Constraint } from 'matter-js';
-import { Vector, Body} from "matter-js";
+import { Vector, Body, Bounds, Mouse } from "matter-js";
 
 //export const allBodies = [];
 
@@ -57,6 +57,10 @@ export default  {
     },    
 };
 
+const screenOff = {
+    x: 0,
+    y: 0,
+}
 function run(props) {
     //const { props } = opt;
     const { curBuildType } = core.inputs;
@@ -86,7 +90,16 @@ function run(props) {
     setCurDebugText("key=" + core.inputs.lastKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
     
 
-
+    
+    if (key === 'c' || key === 'v') {
+        if (key === 'c') screenOff.y+=10;
+        if (key === 'v') screenOff.y -= 10;
+        core.inputs.loopKey = '';
+        doTranslate({
+            render: core.render, mouse: engine.mouse, translate: screenOff,
+            world: engine.world,
+        });
+    }
     //if (core.inputs.curBuildType === 'wall') 
     {        
         if (isSelect) {
@@ -425,6 +438,28 @@ function showSelect({
     }
 }
 
+
+function doTranslate({ render, mouse, translate, world }) {    
+
+    // prevent the view moving outside the world bounds
+    if (render.bounds.min.x + translate.x < world.bounds.min.x)
+        translate.x = world.bounds.min.x - render.bounds.min.x;
+
+    if (render.bounds.max.x + translate.x > world.bounds.max.x)
+        translate.x = world.bounds.max.x - render.bounds.max.x;
+
+    if (render.bounds.min.y + translate.y < world.bounds.min.y)
+        translate.y = world.bounds.min.y - render.bounds.min.y;
+
+    if (render.bounds.max.y + translate.y > world.bounds.max.y)
+        translate.y = world.bounds.max.y - render.bounds.max.y;
+
+    // move the view
+    Bounds.translate(render.bounds, translate);
+
+    // we must update the mouse too
+    Mouse.setOffset(mouse, render.bounds.min);
+}
 function createWorld() {
 
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0    

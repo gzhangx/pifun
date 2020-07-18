@@ -355,6 +355,7 @@ export const initWorld = (core, { canvas, run, props }) => {
         run: () => run(props),
         options: {
             showAxes: true,
+            hasBounds: true,
             width: WIDTH,
             height: HEIGHT,
         }
