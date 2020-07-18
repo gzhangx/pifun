@@ -2,8 +2,7 @@ import React, {useState } from 'react';
 import './App.css';
 import Scene from './Game'
 import keyHandler from "./components/platform/keyHandler";
-import opt from './components/thisworld/world';
-import { core } from './components/thisworld/consts';
+import { core } from './core';
 function App() {
   const [curKey, setCurKey] = useState();
   const [curSide, setCurSide] = useState('side1');
@@ -13,27 +12,27 @@ function App() {
   const [curCollisionEnd, setCurCollisionEnd] = useState();
   const [curDebugText, setCurDebugText] = useState('');
   keyHandler(key=>{    
-    opt.core.inputs.curKey = key;
+    core.inputs.curKey = key;
   });
   const stBuildType = t => {
     setCurBuildType(t);
-    opt.core.inputs.curBuildType = t;
+    core.inputs.curBuildType = t;
   };
   const stCurSide = e => {
     const side = e.target.value;
     setCurSide(side);
-    opt.core.inputs.curSide = side;
+    core.inputs.curSide = side;
   };
   return (
     <div className="App" style={{display: 'inline-block', width:1000}}>
       <div style={{ left: 0, top: 0, float: 'left', display: 'inline-block' }}>        
         <div id='p5-parent'></div>
-        <Scene inputs = {{
+        <Scene inputs={{
           curKey, setCurKey, curBuildType, setCurBuildType,
-            setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
+          setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
           setCurDebugText,
           curSide,
-          }}/>
+        }} core={core} />
       </div>
       <div style={{left: 800}}>
         <table>

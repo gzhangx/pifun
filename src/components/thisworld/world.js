@@ -1,25 +1,16 @@
 import SimpleCircle from '../objs/SimpleCircle';
 import SimpleRect from '../objs/SimpleRect';
 
-import { core } from './consts';
 import { initWorld, getMouse } from './worldConstructor';
 
 import { showCannonHolder, createCannon } from '../objs/Cannon';
-import { getDispAng, PId2, createEngine } from '../platform/engine';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
 import { postRender } from './unitui';
 
 //export const allBodies = [];
 
-const { WIDTH,
-    HEIGHT,
-    wallWidth,
-    halfWallWidth,
-    WALLHEALTH,
-    BREAKAWAYSPEED,
-    BREAKAWAYANGSPEED, } = core.consts;
-
-function doWallSketch(fromPt, cur) {
+function doWallSketch(core, fromPt, cur) {
+    const { HEIGHT, wallWidth, WIDTH } = core.consts;
     const {rayQueryWithPoints} = core.createdEngine;
     const startPt = rayQueryWithPoints({x:fromPt.x, y:fromPt.y},{x: fromPt.x, y: HEIGHT});
     startPt.forEach(r=>{                        
@@ -49,8 +40,8 @@ const fmt2Int = p => parseInt(p);
 export default  {
     //WIDTH,
     //HEIGHT,
-    core,
-    setup: (canvas, props) => {
+    setup: (canvas, props, core) => {
+        const { WIDTH, HEIGHT } = core.consts;
         initWorld(core, {
             canvas, run, props,
             renderOpts: {
@@ -62,7 +53,8 @@ export default  {
                 core,
             },
         });
-        createWorld();
+        createWorld(core);
+        return core;
     },    
 };
 
@@ -70,7 +62,12 @@ const screenOff = {
     x: 0,
     y: 0,
 }
-function run(props) {
+function run(core, props) {
+    const { WIDTH,
+        HEIGHT,
+        wallWidth,
+        WALLHEALTH,
+    } = core.consts;
     //const { props } = opt;
     const { curBuildType } = core.inputs;
     const { setCurDebugText } = props.inputs;
@@ -113,13 +110,14 @@ function run(props) {
     {        
         if (isSelect) {
             doSelect({
+                core,
                 mouseConstraint,
                 removeFromWorld,
             });
         }
-        showSelect({ isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
+        showSelect({ core, isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
         if (isCannonMode && mouse.state === 'dragged') {
-            showCannonHolder({ c, createdEngine: core.createdEngine, allBodies, setCurDebugText }, {
+            showCannonHolder({ c, core, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
                 y: mouse.cur.y,
             })
@@ -154,7 +152,7 @@ function run(props) {
                 });
 
                 //props.inputs[`setCurCollisionStart`](`${dists} `);                    
-                const endPoints = doWallSketch(mouse.pressLocation, mouse.cur);
+                const endPoints = doWallSketch(core, mouse.pressLocation, mouse.cur);
                 if (!endPoints.ok || !endPoints.end) return;
 
                 const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur, endPoints);
@@ -169,7 +167,7 @@ function run(props) {
             core.states.mouse.pressLocation = null;
             
             if (isCannonMode) {
-                createCannon({ createdEngine: core.createdEngine, allBodies, side }, mouseCur);
+                createCannon({ core, allBodies, side }, mouseCur);
             }
             if (isConnection) {
                 const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
@@ -207,7 +205,7 @@ function run(props) {
             }
 
             if (isWallMode) {
-                const endPoints = doWallSketch(mouseFrom, mouseCur);
+                const endPoints = doWallSketch(core, mouseFrom, mouseCur);
                 if (!endPoints.ok || !endPoints.end) return;
                 const wallPts = getDragCellPoints(mouseFrom, mouseCur,endPoints);                
                 if (wallPts && wallPts.length) {                    
@@ -226,6 +224,7 @@ function run(props) {
 }
 
 function doSelect({ 
+    core,
     mouseConstraint,
     removeFromWorld,
 }) {
@@ -280,6 +279,7 @@ function doSelect({
 }
 
 function showSelect({
+    core,
     isSelect,
     removeFromWorld,
     mouseConstraint,
@@ -425,11 +425,12 @@ function doTranslate({ render, mouse, translate, world }) {
     // we must update the mouse too
     Mouse.setOffset(mouse, render.bounds.min);
 }
-function createWorld() {
+function createWorld(core) {
 
     //(categoryA & maskB) !== 0 and (categoryB & maskA) !== 0    
     //const { addToWorld, Bodies, Body } = core.createdEngine;
-    const { worldCats, createdEngine } = core;    
+    const { worldCats, createdEngine, consts } = core;
+    const { WIDTH, HEIGHT} = consts;
     
     new SimpleCircle({
         x: 210,

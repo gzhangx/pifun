@@ -1,18 +1,11 @@
 import { Bodies, Vector } from "matter-js";
-import { core, WIDTH } from '../thisworld/consts';
+//import { core, WIDTH } from '../thisworld/consts';
 import SimpleRect from './SimpleRect';
 import { getProjectionPoint, rayQueryOnOneBody, stickRect2Body, getDispAng, createEngine } from "../platform/engine";
 const w = 100;
 const h = 20;
 const w2 = w / 2;
 const h2 = h / 2;
-
-export function createCannonOld(engine, { x, y, opts, ggOpts }) {    
-    const { World, world, Bodies } = engine;
-    const body = Bodies.rectangle(x, y, w, h, opts);    
-    World.add(world, body);
-    engine.setBodyOuterParent(body, Object.assign({}, ggOpts));    
-}
 
 
 function getCloserBody(from, bodies) {
@@ -33,12 +26,12 @@ function getCloserBody(from, bodies) {
         dist: 0,
     }).body;
 }
-function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, from) {
+function queryCannonPos({ core, allBodies, setCurDebugText }, from) {
+    const { createdEngine, consts } = core;
+    const { WIDTH, HEIGHT } = consts;
     const { x, y } = from;
     const { Bounds, Bodies, Matter, rayQueryWithPoints } = createdEngine;
-    const {
-        HEIGHT,
-    } = core.consts;
+    
     const centerPtBtm = rayQueryWithPoints(from, { x, y: HEIGHT })[0];
     const centerPtTop = rayQueryWithPoints(from, { x, y: 0 })[0];
     const centerPtRight = rayQueryWithPoints(from, { x: WIDTH, y })[0];
@@ -74,9 +67,11 @@ function queryCannonPos({ createdEngine, allBodies, setCurDebugText }, from) {
 export function createCannon(opt, pos) {
     const rrr = queryCannonPos(opt, pos);
     if (!rrr) return;
+    const core = opt.core;
     const { newC, fromEnd1, fromEnd2, goodPts } = rrr; //{ x: projPt.x + (cr * vc.x), y: projPt.y + (cr * vc.y),}
     const angle = newC.angle;
-    const { createdEngine, side } = opt;
+    const { side } = opt;
+    const { createdEngine } = core;
     const rc = new SimpleRect({
         x: newC.x,
         y: newC.y,

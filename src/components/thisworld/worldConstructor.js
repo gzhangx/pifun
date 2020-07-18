@@ -352,7 +352,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     core.render = createRender({
         core,
         canvas,
-        run: () => run(props),
+        run: () => run(core, props),
         options: renderOpts || {
             showAxes: true,
             hasBounds: true,

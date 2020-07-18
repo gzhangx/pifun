@@ -1,5 +1,6 @@
 import React from "react";
 
+import { core } from './core';
 import opt from './components/thisworld/world';
 class Scene extends React.Component {
   constructor(props) {
@@ -12,7 +13,7 @@ class Scene extends React.Component {
   
 
   componentDidMount() {    
-    opt.setup(this.drawRef.current, this.props);
+    opt.setup(this.drawRef.current, this.props, core);
   }
 
   render() {
