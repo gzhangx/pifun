@@ -85,6 +85,7 @@ function run(core, props) {
         doSelect,
         showSelect,
         doTranslate,
+        doFireBall,
     } = core.worldCon;
     //removeBadBodies();
     //processCollisions(core);
@@ -123,30 +124,14 @@ function run(core, props) {
 
         if (mouse.state === 'dragged') {
             if (isFireMode || isConnection) {
-                
-                c.lineWidth = 5;
-                c.strokeStyle = 'red';
-                core.render.line(mouse.pressLocation, mouse.cur);
-                //p.stroke(128);
-                //p.strokeWeight(2);
-                //p.line(mouse.pressLocation.x, mouse.pressLocation.y, mouse.cur.x, mouse.cur.y);
+                core.uiDspInfo.fireDirInfo = {
+                    from: getMouse(mouse.pressLocation),
+                    to: getMouse(mouse.cur),
+                };
             }
 
             if (isWallMode) {
                 const res = rayQueryWithPoints({ x: mouse.pressLocation.x, y: mouse.pressLocation.y }, { x: mouse.cur.x, y: mouse.cur.y });
-                res.forEach(r => {
-                    //props.inputs[`setCurCollisionStart`](`${r.x.toFixed(2)}/${r.y.toFixed(2)} `);
-                    //p.push();
-                    //p.translate(r.x, r.y);
-                    //p.text(r.t.toFixed(2), 0,0);        
-                    //p.rectMode(p.CENTER);
-                    //p.stroke('#ff0000');
-                    //p.strokeWeight(2);
-                    //p.fill('#0000ff');                    
-                    //p.rect(2,2, 4, 4);
-                    //p.pop();                        
-                });
-
                 //props.inputs[`setCurCollisionStart`](`${dists} `);                    
                 const endPoints = doWallSketch(core, mouse.pressLocation, mouse.cur);
                 if (!endPoints.ok || !endPoints.end) return;
@@ -174,30 +159,7 @@ function run(core, props) {
             }
             if (isFireMode) {
                 if (!mouseFrom) return;
-                const x1 = mouseCur.x;
-                const y1 = mouseCur.y;
-                const x2 = mouseFrom.x;
-                const y2 = mouseFrom.y;                
-                const ball = new SimpleCircle({
-                    x: x2,
-                    y: y2,
-                    r: 10,
-                    label: 'fireball',
-                    opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
-                    ggOpts: { label: 'fireball', time: new Date(), side},
-                }, core.createdEngine);
-                const bbody = ball.body;
-                bbody.label = 'fireball';
-                const forceMagnitude = bbody.mass * 0.05;
-                const xx = x1 - x2;
-                const yy = y1 - y2;
-                if (Math.abs(xx) + Math.abs(yy) > 0) {
-                    Body.applyForce(bbody, bbody.position, {
-                        x: forceMagnitude * xx * 0.01,
-                        y: forceMagnitude * yy * 0.01,
-                    });
-                }
-                return;
+                return doFireBall(mouseFrom, mouseCur, side);                
             }
 
             if (isWallMode) {

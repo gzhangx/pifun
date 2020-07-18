@@ -196,9 +196,23 @@ function showSelect(c, dspInfo) {
     }
 }
 
+function showFireLine(c, dspInfo) {
+    if (dspInfo.fireDirInfo) {
+        const { from, to } = dspInfo.fireDirInfo;
+        dspInfo.fireDirInfo = null;        
+        c.beginPath();
+        c.lineWidth = 5;
+        c.strokeStyle = 'red';
+        c.moveTo(from.x, from.y);
+        c.lineTo(to.x, to.y);
+        c.stroke();
+    }
+}
+
 export function postRender(c, opts) {
     const dspInfo = opts.core.uiDspInfo;
+    showFireLine(c, dspInfo);
     drawCellPointsCnv(c, dspInfo);
     showCannonHolder(c, dspInfo);
-    showSelect(c, dspInfo);
+    showSelect(c, dspInfo);    
 }

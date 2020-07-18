@@ -198,6 +198,7 @@ export const createConstructor = (core) => {
                 side,
             }),
         doTranslate: translate => doTranslate(core, translate),
+        doFireBall: (p1, p2, side) => doFireBall(core, p1, p2, side),
         worldOperations: () => {
             const key = core.inputs.curKey;
             core.inputs.loopKey = key;
@@ -485,7 +486,7 @@ function showSelect({
     //mouse,
     key,
     side,
-}) {    
+}) {
     if (!isSelect) return;
     const body = core.selectObj.cur;
     if (!body) return;
@@ -552,23 +553,13 @@ function showSelect({
             if (mdeg >= degl2 && mdeg <= degl1) {
                 //dovn(mdeg, len);
                 if (key === 'z') {
-                    const ball = new SimpleCircle({
+                    doFireBall(core, {
                         x: bpx,
                         y: bpy,
-                        r: 10,
-                        label: 'fireball',
-                        opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
-                        ggOpts: { label: 'fireball', time: new Date(), side },
-                    }, core.createdEngine);
-                    const bbody = ball.body;
-                    //bbody.label = 'fireball';
-                    const forceMagnitude = bbody.mass * 0.05;
-                    {
-                        Body.applyForce(bbody, bbody.position, {
-                            x: forceMagnitude * dirx * 0.01,
-                            y: forceMagnitude * diry * 0.01,
-                        });
-                    }
+                    },
+                        mouse.cur,
+                        side,
+                    );                    
                 }
                 const to = {
                     x: dirx + bpx,
@@ -619,4 +610,30 @@ function doTranslate(core, translate) {
 
     // we must update the mouse too
     Mouse.setOffset(mouse, render.bounds.min);
+}
+
+function doFireBall(core, p2, p1, side) {
+    const x1 = p1.x;
+    const y1 = p1.y;
+    const x2 = p2.x;
+    const y2 = p2.y;
+    const ball = new SimpleCircle({
+        x: x2,
+        y: y2,
+        r: 10,
+        label: 'fireball',
+        opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
+        ggOpts: { label: 'fireball', time: new Date(), side },
+    }, core.createdEngine);
+    const bbody = ball.body;
+    bbody.label = 'fireball';
+    const forceMagnitude = bbody.mass * 0.05;
+    const xx = x1 - x2;
+    const yy = y1 - y2;
+    if (Math.abs(xx) + Math.abs(yy) > 0) {
+        Body.applyForce(bbody, bbody.position, {
+            x: forceMagnitude * xx * 0.01,
+            y: forceMagnitude * yy * 0.01,
+        });
+    }
 }
