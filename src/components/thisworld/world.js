@@ -115,7 +115,7 @@ function run(core, props) {
                 removeFromWorld,
             });
         }
-        showSelect({ core, isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
+        core.uiDspInfo.selectInfo = showSelect({ core, isSelect, removeFromWorld, mouseConstraint, setCurDebugText, mouse, key, side});
         if (isCannonMode && mouse.state === 'dragged') {
             core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
                 x: mouse.cur.x,
@@ -280,24 +280,18 @@ function doSelect({
 
 function showSelect({
     core,
-    isSelect,
-    removeFromWorld,
-    mouseConstraint,
+    isSelect,    
     mouse,
     key,
     side,
-    setCurDebugText,
 }) {
     if (!isSelect) return;
     const body = core.selectObj.cur;
     if (!body) return;
-    const c = core.render.context;
-    c.beginPath();
-    c.strokeStyle = '#00ff00';
-    c.strokeWeight = 10;
-    c.fillStyle = '#00ff00';
+    const selectInfo = {};
+
     if (core.selectObj.curType === 'selbody') {
-        c.fillRect(body.position.x - 5, body.position.y - 5, 10, 10)
+        selectInfo.bodyPos = body.position;
     } else {
         const constraint = body;
         const bodyA = constraint.bodyA,
@@ -317,11 +311,11 @@ function showSelect({
             end = constraint.pointB;
         }
 
-        c.moveTo(start.x, start.y);
-        c.lineTo(end.x + 5, end.y + 5);
-        c.lineWidth = 10;
+        selectInfo.constraint = {
+            start,
+            end,
+        };
     }
-    c.stroke();
 
     if (mouse.cur) {
         const ggInfo = body.ggInfo;
@@ -339,16 +333,10 @@ function showSelect({
             const dovn = (deg, len) => {
                 const x = Math.cos(deg) * len;
                 const y = Math.sin(deg) * len;
-                c.beginPath();
-                c.moveTo(bpx, bpy);
                 const to = {
                     x: x + bpx,
                     y: y+ bpy,
                 }
-                c.lineTo(to.x, to.y);
-                c.lineWidth = 3;
-                c.strokeStyle = "rgba(200, 0, 128, 0.2)";;
-                c.stroke();
                 return to;
             }
             const degl1 = deg + limitGrad;
@@ -381,26 +369,28 @@ function showSelect({
                         });
                     }
                 }
-                c.beginPath();
-                c.lineWidth = 3;
-                c.strokeStyle = "000";
-                c.moveTo(bpx, bpy);
-                c.lineTo(dirx + bpx, diry + bpy);
-                c.stroke();
+                const to = {
+                    x: dirx + bpx,
+                    y: diry + bpy,
+                }
+                selectInfo.cannonDir = {
+                    bpx,
+                    bpy,
+                    to,
+                }
             }
-            c.beginPath();
-            c.fillStyle = "rgba(255, 0, 128, 0.2)";
-            c.moveTo(bpx, bpy);
-            c.lineTo(to1.x ,to1.y);
-            c.arc(bpx, bpy, len, degl2, degl1)
-            c.lineTo(bpx, bpy);
-            c.fill();
-            c.stroke();
 
-
+            selectInfo.cannonCone = {
+                bpx,
+                bpy,
+                to1,
+                len,
+                degl2, degl1,
+            }
             
         }
     }
+    return selectInfo;
 }
 
 

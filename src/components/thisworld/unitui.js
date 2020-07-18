@@ -124,8 +124,81 @@ export function showCannonHolder(c, dspInfo) {
 
 }
 
+
+
+function showSelect(c, dspInfo) {
+    const selectInfo = dspInfo.selectInfo;
+    if (!selectInfo) return;        
+    dspInfo.selectInfo = null;
+    c.beginPath();
+    c.strokeStyle = '#00ff00';
+    c.strokeWeight = 10;
+    c.fillStyle = '#00ff00';
+    const bodyPos = selectInfo.bodyPos;
+    if (bodyPos) {
+        c.fillRect(bodyPos.x - 5, bodyPos.y - 5, 10, 10);
+    } else if (selectInfo.constraint){
+        const { start, end } = selectInfo.constraint;
+
+        c.moveTo(start.x, start.y);
+        c.lineTo(end.x + 5, end.y + 5);
+        c.lineWidth = 10;
+    }
+    c.stroke();
+
+    if (selectInfo.cannonCone) {
+        const {
+            bpx,
+            bpy,
+            to1,
+            len,
+            degl2, degl1,
+        } = selectInfo.cannonCone;
+        {            
+            const dovn = (deg, len) => {
+                const x = Math.cos(deg) * len;
+                const y = Math.sin(deg) * len;
+                c.beginPath();
+                c.moveTo(bpx, bpy);
+                const to = {
+                    x: x + bpx,
+                    y: y + bpy,
+                }
+                c.lineTo(to.x, to.y);
+                c.lineWidth = 3;
+                c.strokeStyle = "rgba(200, 0, 128, 0.2)";;
+                c.stroke();
+                return to;
+            }
+            
+            //setCurDebugText(`dirxy=${dirx.toFixed(0)} ${diry.toFixed(0)}`);
+            if (selectInfo.cannonDir) {                
+                
+                const {                    
+                    to,
+                } = selectInfo.cannonDir;
+                c.beginPath();
+                c.lineWidth = 3;
+                c.strokeStyle = "000";
+                c.moveTo(bpx, bpy);
+                c.lineTo(to.x, to.y);
+                c.stroke();
+            }
+            c.beginPath();
+            c.fillStyle = "rgba(255, 0, 128, 0.2)";
+            c.moveTo(bpx, bpy);
+            c.lineTo(to1.x, to1.y);
+            c.arc(bpx, bpy, len, degl2, degl1)
+            c.lineTo(bpx, bpy);
+            c.fill();
+            c.stroke();            
+        }
+    }
+}
+
 export function postRender(c, opts) {
     const dspInfo = opts.core.uiDspInfo;
     drawCellPointsCnv(c, dspInfo);
     showCannonHolder(c, dspInfo);
+    showSelect(c, dspInfo);
 }
