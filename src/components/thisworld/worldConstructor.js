@@ -84,7 +84,10 @@ export const createConstructor = (core) => {
             pointA: getConstraintOffset('-', bodies[0]),
             pointB: getConstraintOffset('-', bodies[2]),
         });
-        return connects;
+        return {
+            points,
+            connects,
+        }
     }
 
     const stiffness = .95;
@@ -201,6 +204,7 @@ export const createConstructor = (core) => {
             removeBadBodies();
             processCollisions(core);
         },
+        checkWallPoints,
     }
 }
 
@@ -628,4 +632,20 @@ function doFireBall(core, p2, p1, side) {
             y: forceMagnitude * yy * 0.01,
         });
     }
+}
+
+function checkWallPoints(wallPts) {
+    if (!wallPts) return null;
+    const { points } = wallPts;
+    if (!points) return null;
+    console.log(points);
+    const res = points.reduce(({ last, total }, pt) => {
+        const l = Vector.magnitude(Vector.sub(last, pt));
+        console.log(`calc ${last.x},${last.y} ${pt.x},${pt.y}`)
+        return {
+            last: pt,
+            total: total+l,
+        }
+    }, { last: points[3], total: 0 });
+    return res.total;
 }

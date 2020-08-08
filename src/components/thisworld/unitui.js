@@ -1,7 +1,8 @@
 import { getDispAng } from '../platform/engine';
 const drawCellPointsCnv = (p, dspInfo) => {
-    const connects = dspInfo.wallPts;
-    dspInfo.wallPts = [];
+    const { connects , points} = dspInfo.wallPts || {};
+    dspInfo.wallPts = { connects: [], points:[] };
+    if (!connects) return;
     connects.reduce((acc, c) => {
         const showRect = (rr, stroke = '#ff0000', fill = '#0000ff') => {
             p.save();

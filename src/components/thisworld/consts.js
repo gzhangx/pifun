@@ -27,7 +27,8 @@ export function createCore() {
                 state: '',
                 pressLocation: null,
                 cur: null,
-            }
+            },
+            lastGoodWallPts: null,
         },
         inputs: {
             curKey: '',

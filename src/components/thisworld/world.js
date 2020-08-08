@@ -6,6 +6,8 @@ import { initWorld, getMouse } from './worldConstructor';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { postRender } from './unitui';
 
+const MAX_WALL_WIDTH = 200;
+const MAX_WALL_HEIGHT = 200;
 //export const allBodies = [];
 
 function doWallSketch(core, fromPt, cur) {
@@ -81,6 +83,7 @@ function run(core, props) {
         showSelect,
         doTranslate,
         doFireBall,
+        checkWallPoints,
     } = core.worldCon;
     //removeBadBodies();
     //processCollisions(core);
@@ -132,7 +135,12 @@ function run(core, props) {
             if (!endPoints.ok || !endPoints.end) return;
 
             const wallPts = getDragCellPoints(mouse.pressLocation, mouse.cur, endPoints);
+            core.states.lastGoodWallPts = null;
             core.uiDspInfo.wallPts = wallPts;
+            const totalWallLen = checkWallPoints(wallPts);
+            if (totalWallLen !== null) {
+                setCurDebugText(`walllen=${totalWallLen}`);
+            }
             //drawCellPointsCnv(wallPts);
         }
 
@@ -161,10 +169,10 @@ function run(core, props) {
             const endPoints = doWallSketch(core, mouseFrom, mouseCur);
             if (!endPoints.ok || !endPoints.end) return;
             const wallPts = getDragCellPoints(mouseFrom, mouseCur, endPoints);
-            if (wallPts && wallPts.length) {
+            if (wallPts && wallPts.connects && wallPts.connects.length) {
                 core.uiDspInfo.wallPts = wallPts;
                 //drawCellPointsCnv(wallPts);
-                const allWalls = makeCell(wallPts, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
+                const allWalls = makeCell(wallPts.connects, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }
