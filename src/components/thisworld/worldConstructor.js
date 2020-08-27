@@ -103,12 +103,19 @@ export const createConstructor = (core) => {
         addCstToBody(cst.bodyA, cst);
         addCstToBody(cst.bodyB, cst);
         //core.constraints.push(cst);
-    };
-    const makeCell = (wallPts, downConns, collisionFilter) => {
+    };    
+    /**
+     * 
+     * @param {object} wallPts Array of {a,b, pointA, pointB}
+     * @param {*} downConns end,start {x, body.position}
+     * @param {*} collisionFilter 
+     * @param {*} playerInfo {side, player}
+     */
+    const makeCell = (wallPts, downConns, collisionFilter, playerInfo) => {
         const makeRect = (rr, label) => new SimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
             opts: { label, angle: getDispAng(rr.angle), collisionFilter, },
-            ggOpts: {label, health: 10, w: rr.w, h: rr.h},
+            ggOpts: {label,health: 10,w: rr.w,h: rr.h, playerInfo},
         }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
             const { a, b, pointA, pointB } = pt;

@@ -172,7 +172,11 @@ function run(core, props) {
             if (wallPts && wallPts.connects && wallPts.connects.length) {
                 core.uiDspInfo.wallPts = wallPts;
                 //drawCellPointsCnv(wallPts);
-                const allWalls = makeCell(wallPts.connects, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter());
+                const allWalls=makeCell(wallPts.connects,endPoints,core.worldCats.getCat(side).structure.getCollisionFilter(),
+                    {
+                        side,
+                        player: side + 1,
+                });
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }
