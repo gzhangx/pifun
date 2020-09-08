@@ -19,7 +19,7 @@ function App() {
     core.inputs.curBuildType = t;
   };
   const stCurSide = e => {
-    const side = e.target.value;
+    const side = parseInt(e.target.value);
     setCurSide(side);
     core.inputs.curSide = side;
   };
@@ -48,8 +48,8 @@ function App() {
             <td>Action</td><td>{curBuildType}</td>
           </tr>
           <tr>
-            <td>Side</td><td><input type="radio" value="side1" checked={curSide === 'side1'} onChange={stCurSide}></input></td>
-            <td><input type="radio" value="side2" checked={curSide === 'side2'} onChange={stCurSide}></input></td>
+            <td>Side</td><td><input type="radio" value="1" checked={curSide === 1} onChange={stCurSide}></input></td>
+            <td><input type="radio" value="2" checked={curSide === 2} onChange={stCurSide}></input></td>
           </tr>
           <tr>
             <td>Col Start</td><td>{curCollisionStart}</td>

@@ -1,4 +1,4 @@
-export const WIDTH = 800;
+export const WIDTH = 1800;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
 const BREAKAWAYSPEED = 10;
@@ -32,7 +32,7 @@ export function createCore() {
         },
         inputs: {
             curKey: '',
-            curSide: 'side1',
+            curSide: 1,
             curBuildType: 'wall',
         },
         //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
