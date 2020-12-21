@@ -1,8 +1,10 @@
-import React, {useState } from 'react';
+import React, {useState, useEffect } from 'react';
 import './App.css';
 import Scene from './Game'
 import keyHandler from "./components/platform/keyHandler";
 import { core } from './core';
+import { initWS } from './components/thisworld/socket';
+
 function App() {
   const [curKey, setCurKey] = useState();
   const [curSide, setCurSide] = useState('side1');
@@ -11,6 +13,9 @@ function App() {
   const [curCollisionActive, setCurCollisionActive] = useState();
   const [curCollisionEnd, setCurCollisionEnd] = useState();
   const [curDebugText, setCurDebugText] = useState('');
+  useEffect(() => {
+    initWS();
+  },[]);
   keyHandler(key=>{    
     core.inputs.curKey = key;
   });
