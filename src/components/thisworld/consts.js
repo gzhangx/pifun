@@ -1,3 +1,4 @@
+import {utils} from './util';
 export const WIDTH = 1800;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
@@ -7,6 +8,7 @@ const wallWidth = 20;
 const halfWallWidth = wallWidth / 10;
 
 export function createCore() {
+    const curPlayerId = utils.uuidv1();
     const core = {
         consts: {
             WIDTH,
@@ -34,6 +36,15 @@ export function createCore() {
             curKey: '',
             curSide: 1,
             curBuildType: 'wall',
+        },
+        playersInfo: {
+            curPlayerId,
+            playerIds: [curPlayerId],
+            players: {
+                [curPlayerId]: {
+                    
+                }
+            }
         },
         //https://github.com/liabru/matter-js/blob/5f5b8a1f279736b121231a41181621b86253ea1c/src/body/Body.js#L1040
         worldCats: {
