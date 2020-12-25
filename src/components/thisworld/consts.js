@@ -10,6 +10,7 @@ const halfWallWidth = wallWidth / 10;
 export function createCore() {
     const curPlayerId = utils.uuidv1();
     const core = {
+        curPlayerId,
         consts: {
             WIDTH,
             HEIGHT,
@@ -42,7 +43,22 @@ export function createCore() {
             playerIds: [curPlayerId],
             players: {
                 [curPlayerId]: {
-                    
+                    playerInputState: {
+                        mouse: {
+                            state: '',
+                            pressLocation: null,
+                            cur: null,
+                        },
+                        lastGoodWallPts: null,
+                        curKey: '',
+                        curSide: 1,
+                        curBuildType: 'wall',
+                        selectObj: {
+                            cur: null,
+                            curIndex: -1,
+                            curType: '',
+                        },
+                    }
                 }
             }
         },
@@ -102,12 +118,25 @@ export function createCore() {
         }
     };
 
-    core.selectObj.reset = () => {
-        core.selectObj.cur = null;
-        core.selectObj.curBase = null;
-        core.selectObj.curIndex = -1;
-        core.selectObj.curType = '';
+
+    const addResetToSelectObj = selectObj => {
+        selectObj.reset = () => {
+            selectObj.cur = null;
+            selectObj.curBase = null;
+            selectObj.curIndex = -1;
+            selectObj.curType = '';
+        }
+    }
+    addResetToSelectObj(core.selectObj);
+
+    core.getCurPlayer = () => {
+        return core.playersInfo.players[curPlayerId];  
     };
+    core.getCurPlayerInputState = () => {
+        return core.getCurPlayer().playerInputState;
+    }
+
+    addResetToSelectObj(core.getCurPlayerInputState().selectObj);
 
     return core;
 }

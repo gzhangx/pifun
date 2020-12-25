@@ -3,6 +3,7 @@ import { createRender } from './ui';
 import SimpleRect from '../objs/SimpleRect';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
 import SimpleCircle from '../objs/SimpleCircle';
+import {sendWsMsg} from './socket';
 
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -29,7 +30,7 @@ export const createConstructor = (core) => {
 
     const {
         HEIGHT,
-        wallWidth,        
+        wallWidth,
         BREAKAWAYSPEED,
         BREAKAWAYANGSPEED,
     } = core.consts;
@@ -44,7 +45,7 @@ export const createConstructor = (core) => {
         }
     }
 
-    const getDragCellPoints = (mouseFrom, mouseCur,endPoints) => {        
+    const getDragCellPoints = (mouseFrom, mouseCur, endPoints) => {
         const p1 = mouseFrom;
         const p2 = mouseCur;
         const p3 = endPoints.end;
@@ -58,7 +59,7 @@ export const createConstructor = (core) => {
             const bar = getRectPos(p, points[connId]);
             bar.id = i;
             bar.connId = connId;
-            acc.push(bar);            
+            acc.push(bar);
             return acc;
         }, []);
 
@@ -103,7 +104,7 @@ export const createConstructor = (core) => {
         addCstToBody(cst.bodyA, cst);
         addCstToBody(cst.bodyB, cst);
         //core.constraints.push(cst);
-    };    
+    };
     /**
      * 
      * @param {object} wallPts Array of {a,b, pointA, pointB}
@@ -115,7 +116,7 @@ export const createConstructor = (core) => {
         const makeRect = (rr, label) => new SimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
             opts: { label, angle: getDispAng(rr.angle), collisionFilter, },
-            ggOpts: {label,health: 10,w: rr.w,h: rr.h, playerInfo},
+            ggOpts: { label, health: 10, w: rr.w, h: rr.h, playerInfo },
         }, core.createdEngine); //tl
         const allWalls = wallPts.reduce((acc, pt) => {
             const { a, b, pointA, pointB } = pt;
@@ -161,7 +162,7 @@ export const createConstructor = (core) => {
         const now = new Date();
         const allBodies = Composite.allBodies(engine.world);
         const toDelete = allBodies.map((bdy, i) => {
-            const ggInfo = bdy.ggInfo;            
+            const ggInfo = bdy.ggInfo;
             if (!ggInfo)
                 return null;
             if (ggInfo.isImmortal) return null;
@@ -181,7 +182,7 @@ export const createConstructor = (core) => {
         }).filter(x => x);
 
         toDelete.forEach(b => {
-            removeFromWorld(b.bdy);            
+            removeFromWorld(b.bdy);
         });
     }
 
@@ -193,10 +194,10 @@ export const createConstructor = (core) => {
         doSelect: () => doSelect({ core, removeFromWorld, }),
         showSelect: ({ isSelect,
             key,
-            side,}) => showSelect({
-            core, isSelect,
-            //mouse,
-            key,
+            side, }) => showSelect({
+                core, isSelect,
+                //mouse,
+                key,
                 side,
             }),
         doTranslate: translate => doTranslate(core, translate),
@@ -281,11 +282,11 @@ export const processCollisions = core => {
         // render collision normals                    
         const collision = pair.collision;
 
-        if (pair.activeContacts.length > 0) {            
+        if (pair.activeContacts.length > 0) {
             if (collision.depth) {
-                const isFireA = isFireball(collision.bodyA) ? collision.bodyA : null;                
+                const isFireA = isFireball(collision.bodyA) ? collision.bodyA : null;
                 const fire = isFireA || (isFireball(collision.bodyB) ? collision.bodyB : null);
-                if (fire) {                   
+                if (fire) {
                     //const fire = collision.bodyA.label === 'fireball' ? collision.bodyA : collision.bodyB;
                     const colId = fire.id;
                     const wall = isFireA ? collision.bodyB : collision.bodyA;
@@ -317,11 +318,11 @@ export const processCollisions = core => {
 
 
 export const initWorld = (core, { canvas, run, props, renderOpts }) => {
-    initCats(core);   
+    initCats(core);
     const {
         WIDTH,
-        HEIGHT,        
-    } = core.consts;    
+        HEIGHT,
+    } = core.consts;
     const createdEngine = core.createdEngine;
     const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
 
@@ -348,18 +349,43 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     Events.on(mouseConstraint, 'mousemove', e => {
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
+        const mouse = core.getCurPlayerInputState().mouse;
+        mouse.state = 'dragged';
+        mouse.cur = p;
+        sendWsMsg({
+            type: 'mouseMsg',
+            player: core.curPlayerId,
+            mouse,
+        })
         core.states.mouse.state = 'dragged';
         core.states.mouse.cur = p;
     });
     Events.on(mouseConstraint, 'mousedown', e => {
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
+        const { mouse,  selectObj} = core.getCurPlayerInputState();
+        mouse.state = 'pressed';
+        mouse.pressLocation = p;
+        selectObj.cur = null;
+        sendWsMsg({
+            type: 'mouseMsg',
+            player: core.curPlayerId,
+            mouse,
+            selectObj,
+        })
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = p;
-        core.selectObj.cur = null;
+        core.selectObj.cur = null;        
         mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
     });
     Events.on(mouseConstraint, 'mouseup', e => {
+        const mouse = core.getCurPlayerInputState().mouse;
+        mouse.state = 'released';
+        sendWsMsg({
+            type: 'mouseMsg',
+            player: core.curPlayerId,
+            mouse,
+        })
         core.states.mouse.state = 'released';
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
@@ -385,7 +411,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
 }
 
 
-function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Events, Sleeping}) {
+function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Events, Sleeping }) {
     MouseConstraint.update = function (mouseConstraint, bodies) {
         if (mouseConstraint.disabled) return;
         const mouse = mouseConstraint.mouse,
@@ -394,7 +420,7 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
 
         if (mouse.button === 0) {
             if (!constraint.bodyB) {
-                if (body) {                
+                if (body) {
                     if (Bounds.contains(body.bounds, mouse.position)
                         && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
                         for (var j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
@@ -429,7 +455,7 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
 
 
 function doSelect({
-    core,    
+    core,
     removeFromWorld,
 }) {
     const mouseConstraint = core.mouseConstraint;
@@ -562,7 +588,7 @@ function showSelect({
                     },
                         mouse.cur,
                         side,
-                    );                    
+                    );
                 }
                 const to = {
                     x: dirx + bpx,
@@ -651,7 +677,7 @@ function checkWallPoints(wallPts) {
         console.log(`calc ${last.x},${last.y} ${pt.x},${pt.y}`)
         return {
             last: pt,
-            total: total+l,
+            total: total + l,
         }
     }, { last: points[3], total: 0 });
     return res.total;
