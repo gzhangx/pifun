@@ -4,7 +4,7 @@ const WsSocket = {
     freeFormMsgListener: null,
 }
 
-export function setListener(lsn) {
+export function setFreeFormMsgListener(lsn) {
     WsSocket.freeFormMsgListener = lsn;
 }
 export function sendWsMsg(msg) {

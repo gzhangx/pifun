@@ -4,6 +4,7 @@ import SimpleRect from '../objs/SimpleRect';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
 import SimpleCircle from '../objs/SimpleCircle';
 import {sendWsMsg} from './socket';
+import { setupMultiplayer } from './multiplayer';
 
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -350,7 +351,12 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
         const mouse = core.getCurPlayerInputState().mouse;
-        mouse.state = 'dragged';
+        if (mouse.state === 'dragged' || mouse.state === 'pressed') {
+            mouse.state = 'dragged';
+        } else {
+            mouse.state = 'moved';
+        }
+        console.log('state ' + mouse.state);
         mouse.cur = p;
         sendWsMsg({
             type: 'mouseMsg',
@@ -360,11 +366,12 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         core.states.mouse.state = 'dragged';
         core.states.mouse.cur = p;
     });
-    Events.on(mouseConstraint, 'mousedown', e => {
+    Events.on(mouseConstraint, 'mousedown', e => {        
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
-        const { mouse,  selectObj} = core.getCurPlayerInputState();
+        const { mouse, selectObj } = core.getCurPlayerInputState();        
         mouse.state = 'pressed';
+        console.log('state ' + mouse.state);
         mouse.pressLocation = p;
         selectObj.cur = null;
         sendWsMsg({
@@ -386,11 +393,14 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             player: core.curPlayerId,
             mouse,
         })
+
         core.states.mouse.state = 'released';
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
         core.states.mouse.cur = p;
     });
+
+    setupMultiplayer(core);
     core.createdEngine.addToWorld(mouseConstraint);
     core.render = createRender({
         core,

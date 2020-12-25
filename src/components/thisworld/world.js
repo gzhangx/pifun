@@ -75,7 +75,8 @@ function run(core, props) {
     const isSelect = curBuildType === 'select';
     const { mouseConstraint } = core;
     
-    const mouse = core.states.mouse;
+    //const mouse = core.states.mouse;
+    const mouse = core.getCurPlayerInputState().mouse;
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const { engine, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,

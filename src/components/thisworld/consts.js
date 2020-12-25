@@ -1,4 +1,4 @@
-import {utils} from './util';
+import { utils } from './util';
 export const WIDTH = 1800;
 export const HEIGHT = 600;
 const WALLHEALTH = 10;
@@ -129,11 +129,40 @@ export function createCore() {
     }
     addResetToSelectObj(core.selectObj);
 
+    core.getPlayerById = id => {
+        return core.playersInfo.players[id];  
+    }
+    core.getPlayerInputStateById = id => {
+        let player = core.getPlayerById(id);
+        if (!player) {            
+            player = {
+                playerInputState: {
+                    mouse: {
+                        state: '',
+                        pressLocation: null,
+                        cur: null,
+                    },
+                    lastGoodWallPts: null,
+                    curKey: '',
+                    curSide: 1,
+                    curBuildType: 'wall',
+                    selectObj: {
+                        cur: null,
+                        curIndex: -1,
+                        curType: '',
+                    },
+                }
+            };
+            core.playersInfo.players[id] = player;
+            core.playersInfo.players = core.playersInfo.players.push(id);
+        }
+        return player.playerInputState;
+    }
     core.getCurPlayer = () => {
-        return core.playersInfo.players[curPlayerId];  
+        return core.getPlayerById(curPlayerId);
     };
     core.getCurPlayerInputState = () => {
-        return core.getCurPlayer().playerInputState;
+        return core.getPlayerInputStateById(curPlayerId);
     }
 
     addResetToSelectObj(core.getCurPlayerInputState().selectObj);
