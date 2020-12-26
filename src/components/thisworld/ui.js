@@ -221,6 +221,7 @@ export const createRender = (opt) => {
             render.endViewTransform(render);
         }
 
+        render.cursors(render);
     }
 
 
@@ -770,6 +771,25 @@ export const createRender = (opt) => {
             c.strokeStyle = 'orange';
         }
         c.stroke();
+    };
+
+    /**
+     * Draws ohter ppl cursors     
+     */
+    render.cursors = function (bodies) {
+        let c = context, i,j;
+
+        const pinfs = opt.core.playersInfo;
+        const pids = pinfs.playerIds;
+        pids.forEach(id => {
+            const pi = opt.core.getCurPlayerInputState(id); 
+            const mp = pi.mouse.cur;
+            if (mp) {
+                c.font = "12px Arial";
+                c.fillStyle = 'rgba(255,255,255,0.5)';
+                c.fillText("player", mp.x + 10, mp.y - 10);
+            }
+        });        
     };
 
     return render;

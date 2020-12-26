@@ -356,7 +356,6 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         } else {
             mouse.state = 'moved';
         }
-        console.log('state ' + mouse.state);
         mouse.cur = p;
         sendWsMsg({
             type: 'mouseMsg',
@@ -371,7 +370,6 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         const p = getMouse(e.mouse.position);
         const { mouse, selectObj } = core.getCurPlayerInputState();        
         mouse.state = 'pressed';
-        console.log('state ' + mouse.state);
         mouse.pressLocation = p;
         selectObj.cur = null;
         sendWsMsg({
