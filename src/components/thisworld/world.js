@@ -6,6 +6,7 @@ import { initWorld, getMouse } from './worldConstructor';
 import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { createCar} from '../objs/simplecar';
 import { postRender } from './unitui';
+import { get } from 'lodash';
 
 const MAX_WALL_WIDTH = 200;
 const MAX_WALL_HEIGHT = 200;
@@ -62,6 +63,11 @@ const screenOff = {
     x: 0,
     y: 0,
 }
+
+const arrowDir = {
+    ArrowRight: 1,
+    ArrowLeft: -1,
+}
 function run(core, props) {
     const {
         WALLHEALTH,
@@ -79,7 +85,7 @@ function run(core, props) {
     //const mouse = core.states.mouse;
     const mouse = core.getCurPlayerInputState().mouse;
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
-    const { engine, rayQueryWithPoints, Vector, Composite } = core.createdEngine;
+    const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,
         doSelect,
         showSelect,
@@ -106,6 +112,29 @@ function run(core, props) {
         if (key === 'v') screenOff.y -= 10;
         core.inputs.loopKey = '';
         doTranslate(screenOff);
+    }
+
+    if (arrowDir[key]) {
+        const dir = arrowDir[key];
+        // allBodies.forEach(b => {
+        //     const isTestWheel = get(b, 'ggInfo.isTestWheel');
+        //     if (isTestWheel) {
+        //         Body.applyForce(b, { x: b.position.x, y: b.position.y + 1 }, { x: 0.01, y: 0 })
+        //         console.log(`${b.position.x} ${b.position.y}`)
+        //     }
+        // })
+        const selected = core.selectObj.cur;
+        if (selected && selected.ggInfo) {
+            if (selected.ggInfo.forceLeftRight) {
+                selected.ggInfo.forceLeftRight(dir)
+            } else if (selected.ggInfo.wheels) {
+                selected.ggInfo.wheels.forEach(w => {
+                    if (w.ggInfo.forceLeftRight) {
+                        w.ggInfo.forceLeftRight(dir);
+                    }
+                })
+            }
+        }
     }
     //if (core.inputs.curBuildType === 'wall') 
 

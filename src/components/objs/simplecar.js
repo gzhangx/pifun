@@ -1,8 +1,8 @@
 import { Vector } from "matter-js";
 //import { core, WIDTH } from '../thisworld/consts';
 import SimpleRect from './SimpleRect';
-const w = 100;
-const h = 20;
+const w = 200;
+const h = 40;
 
 
 export function createCar(opt, pos) {    
@@ -23,15 +23,25 @@ export function createCar(opt, pos) {
         opts,
     }, createdEngine);
 
-    const { addToWorld, Bodies } = createdEngine;
-    const w1 = Bodies.circle(pos.x-(w/2)+10, pos.y+28, 10, opts);
+    const { addToWorld, Bodies, Body } = createdEngine;
+    const wheelR = 20;
+    const w1 = Bodies.circle(pos.x - (w / 2) + wheelR, pos.y + (wheelR/2)+(h/2)+20, wheelR, opts);
     addToWorld(w1);
-    const w2 = Bodies.circle(pos.x + (w / 2) -10, pos.y+28, 10, opts);
+    const w2 = Bodies.circle(pos.x + (w / 2) - wheelR, pos.y + (wheelR/2)+(h/2)+20, wheelR, opts);
     addToWorld(w2);
-    const stiffness = 0.9;
-    const wws = [w1, w2]
+    Body.applyForce(w1, {x:0, y:1}, {x:0.001, y:0.001})
+    
+    const stiffness = 0.1;
+    const wws = [w1, w2];
+    wws.forEach(w => {
+        w.ggInfo = Object.assign({}, rc.body.ggInfo, {
+            isTestWheel: true,
+            forceLeftRight: lr => Body.applyForce(w, { x: w.position.x, y: w.position.y + 1 }, { x: 0.01*lr, y: 0 })
+        });
+    })
+    rc.body.ggInfo.wheels = wws;
     const getCst = (who, mul=1) => {
-        return { bodyA: wws[who], bodyB: rc.body, pointA: {x:0,y:0}, pointB: {x: (who?(w/2):(-w/2))*mul,y:0}, stiffness };
+        return { bodyA: wws[who], bodyB: rc.body, pointA: {x:0,y:0}, pointB: {x: (who?(w/2-wheelR):(-w/2+wheelR))*mul,y:0}, stiffness };
     };
     core.worldCon.addCst(getCst(0));
     core.worldCon.addCst(getCst(0,0));
