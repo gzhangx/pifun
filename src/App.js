@@ -13,6 +13,7 @@ function App() {
   const [curCollisionActive, setCurCollisionActive] = useState();
   const [curCollisionEnd, setCurCollisionEnd] = useState();
   const [curDebugText, setCurDebugText] = useState('');
+  const [isMaster, setIsMaster] = useState('');
   useEffect(() => {
     initWS();
   },[]);
@@ -48,6 +49,7 @@ function App() {
               <button onClick={() => stBuildType('cannon')}>Cannon</button>
               <button onClick={() => stBuildType('connection')}>Connection</button>
               <button onClick={() => stBuildType('select')}>Select</button>
+              <button onClick={() => stBuildType('gmakecar')}>Car</button>
             </td><td></td></tr>
           <tr>
             <td>Action</td><td>{curBuildType}</td>
@@ -63,6 +65,15 @@ function App() {
           </tr>
           <tr>
             <td>DbgTxt</td><td colSpan='8'>{curDebugText}</td>
+          </tr>
+          <tr><td>setMaster<input type="checkbox" checked={isMaster} onClick={() => {
+            if (!isMaster) {
+              core.masterPlayerId = core.curPlayerId;
+            }
+            setIsMaster(!isMaster);
+            
+          }}></input></td>
+            <td>{ core.isMaster()?'is master':'not m' }</td>
           </tr>
         </table>
       </div>

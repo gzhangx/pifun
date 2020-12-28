@@ -10,6 +10,7 @@ const halfWallWidth = wallWidth / 10;
 export function createCore() {
     const curPlayerId = utils.uuidv1();
     const core = {
+        masterPlayerId:'',
         curPlayerId,
         consts: {
             WIDTH,
@@ -165,6 +166,9 @@ export function createCore() {
         return core.getPlayerInputStateById(curPlayerId);
     }
 
+    core.isMaster = () => {
+        return core.masterPlayerId === core.curPlayerId;
+    }
     addResetToSelectObj(core.getCurPlayerInputState().selectObj);
 
     return core;

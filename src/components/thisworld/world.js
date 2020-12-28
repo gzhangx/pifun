@@ -4,6 +4,7 @@ import SimpleRect from '../objs/SimpleRect';
 import { initWorld, getMouse } from './worldConstructor';
 
 import { showCannonHolder, createCannon } from '../objs/Cannon';
+import { createCar} from '../objs/simplecar';
 import { postRender } from './unitui';
 
 const MAX_WALL_WIDTH = 200;
@@ -153,6 +154,9 @@ function run(core, props) {
             
         if (isCannonMode) {
             createCannon({ core, allBodies, side }, mouseCur);
+        }
+        if (curBuildType === 'gmakecar') {
+            createCar({core, allBodies, side}, mouseCur)
         }
         if (isConnection) {
             const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
