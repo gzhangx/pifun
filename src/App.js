@@ -14,6 +14,8 @@ function App() {
   const [curCollisionEnd, setCurCollisionEnd] = useState();
   const [curDebugText, setCurDebugText] = useState('');
   const [isMaster, setIsMaster] = useState('');
+  const [gravity, setGravity] = useState('');
+  const [selectedObj, setUISelectedObj1] = useState(null);
   useEffect(() => {
     initWS();
   },[]);
@@ -29,6 +31,8 @@ function App() {
     setCurSide(side);
     core.inputs.curSide = side;
   };
+  //const selectedObj = core.getCurPlayerInputState().selectObj.cur;
+  console.log(selectedObj);
   return (
     <div className="App" style={{display: 'inline-block', width:1000}}>
       <div style={{ left: 0, top: 0, float: 'left', display: 'inline-block' }}>        
@@ -37,6 +41,11 @@ function App() {
           curKey, setCurKey, curBuildType, setCurBuildType,
           setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
           setCurDebugText,
+          setUISelectedObj: o => {
+            console.log('set ui selected object');
+            console.log(o);
+            setUISelectedObj1(o);
+          },
           curSide,
         }} core={core} />
       </div>
@@ -75,6 +84,9 @@ function App() {
           }}></input></td>
             <td>{ core.isMaster()?'is master':'not m' }</td>
           </tr>
+          <tr><td>Gravity {gravity} <button onClick={() => {
+            setGravity(core.createdEngine.getGravity());
+          }}>Get Gravity</button></td></tr>
         </table>
       </div>
     </div>

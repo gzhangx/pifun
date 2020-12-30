@@ -242,6 +242,8 @@ export function createEngine() {
     Query,
     engine,
     addToWorld: body => World.add(engine.world, body),
+    getGravity: () => engine.world.gravity.y,
+    setGravity: y => engine.world.gravity.y = y,
     removeFromWorld: body => {
       if (body.ggConstraints) {
         body.ggConstraints.forEach(c => {

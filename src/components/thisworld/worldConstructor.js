@@ -413,6 +413,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             postRender: (ctx, opt) => { },
         }
     })
+    core.getCurPlayerInputState().events.onSelectedObjectChanged = props.inputs.setUISelectedObj;
     //core.groupGroup = group;
     core.worldCon = createConstructor(core);
     core.mouseConstraint = mouseConstraint;
@@ -475,6 +476,7 @@ function doSelect({
             core.selectObj.cur = mouseConstraint.body;
             core.selectObj.curInd = -1;
             core.selectObj.curType = 'selbody';
+            core.getCurPlayerInputState().events.onSelectedObjectChanged(core.selectObj);
         }
     } else {
         const body = core.selectObj.curBase;
@@ -484,12 +486,13 @@ function doSelect({
                 core.selectObj.curBase = mouseConstraint.body;
                 core.selectObj.cur = mouseConstraint.body;
                 core.selectObj.curInd = -1;
-                core.selectObj.curType = 'selbody';
+                core.selectObj.curType = 'selbody';                
             } else {
                 core.selectObj.curInd = curInd;
                 core.selectObj.cur = body.ggConstraints[curInd];
-                core.selectObj.curType = 'constraint';
+                core.selectObj.curType = 'constraint';                
             }
+            core.getCurPlayerInputState().events.onSelectedObjectChanged(core.selectObj);
         }
     }
 

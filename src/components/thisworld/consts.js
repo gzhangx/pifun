@@ -57,8 +57,11 @@ export function createCore() {
                         selectObj: {
                             cur: null,
                             curIndex: -1,
-                            curType: '',
+                            curType: '',                            
                         },
+                        events: {
+                            onSelectedObjectChange: null,
+                        }
                     }
                 }
             }

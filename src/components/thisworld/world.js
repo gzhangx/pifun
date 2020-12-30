@@ -140,6 +140,7 @@ function run(core, props) {
 
     if (isSelect) {
         doSelect();
+        //props.inputs.setUISelectedObj(core.selectObj);
     }
     core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
     if (isCannonMode && mouse.state === 'dragged') {
