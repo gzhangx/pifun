@@ -2,6 +2,7 @@ import { sendWsMsg, setFreeFormMsgListener } from './socket';
 
 export function setupMultiplayer(core) {
     setFreeFormMsgListener(msg => {
+        if (msg.player === core.curPlayerId) return;
         switch (msg.type) {
             case 'mouseMsg':
                 const { player, mouse } = msg;
