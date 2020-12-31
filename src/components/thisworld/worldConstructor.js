@@ -98,6 +98,7 @@ export const createConstructor = (core) => {
         //cst.stiffness = stiffness;
         createdEngine.addConstraint(cst);
         const addCstToBody = (bdy, cst) => {
+            if (!bdy) return;
             if (!bdy.ggConstraints) {
                 bdy.ggConstraints = [];
             }

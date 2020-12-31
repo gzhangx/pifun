@@ -234,15 +234,20 @@ function run(core, props) {
 
         if (curBuildType === 'circle') {
             const r = Vector.magnitude(Vector.sub(mouse.pressLocation, mouse.cur));
-            new SimpleCircle({
-                x: mouse.pressLocation.x +r/2,
-                y: mouse.pressLocation.y +r/2,
+            const { x, y } = mouse.cur;            
+
+            const c = new SimpleCircle({
+                x,
+                y,
                 r,
                 ggOpts: {
                     isImmortal: true,
                 },
                 opts: { restitution: 0.5,  },
             }, core.createdEngine);
+            if (core.inputs.isDesignMode) {
+                core.worldCon.addCst({ bodyB: c.body, pointA: {x, y}, pointB:{x:0,y:0} });
+            }
         } else if (curBuildType === 'rectangle') {
             const diff = Vector.sub(mouse.pressLocation, mouse.cur);
             const w = Math.abs(diff.x);

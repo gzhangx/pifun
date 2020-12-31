@@ -201,7 +201,9 @@ function showEditorObj(c, dspInfo) {
         if (type === 'rectangle') {
             c.fillRect(x - (w), y - (h), w, h);
         } else if (type === 'circle') {
-            c.arc(x,y, r, 0, 2 * Math.PI);
+            c.arc(x, y, r, 0, 2 * Math.PI);
+            c.moveTo(x,y);
+            //c.lineTo(to.x, to.y);
         }
         c.stroke();
     }
