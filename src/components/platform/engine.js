@@ -245,11 +245,6 @@ export function createEngine() {
     getGravity: () => engine.world.gravity.y,
     setGravity: y => engine.world.gravity.y = y,
     removeFromWorld: body => {
-      if (body.ggConstraints) {
-        body.ggConstraints.forEach(c => {
-          World.remove(engine.world, c);
-        })
-      }
       const rmFromBody = (body, cst) => {
         if (body) {
           if (body.ggConstraints) {
@@ -257,9 +252,13 @@ export function createEngine() {
           }
         }
       }
-      
-      rmFromBody(body.bodyA, body);
-      rmFromBody(body.bodyB, body);
+      if (body.ggConstraints) {
+        body.ggConstraints.forEach(c => {
+          World.remove(engine.world, c);
+          rmFromBody(body.bodyA, c);
+          rmFromBody(body.bodyB, c);
+        });
+      }
       
       World.remove(engine.world, body);
     },

@@ -236,32 +236,46 @@ function run(core, props) {
             const r = Vector.magnitude(Vector.sub(mouse.pressLocation, mouse.cur));
             const { x, y } = mouse.cur;            
 
-            const c = new SimpleCircle({
-                x,
-                y,
-                r,
+            const sdata = {
+                x, y, r,
+                opts: { restitution: 0.5, },
+            };
+            const c = new SimpleCircle(Object.assign({}, sdata, {
                 ggOpts: {
                     isImmortal: true,
-                },
-                opts: { restitution: 0.5,  },
-            }, core.createdEngine);
+                    isDesignerItem: true,
+                },                
+            }), core.createdEngine);
             if (core.inputs.isDesignMode) {
-                core.worldCon.addCst({ bodyB: c.body, pointA: {x, y}, pointB:{x:0,y:0} });
+                core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
+                sdata.body = c.body;
+                core.designerData.items.push(sdata);
             }
         } else if (curBuildType === 'rectangle') {
             const diff = Vector.sub(mouse.pressLocation, mouse.cur);
             const w = Math.abs(diff.x);
             const h = Math.abs(diff.y);
-            new SimpleRect({
-                x: mouse.pressLocation.x + w/2,
-                y: mouse.pressLocation.y + h/2,
+            const sdata = {
+                x: mouse.pressLocation.x + w / 2,
+                y: mouse.pressLocation.y + h / 2,
                 w,
-                h,
+                h,                
+                opts: { restitution: 0.5, },
+            };
+            const c = new SimpleRect(Object.assign({                
                 ggOpts: {
                     isImmortal: true,
-                },
-                opts: { restitution: 0.5, },
-            }, core.createdEngine)
+                    isDesignerItem: true,
+                },                
+            }, sdata), core.createdEngine)
+            if (core.inputs.isDesignMode) {
+                const cy = mouse.pressLocation.y + (h / 2);
+                const mx = mouse.pressLocation.x;
+                core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx, y: cy }, pointB: { x: -w / 2, y: 0 } });
+                core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx + w, y: cy }, pointB: { x: w / 2, y: 0 } });
+                sdata.body = c.body;
+                core.designerData.items.push(sdata);
+            }
         }
     }
     

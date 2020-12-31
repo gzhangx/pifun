@@ -22,6 +22,10 @@ export function createCore() {
             BREAKAWAYANGSPEED,
         },
         createdEngine: null,
+        designerData: {
+            items: [],
+            constraints: [],
+        },
         //allBodies,
         //constraints: [],
         collisions: [],
