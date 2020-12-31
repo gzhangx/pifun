@@ -244,7 +244,7 @@ export function createEngine() {
     addToWorld: body => World.add(engine.world, body),
     getGravity: () => engine.world.gravity.y,
     setGravity: y => engine.world.gravity.y = y,
-    removeFromWorld: body => {
+    removeFromWorld: (body, core) => {
       const rmFromBody = (body, cst) => {
         if (body) {
           if (body.ggConstraints) {
@@ -259,7 +259,18 @@ export function createEngine() {
           rmFromBody(body.bodyB, c);
         });
       }
-      
+      const ggInfo = body.ggInfo;
+      if (ggInfo) {
+        if (ggInfo.isDesignerItem) {
+          const dItems = core.designerData.items;
+          for (let i = 0; i < dItems.length; i++) {
+            if (dItems[i].body === body) {
+              dItems[i] = null;
+              break;
+            }
+          }
+        }
+      }
       World.remove(engine.world, body);
     },
     addConstraint: cst => World.add(engine.world, Constraint.create(cst)),
