@@ -510,7 +510,7 @@ function doSelect({
 
     const body = core.selectObj.cur;
     if (body && core.inputs.loopKey === 'Delete') {
-        const canDel1 = body.ggInfo && body.ggInfo.player !== 0;
+        const canDel1 = body.ggInfo && body.ggInfo.player !== 0 && !body.ggInfo.isImmortal;
         const isCons = body.bodyA || body.bodyB;
         if (canDel1 || isCons) {
             removeFromWorld(body);

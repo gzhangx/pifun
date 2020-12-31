@@ -242,7 +242,6 @@ function run(core, props) {
             };
             const c = new SimpleCircle(Object.assign({}, sdata, {
                 ggOpts: {
-                    isImmortal: true,
                     isDesignerItem: true,
                 },                
             }), core.createdEngine);
@@ -264,7 +263,7 @@ function run(core, props) {
             };
             const c = new SimpleRect(Object.assign({                
                 ggOpts: {
-                    isImmortal: true,
+                    isImmortal: false,
                     isDesignerItem: true,
                 },                
             }, sdata), core.createdEngine)
@@ -294,7 +293,7 @@ function createWorld(core) {
         y: 100,
         r: 30,
         ggOpts: {
-            isImmortal: true,
+            isImmortal: false,
         },
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
@@ -305,7 +304,6 @@ function createWorld(core) {
         w: 30,
         h: 60,
         ggOpts: {
-            isImmortal: true,
             h: 60,
         },
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
@@ -318,7 +316,7 @@ function createWorld(core) {
         w: WIDTH,
         h: GroundHeight,
         ggOpts: {
-            isImmortal: true,
+            isImmortal: false,
             h: GroundHeight,
             player: 'groundPerm'
         },
