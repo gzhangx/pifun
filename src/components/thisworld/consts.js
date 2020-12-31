@@ -38,6 +38,7 @@ export function createCore() {
             curKey: '',
             curSide: 1,
             curBuildType: 'wall',
+            isDesignMode: false,
         },
         playersInfo: {
             curPlayerId,

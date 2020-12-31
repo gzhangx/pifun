@@ -17,6 +17,7 @@ class Scene extends React.Component {
   }
 
   render() {
+    core.inputs.isDesignMode = this.props.inputs.isDesignMode;
     return <div>      
       <canvas ref={this.drawRef} onDragStart={e => e.preventDefault()}></canvas>
     </div>;

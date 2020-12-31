@@ -194,13 +194,12 @@ function showEditorObj(c, dspInfo) {
         const {
             type, x, y, w, h, r
         } = dspInfo.editorObj;
-        console.log('editor obj ' + x+ ' ' + y+ ' r='+r);
         dspInfo.editorObj = null;
         c.beginPath();
         c.lineWidth = 5;
         c.strokeStyle = 'red';
         if (type === 'rectangle') {
-            c.fillRect(x, y, w, h);
+            c.fillRect(x - (w), y - (h), w, h);
         } else if (type === 'circle') {
             c.arc(x,y, r, 0, 2 * Math.PI);
         }

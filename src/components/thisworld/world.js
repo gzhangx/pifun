@@ -235,14 +235,28 @@ function run(core, props) {
         if (curBuildType === 'circle') {
             const r = Vector.magnitude(Vector.sub(mouse.pressLocation, mouse.cur));
             new SimpleCircle({
-                x: mouse.pressLocation.x,
-                y: mouse.pressLocation.y,
+                x: mouse.pressLocation.x +r/2,
+                y: mouse.pressLocation.y +r/2,
                 r,
                 ggOpts: {
                     isImmortal: true,
                 },
                 opts: { restitution: 0.5,  },
             }, core.createdEngine);
+        } else if (curBuildType === 'rectangle') {
+            const diff = Vector.sub(mouse.pressLocation, mouse.cur);
+            const w = Math.abs(diff.x);
+            const h = Math.abs(diff.y);
+            new SimpleRect({
+                x: mouse.pressLocation.x + w/2,
+                y: mouse.pressLocation.y + h/2,
+                w,
+                h,
+                ggOpts: {
+                    isImmortal: true,
+                },
+                opts: { restitution: 0.5, },
+            }, core.createdEngine)
         }
     }
     
