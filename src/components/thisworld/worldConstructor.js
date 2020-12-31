@@ -26,8 +26,8 @@ export const getMouse = p => ({
 });
 
 export const createConstructor = (core) => {
-    const { createdEngine } = core;
-    const { engine, removeFromWorld, Vector, Composite } = createdEngine;
+    const { createdEngine, removeFromWorld } = core;
+    const { engine, Vector, Composite } = createdEngine;
 
     const {
         HEIGHT,
@@ -415,6 +415,8 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         }
     })
     core.getCurPlayerInputState().events.onSelectedObjectChanged = props.inputs.setUISelectedObj;
+
+    core.removeFromWorld = itm => createdEngine.removeFromWorld(itm, core);
     //core.groupGroup = group;
     core.worldCon = createConstructor(core);
     core.mouseConstraint = mouseConstraint;
