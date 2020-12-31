@@ -264,7 +264,8 @@ export function createEngine() {
         if (ggInfo.isDesignerItem) {
           const dItems = core.designerData.items;
           for (let i = 0; i < dItems.length; i++) {
-            if (dItems[i].body === body) {
+            const itm = dItems[i];
+            if (itm && itm.body === body) {
               dItems[i] = null;
               break;
             }
