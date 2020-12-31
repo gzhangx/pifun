@@ -16,6 +16,7 @@ function App() {
   const [isMaster, setIsMaster] = useState('');
   const [gravity, setGravity] = useState('');
   const [selectedObj, setUISelectedObj1] = useState(null);
+  const [isDesignMode, setIsDesignMode] = useState(false);
   useEffect(() => {
     initWS();
   },[]);
@@ -32,7 +33,6 @@ function App() {
     core.inputs.curSide = side;
   };
   //const selectedObj = core.getCurPlayerInputState().selectObj.cur;
-  console.log(selectedObj);
   return (
     <div className="App" style={{display: 'inline-block', width:1000}}>
       <div style={{ left: 0, top: 0, float: 'left', display: 'inline-block' }}>        
@@ -40,6 +40,7 @@ function App() {
         <Scene inputs={{
           curKey, setCurKey, curBuildType, setCurBuildType,
           setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
+          isDesignMode,
           setCurDebugText,
           setUISelectedObj: o => {
             console.log('set ui selected object');
@@ -60,6 +61,15 @@ function App() {
               <button onClick={() => stBuildType('select')}>Select</button>
               <button onClick={() => stBuildType('gmakecar')}>Car</button>
             </td><td></td></tr>
+          <tr>
+            <td>
+              <button onClick={() => stBuildType('circle')}>Circle</button>
+              <button onClick={() => stBuildType('rectangle')}>Rect</button>
+            </td>
+            <td>
+              <input ></input>
+            </td>
+          </tr>
           <tr>
             <td>Action</td><td>{curBuildType}</td>
           </tr>
@@ -87,6 +97,9 @@ function App() {
           <tr><td>Gravity {gravity} <button onClick={() => {
             setGravity(core.createdEngine.getGravity());
           }}>Get Gravity</button></td></tr>
+          <tr><td><input type="checkbox" checked={!!isDesignMode} onChange={() => {
+            setIsDesignMode(!isDesignMode)
+          }} ></input> Design</td></tr>
         </table>
       </div>
     </div>

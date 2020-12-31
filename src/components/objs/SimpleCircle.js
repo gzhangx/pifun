@@ -8,5 +8,9 @@ export default function SimpleCircle(initInfo, engine) {
     addToWorld(body);
 
     this.body = body;
+    ggOpts.buildInfo = {
+        type: 'circle',
+        x, y, r,
+    };
     engine.setBodyGGInfo(body, ggOpts);
 }

@@ -80,6 +80,8 @@ function run(core, props) {
     const isCannonMode = curBuildType === 'cannon';
     const isConnection = curBuildType === 'connection';
     const isSelect = curBuildType === 'select';
+    const isCircle = curBuildType === 'circle';
+    const isRectangle = curBuildType === 'rectangle';
     const { mouseConstraint } = core;
     
     //const mouse = core.states.mouse;
@@ -176,6 +178,19 @@ function run(core, props) {
             //drawCellPointsCnv(wallPts);
         }
 
+        if (isCircle || isRectangle) {
+            const diff = Vector.sub(mouse.pressLocation, mouse.cur);
+            const r = Vector.magnitude(diff);
+            core.uiDspInfo.editorObj = {
+                type: isCircle ? 'circle' : 'rectangle',
+                x: mouse.cur.x,
+                y: mouse.cur.y,
+                r: r,
+                w: Math.abs(diff.x),
+                h: Math.abs(diff.y)
+            }
+        }
+
     } else if (mouse.state === 'released') {
         mouse.state = '';
         const mouseFrom = getMouse(mouse.pressLocation);
@@ -215,6 +230,19 @@ function run(core, props) {
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }
+        }
+
+        if (curBuildType === 'circle') {
+            const r = Vector.magnitude(Vector.sub(mouse.pressLocation, mouse.cur));
+            new SimpleCircle({
+                x: mouse.pressLocation.x,
+                y: mouse.pressLocation.y,
+                r,
+                ggOpts: {
+                    isImmortal: true,
+                },
+                opts: { restitution: 0.5,  },
+            }, core.createdEngine);
         }
     }
     

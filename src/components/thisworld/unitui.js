@@ -189,11 +189,31 @@ function showFireLine(c, dspInfo) {
     }
 }
 
+function showEditorObj(c, dspInfo) {
+    if (dspInfo.editorObj) {
+        const {
+            type, x, y, w, h, r
+        } = dspInfo.editorObj;
+        console.log('editor obj ' + x+ ' ' + y+ ' r='+r);
+        dspInfo.editorObj = null;
+        c.beginPath();
+        c.lineWidth = 5;
+        c.strokeStyle = 'red';
+        if (type === 'rectangle') {
+            c.fillRect(x, y, w, h);
+        } else if (type === 'circle') {
+            c.arc(x,y, r, 0, 2 * Math.PI);
+        }
+        c.stroke();
+    }
+}
+
 export function postRender(c, opts) {
     const dspInfo = opts.core.uiDspInfo;
     showFireLine(c, dspInfo);
     drawCellPointsCnv(c, dspInfo);
     showCannonHolder(c, dspInfo);
     showSelect(c, dspInfo);    
+    showEditorObj(c, dspInfo);
 }
 
