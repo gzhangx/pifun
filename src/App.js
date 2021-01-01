@@ -4,7 +4,7 @@ import Scene from './Game'
 import keyHandler from "./components/platform/keyHandler";
 import { core } from './core';
 import { initWS } from './components/thisworld/socket';
-import { DesignEditor } from './components/editor/editor';
+import { DesignEditor, getEditorInitState, setUISelectedObj } from './components/editor/editor';
 
 function App() {
   const [curKey, setCurKey] = useState();
@@ -15,18 +15,8 @@ function App() {
   const [curCollisionEnd, setCurCollisionEnd] = useState();
   const [curDebugText, setCurDebugText] = useState('');
   const [isMaster, setIsMaster] = useState('');
-  const [gravity, setGravity] = useState('');
-  const [selectedObj, setUISelectedObj1] = useState(null);
-  const [isDesignMode, setIsDesignMode] = useState(false);
-  const [curDesignInfo, setCurDesignInfo] = useState({
-    isDesignMode: false,
-    selectedObj: null,
-    x: 0,
-    y: 0,
-    w: 0,
-    h: 0,
-    r:0, 
-  });
+  const [gravity, setGravity] = useState('');  
+  const [curDesignInfo, setCurDesignInfo] = useState(getEditorInitState());
   useEffect(() => {
     initWS();
   },[]);
@@ -52,19 +42,7 @@ function App() {
           setCurCollisionStart, setCurCollisionActive, setCurCollisionEnd,
           isDesignMode: curDesignInfo.isDesignMode,
           setCurDebugText,
-          setUISelectedObj: o => {
-            console.log('set ui selected object');
-            console.log(o);
-            const info = o.cur.ggInfo.buildInfo;
-            setCurDesignInfo({
-              x: info.x,
-              y: info.y,
-              r: info.r,
-              w: info.w,
-              h: info.h,
-            })
-            setUISelectedObj1(o);
-          },
+          setUISelectedObj: o => setUISelectedObj(setCurDesignInfo,o),
           curSide,
         }} core={core} />
       </div>
@@ -81,18 +59,12 @@ function App() {
             </td><td></td></tr>
           <tr>
             <td>
-              <DesignEditor context={{ core, curDesignInfo, selectedObj, stBuildType }}></DesignEditor>
+              <DesignEditor context={{
+                core, curDesignInfo, setCurDesignInfo,
+                stBuildType
+              }}></DesignEditor>
             </td>
-          </tr>
-          {
-            selectedObj && <tr>
-              <td>x: <input type="text" value={curDesignInfo.x || '0'}></input></td>
-              <td>y: <input type="text" value={curDesignInfo.y || '0'}></input></td>
-              <td>r: <input type="text" value={curDesignInfo.r || '0'}></input></td>
-              <td>w: <input type="text" value={curDesignInfo.w || '0'}></input></td>
-              <td>h: <input type="text" value={curDesignInfo.h || '0'}></input></td>
-            </tr>
-          }
+          </tr>          
           <tr>
             <td>Action</td><td>{curBuildType}</td>
           </tr>
@@ -119,14 +91,7 @@ function App() {
           </tr>
           <tr><td>Gravity {gravity} <button onClick={() => {
             setGravity(core.createdEngine.getGravity());
-          }}>Get Gravity</button></td></tr>
-          <tr><td><input type="checkbox" checked={!!curDesignInfo.isDesignMode} onChange={() => {
-            //setIsDesignMode(!isDesignMode)
-            setCurDesignInfo({
-              ...curDesignInfo,
-              isDesignMode: !curDesignInfo.curDesignInfo,
-            })
-          }} ></input> Design</td></tr>
+          }}>Get Gravity</button></td></tr>          
         </table>
       </div>
     </div>
