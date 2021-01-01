@@ -373,7 +373,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         const { mouse, selectObj } = core.getCurPlayerInputState();        
         mouse.state = 'pressed';
         mouse.pressLocation = p;
-        selectObj.cur = null;
+        //selectObj.cur = null;
         sendWsMsg({
             type: 'mouseMsg',
             player: core.curPlayerId,
@@ -382,7 +382,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         })
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = p;
-        core.selectObj.cur = null;        
+        //core.selectObj.cur = null;        
         mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
     });
     Events.on(mouseConstraint, 'mouseup', e => {

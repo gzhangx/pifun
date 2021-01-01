@@ -316,7 +316,7 @@ function createWorld(core) {
         w: WIDTH,
         h: GroundHeight,
         ggOpts: {
-            isImmortal: false,
+            isImmortal: true,
             h: GroundHeight,
             player: 'groundPerm'
         },
