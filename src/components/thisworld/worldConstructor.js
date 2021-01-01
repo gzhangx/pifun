@@ -486,7 +486,7 @@ function doSelect({
         }
     } else {
         const body = selectObj.curBase;
-        if (key === 'a') {
+        if (key === 'a' || key === 'n') {
             const curInd = selectObj.curInd + 1;
             if (!body.ggConstraints || curInd >= body.ggConstraints.length) {
                 //selectObj.curBase = mouseConstraint.body;
