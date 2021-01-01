@@ -379,7 +379,8 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             player: core.curPlayerId,
             mouse,
             selectObj,
-        })
+        });
+        selectObj.curProcessed = false;
         core.states.mouse.state = 'pressed';
         core.states.mouse.pressLocation = p;
         //core.selectObj.cur = null;        
@@ -473,33 +474,35 @@ function doSelect({
 }) {
     const mouseConstraint = core.mouseConstraint;
     const key = core.inputs.loopKey;
-    if (!core.selectObj.cur) {
+    const { selectObj } = core.getCurPlayerInputState();
+    if (!selectObj.cur || !selectObj.curProcessed) {
         if (mouseConstraint.body) {
-            core.selectObj.curBase = mouseConstraint.body;
-            core.selectObj.cur = mouseConstraint.body;
-            core.selectObj.curInd = -1;
-            core.selectObj.curType = 'selbody';
-            core.getCurPlayerInputState().events.onSelectedObjectChanged(core.selectObj);
+            selectObj.curProcessed = true;
+            selectObj.curBase = mouseConstraint.body;
+            selectObj.cur = mouseConstraint.body;
+            selectObj.curInd = -1;
+            selectObj.curType = 'selbody';
+            core.getCurPlayerInputState().events.onSelectedObjectChanged(selectObj);
         }
     } else {
-        const body = core.selectObj.curBase;
+        const body = selectObj.curBase;
         if (key === 'a') {
-            const curInd = core.selectObj.curInd + 1;
+            const curInd = selectObj.curInd + 1;
             if (!body.ggConstraints || curInd >= body.ggConstraints.length) {
-                core.selectObj.curBase = mouseConstraint.body;
-                core.selectObj.cur = mouseConstraint.body;
-                core.selectObj.curInd = -1;
-                core.selectObj.curType = 'selbody';                
+                //selectObj.curBase = mouseConstraint.body;
+                selectObj.cur = selectObj.curBase;
+                selectObj.curInd = -1;
+                selectObj.curType = 'selbody';                
             } else {
-                core.selectObj.curInd = curInd;
-                core.selectObj.cur = body.ggConstraints[curInd];
-                core.selectObj.curType = 'constraint';                
+                selectObj.curInd = curInd;
+                selectObj.cur = body.ggConstraints[curInd];
+                selectObj.curType = 'constraint';                
             }
-            core.getCurPlayerInputState().events.onSelectedObjectChanged(core.selectObj);
+            core.getCurPlayerInputState().events.onSelectedObjectChanged(selectObj);
         }
     }
 
-    const sel = core.selectObj.cur;
+    const sel = selectObj.cur;
     if (sel && (sel.bodyA || sel.bodyB)) {
         if (key === '1') {
             sel.length++;
@@ -508,7 +511,7 @@ function doSelect({
         }
     }
 
-    const body = core.selectObj.cur;
+    const body = selectObj.cur;
     if (body && core.inputs.loopKey === 'Delete') {
         const canDel1 = body.ggInfo && body.ggInfo.player !== 0 && !body.ggInfo.isImmortal;
         const isCons = body.bodyA || body.bodyB;
@@ -518,8 +521,8 @@ function doSelect({
         if (mouseConstraint.body === body) {
             mouseConstraint.body = null;
         }
-        core.selectObj.cur = null;
-        core.selectObj.curInd = -1;
+        selectObj.cur = null;
+        selectObj.curInd = -1;
         core.inputs.curKey = '';
     }
 }
@@ -532,12 +535,13 @@ function showSelect({
     side,
 }) {
     if (!isSelect) return;
-    const body = core.selectObj.cur;
+    const { selectObj } = core.getCurPlayerInputState();
+    const body = selectObj.cur;
     if (!body) return;
     const mouse = core.states.mouse;
     const selectInfo = {};
-
-    if (core.selectObj.curType === 'selbody') {
+    
+    if (selectObj.curType === 'selbody') {
         selectInfo.bodyPos = body.position;
     } else {
         const constraint = body;
