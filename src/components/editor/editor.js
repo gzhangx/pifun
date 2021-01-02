@@ -91,7 +91,7 @@ export function DesignEditor(props) {
                     //setIsDesignMode(!isDesignMode)
                     setCurDesignInfo(prev=>({
                         ...prev,
-                        isDesignMode: !curDesignInfo.curDesignInfo,
+                        isDesignMode: !prev.isDesignMode,
                     }))
                 }} ></input> Design</td></tr>
                 </table>
