@@ -274,10 +274,17 @@ function run(core, props) {
                 },                
             }, sdata), core.createdEngine)
             if (core.inputs.isDesignMode) {
-                const cy = mouse.pressLocation.y + (h / 2);
-                const mx = mouse.pressLocation.x;
-                core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx, y: cy }, pointB: { x: -w / 2, y: 0 } });
-                core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx + w, y: cy }, pointB: { x: w / 2, y: 0 } });
+                const addDesignCst = ({ x, y }, wh) => {
+                    const wi = wh || { w, h };
+                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 } });
+                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 } });    
+                }
+                c.body.ggInfo.funcs.addDesignCst = addDesignCst;
+                const y = mouse.pressLocation.y + (h / 2);
+                const x = mouse.pressLocation.x + (w/2);
+                addDesignCst({ x, y });
+                //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx, y: cy }, pointB: { x: -w / 2, y: 0 } });
+                //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx + w, y: cy }, pointB: { x: w / 2, y: 0 } });
                 sdata.body = c.body;
                 core.designerData.items.push(sdata);
             }

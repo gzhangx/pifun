@@ -546,20 +546,24 @@ function doSelect({
 function doDragDrop(core) {
     const { removeFromWorld } = core;
     const { selectObj, mouse } = core.getCurPlayerInputState();
-    const { cur, dragStartPoint } = selectObj;
-    if (!dragStartPoint || !cur) return;
+    const { cur, dragStartPoint } = selectObj;    
+    if (!dragStartPoint || !cur) return;    
+    const ggInfo = cur.ggInfo;
+    if (!ggInfo.funcs.addDesignCst) return;// not designer item
     console.log('translate '+ dragStartPoint + ' cur='+cur)
     console.log(Vector.sub(mouse.cur, selectObj.dragOffset));
     if (cur.ggConstraints && cur.ggConstraints.length) {
         cur.ggConstraints.forEach(removeFromWorld);
         cur.ggConstraints = [];
     }
-    const newPos = Vector.sub(mouse.cur, selectObj.dragOffset);
-    const binf = cur.ggInfo.buildInfo;
+    const newPos = Vector.sub(mouse.cur, selectObj.dragOffset);    
+    const binf = ggInfo.buildInfo;
     binf.x = newPos.x;
     cur.ggInfo.buildInfo.y = newPos.y;
     Body.setPosition(cur, newPos);
-    cur.ggInfo.funcs.addDesignCst(newPos);
+    if (ggInfo.funcs && ggInfo.funcs.addDesignCst) {
+        ggInfo.funcs.addDesignCst(newPos);
+    }
 }
 
 function showSelect({
