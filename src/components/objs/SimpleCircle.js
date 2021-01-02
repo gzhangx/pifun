@@ -12,5 +12,6 @@ export default function SimpleCircle(initInfo, engine) {
         type: 'circle',
         x, y, r,
     };
+    ggOpts.funcs = {};
     engine.setBodyGGInfo(body, ggOpts);
 }

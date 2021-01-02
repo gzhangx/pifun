@@ -90,6 +90,7 @@ function run(core, props) {
     const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,
         doSelect,
+        doDragDrop,
         showSelect,
         doTranslate,
         doFireBall,
@@ -144,6 +145,7 @@ function run(core, props) {
         doSelect();
         //props.inputs.setUISelectedObj(core.selectObj);
     }
+    doDragDrop(core);
     core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
     if (isCannonMode && mouse.state === 'dragged') {
         core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
@@ -246,7 +248,11 @@ function run(core, props) {
                 },                
             }), core.createdEngine);
             if (core.inputs.isDesignMode) {
-                core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
+                c.body.ggInfo.funcs.addDesignCst = pointA => {
+                    core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 } });    
+                }
+                c.body.ggInfo.funcs.addDesignCst({ x, y });
+                //core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
                 sdata.body = c.body;
                 core.designerData.items.push(sdata);
             }

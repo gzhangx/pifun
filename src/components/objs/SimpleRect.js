@@ -15,5 +15,6 @@ export default function SimpleRect(initInfo, engine) {
         type: 'rectangle',
         x, y, w, h,
     };
+    ggOpts.funcs = {};
     engine.setBodyGGInfo(body, ggInfo);
 }

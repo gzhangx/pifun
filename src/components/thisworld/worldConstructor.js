@@ -195,6 +195,8 @@ export const createConstructor = (core) => {
         makeCell,
         removeBadBodies,
         doSelect: () => doSelect({ core, removeFromWorld, }),
+        doDragDrop: () => doDragDrop(core),
+        doDragDrop,
         showSelect: ({ isSelect,
             key,
             side, }) => showSelect({
@@ -474,7 +476,7 @@ function doSelect({
 }) {
     const mouseConstraint = core.mouseConstraint;
     const key = core.inputs.loopKey;
-    const { selectObj } = core.getCurPlayerInputState();
+    const { selectObj, mouse } = core.getCurPlayerInputState();
     if (!selectObj.cur || !selectObj.curProcessed) {
         if (mouseConstraint.body) {
             selectObj.curProcessed = true;
@@ -482,6 +484,7 @@ function doSelect({
             selectObj.cur = mouseConstraint.body;
             selectObj.curInd = -1;
             selectObj.curType = 'selbody';
+            selectObj.dragStartPoint = null;
             core.getCurPlayerInputState().events.onSelectedObjectChanged(selectObj);
         }
     } else {
@@ -525,6 +528,38 @@ function doSelect({
         selectObj.curInd = -1;
         core.inputs.curKey = '';
     }
+
+    if (body && selectObj.curProcessed && core.inputs.isDesignMode && mouse.state === 'pressed') {
+        //selected and pressed again
+        if (!selectObj.dragStartPoint) {
+            selectObj.dragStartPoint = mouse.cur;
+            selectObj.dragOffset = Vector.sub(mouse.cur, selectObj.cur.ggInfo.buildInfo);
+            console.log('drag offset')
+            console.log(selectObj.dragOffset);
+        }
+    }
+    if (mouse.state === 'released') {
+        selectObj.dragStartPoint = null;
+    }
+}
+
+function doDragDrop(core) {
+    const { removeFromWorld } = core;
+    const { selectObj, mouse } = core.getCurPlayerInputState();
+    const { cur, dragStartPoint } = selectObj;
+    if (!dragStartPoint || !cur) return;
+    console.log('translate '+ dragStartPoint + ' cur='+cur)
+    console.log(Vector.sub(mouse.cur, selectObj.dragOffset));
+    if (cur.ggConstraints && cur.ggConstraints.length) {
+        cur.ggConstraints.forEach(removeFromWorld);
+        cur.ggConstraints = [];
+    }
+    const newPos = Vector.sub(mouse.cur, selectObj.dragOffset);
+    const binf = cur.ggInfo.buildInfo;
+    binf.x = newPos.x;
+    cur.ggInfo.buildInfo.y = newPos.y;
+    Body.setPosition(cur, newPos);
+    cur.ggInfo.funcs.addDesignCst(newPos);
 }
 
 function showSelect({
