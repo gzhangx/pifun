@@ -553,8 +553,9 @@ function doDragDrop(core) {
     console.log('translate '+ dragStartPoint + ' cur='+cur)
     console.log(Vector.sub(mouse.cur, selectObj.dragOffset));
     if (cur.ggConstraints && cur.ggConstraints.length) {
-        cur.ggConstraints.forEach(removeFromWorld);
-        cur.ggConstraints = [];
+        const toBeRemoved = cur.ggConstraints.filter(c => c.ggCstInfo && c.ggCstInfo.type ==='designerCst')
+        toBeRemoved.forEach(removeFromWorld);
+        cur.ggConstraints = cur.ggConstraints.filter(c => !c.ggCstInfo || c.ggCstInfo.type !== 'designerCst')
     }
     const newPos = Vector.sub(mouse.cur, selectObj.dragOffset);    
     const binf = ggInfo.buildInfo;

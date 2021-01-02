@@ -249,7 +249,10 @@ function run(core, props) {
             }), core.createdEngine);
             if (core.inputs.isDesignMode) {
                 c.body.ggInfo.funcs.addDesignCst = pointA => {
-                    core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 } });    
+                    const ggCstInfo = {
+                        type: 'designerCst',
+                    };
+                    core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 }, ggCstInfo });    
                 }
                 c.body.ggInfo.funcs.addDesignCst({ x, y });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
@@ -276,8 +279,11 @@ function run(core, props) {
             if (core.inputs.isDesignMode) {
                 const addDesignCst = ({ x, y }, wh) => {
                     const wi = wh || { w, h };
-                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 } });
-                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 } });    
+                    const ggCstInfo = {
+                        type:'designerCst',
+                    };
+                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 }, ggCstInfo });
+                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 }, ggCstInfo });    
                 }
                 c.body.ggInfo.funcs.addDesignCst = addDesignCst;
                 const y = mouse.pressLocation.y + (h / 2);
