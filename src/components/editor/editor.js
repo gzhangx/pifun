@@ -89,6 +89,8 @@ export function DesignEditor(props) {
                 }
                 <tr><td><input type="checkbox" checked={!!curDesignInfo.isDesignMode} onChange={() => {
                     //setIsDesignMode(!isDesignMode)
+                    core.inputs.isDesignMode = !curDesignInfo.isDesignMode;
+                    //console.log('set design mode to ' + core.inputs.isDesignMode)
                     setCurDesignInfo(prev=>({
                         ...prev,
                         isDesignMode: !prev.isDesignMode,

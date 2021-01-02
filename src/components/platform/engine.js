@@ -255,8 +255,8 @@ export function createEngine() {
       if (body.ggConstraints) {
         body.ggConstraints.forEach(c => {
           World.remove(engine.world, c);
-          rmFromBody(body.bodyA, c);
-          rmFromBody(body.bodyB, c);
+          rmFromBody(c.bodyA, c);
+          rmFromBody(c.bodyB, c);
         });
       }
       const ggInfo = body.ggInfo;
@@ -273,6 +273,10 @@ export function createEngine() {
         }
       }
       World.remove(engine.world, body);
+      if (body.bodyA) {        
+        rmFromBody(body.bodyA, body);
+      }
+      if (body.bodyB) rmFromBody(body.bodyB, body);
     },
     addConstraint: cst => World.add(engine.world, Constraint.create(cst)),
     eventCallbacks,

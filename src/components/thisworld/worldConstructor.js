@@ -547,7 +547,8 @@ function doDragDrop(core) {
     const { removeFromWorld } = core;
     const { selectObj, mouse } = core.getCurPlayerInputState();
     const { cur, dragStartPoint } = selectObj;    
-    if (!dragStartPoint || !cur) return;    
+    if (!dragStartPoint || !cur) return;
+    if (!core.inputs.isDesignMode) return;
     const ggInfo = cur.ggInfo;
     if (!ggInfo.funcs.addDesignCst) return;// not designer item
     console.log('translate '+ dragStartPoint + ' cur='+cur)
