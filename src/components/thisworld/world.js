@@ -126,7 +126,7 @@ function run(core, props) {
         //         console.log(`${b.position.x} ${b.position.y}`)
         //     }
         // })
-        const selected = core.selectObj.cur;
+        const selected = core.getCurPlayerInputState().selectObj.cur;
         if (selected && selected.ggInfo) {
             if (selected.ggInfo.forceLeftRight) {
                 selected.ggInfo.forceLeftRight(dir)
