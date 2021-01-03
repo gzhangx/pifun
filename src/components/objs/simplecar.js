@@ -1,6 +1,7 @@
 import { Vector } from "matter-js";
 //import { core, WIDTH } from '../thisworld/consts';
 import SimpleRect from './SimpleRect';
+import SimpleCircle from './SimpleCircle';
 const w = 200;
 const h = 40;
 
@@ -25,10 +26,13 @@ export function createCar(opt, pos) {
 
     const { addToWorld, Bodies, Body } = createdEngine;
     const wheelR = 20;
-    const w1 = Bodies.circle(pos.x - (w / 2) + wheelR, pos.y + (wheelR/2)+(h/2)+20, wheelR, opts);
-    addToWorld(w1);
-    const w2 = Bodies.circle(pos.x + (w / 2) - wheelR, pos.y + (wheelR/2)+(h/2)+20, wheelR, opts);
-    addToWorld(w2);
+    const w1 = (new SimpleCircle({ x: pos.x - (w / 2) + wheelR, y: pos.y + (wheelR / 2) + (h / 2) + 20, r: wheelR, opts },
+    createdEngine)).body;
+    //addToWorld(w1);
+    const w2 = (new SimpleCircle({
+        x: pos.x + (w / 2) - wheelR, y: pos.y + (wheelR / 2) + (h / 2) + 20, r: wheelR, opts
+    }, createdEngine)).body;
+    //addToWorld(w2);
     Body.applyForce(w1, {x:0, y:1}, {x:0.001, y:0.001})
     
     const stiffness = 0.1;

@@ -1,5 +1,5 @@
 export default function SimpleCircle(initInfo, engine) {
-    const {x,y,r, opts, ggOpts,} = initInfo;
+    const { x, y, r, opts, ggOpts = {},} = initInfo;
     this.radius = r;
     this.opts = opts;
     this.type = initInfo.type | 'SimpleCircle';    

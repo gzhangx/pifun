@@ -6,7 +6,7 @@ const BREAKAWAYSPEED = 10;
 const BREAKAWAYANGSPEED = 0.3;
 const wallWidth = 20;
 const halfWallWidth = wallWidth / 10;
-
+export const INVALID_NUM = -9999999;
 export function createCore() {
     const curPlayerId = utils.uuidv1();
     const core = {
@@ -64,6 +64,7 @@ export function createCore() {
                             curIndex: -1,
                             curType: '',
                             curProcessed: false,
+                            prevPos: { x: INVALID_NUM, y: INVALID_NUM}
                         },
                         events: {
                             onSelectedObjectChange: null,
@@ -180,5 +181,9 @@ export function createCore() {
     }
     addResetToSelectObj(core.getCurPlayerInputState().selectObj);
 
+    const { selectObj, events } = core.getCurPlayerInputState();
+    core.raiseMySelectedObjChange = ()=> {
+        events.onSelectedObjectChanged(selectObj);
+    }
     return core;
 }

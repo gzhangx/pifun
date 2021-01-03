@@ -482,10 +482,11 @@ function doSelect({
             selectObj.curProcessed = true;
             selectObj.curBase = mouseConstraint.body;
             selectObj.cur = mouseConstraint.body;
+            selectObj.prevPos = { ...selectObj.curBase.position };
             selectObj.curInd = -1;
             selectObj.curType = 'selbody';
             selectObj.dragStartPoint = null;
-            core.getCurPlayerInputState().events.onSelectedObjectChanged(selectObj);
+            core.raiseMySelectedObjChange();
         }
     } else {
         const body = selectObj.curBase;
@@ -501,7 +502,7 @@ function doSelect({
                 selectObj.cur = body.ggConstraints[curInd];
                 selectObj.curType = 'constraint';                
             }
-            core.getCurPlayerInputState().events.onSelectedObjectChanged(selectObj);
+            core.raiseMySelectedObjChange();
         }
     }
 
@@ -574,11 +575,26 @@ function showSelect({
     //mouse,
     key,
     side,
-}) {
-    if (!isSelect) return;
+}) {    
     const { selectObj } = core.getCurPlayerInputState();
     const body = selectObj.cur;
     if (!body) return;
+
+    const prevPos = selectObj.prevPos;
+    const ggInfo = selectObj.cur.ggInfo;
+    if (prevPos && ggInfo) {
+        const xDiff = Math.abs(prevPos.x - body.position.x);
+        if (xDiff >=1
+            || Math.abs(prevPos.y - body.position.y)>=1) {
+            const buildInfo = ggInfo.buildInfo;
+            buildInfo.x = body.position.x;
+            buildInfo.y = body.position.y;
+            core.raiseMySelectedObjChange();
+            selectObj.prevPos = { ...body.position };
+        }
+    }
+
+    if (!isSelect) return;
     const mouse = core.states.mouse;
     const selectInfo = {};
     

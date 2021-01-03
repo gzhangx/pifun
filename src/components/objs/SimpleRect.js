@@ -1,5 +1,5 @@
 export default function SimpleRect(initInfo, engine) {
-    const {x,y,w,h, opts, ggOpts} = initInfo;
+    const { x, y, w, h, opts, ggOpts = {}} = initInfo;
     this.w = w;
     this.h = h;
     this.opts = opts || {};
