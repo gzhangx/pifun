@@ -4,7 +4,7 @@ const KeyHandler = cb => {
     useEffect(() => {
       const onKeyDown = (e) => {
         const key = e.key;        
-          e.preventDefault();
+          //e.preventDefault();
           setKeyPressed(key);        
           if (cb) cb(key);
       };

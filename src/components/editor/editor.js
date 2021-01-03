@@ -140,10 +140,18 @@ export function DesignEditor(props) {
                             <td>pointB <input type="text" value={curDesignInfo.pointBx}></input>
                                 <input type="text" value={curDesignInfo.pointBy}></input>
                             </td>
-                            <td>stiffness <input type="text" value={curDesignInfo.stiffness}></input>
+                            <td>stiffness <input type="text" value={curDesignInfo.stiffness} onChange={e => {                                
+                                const stiffness = parseFloat(e.target.value);
+                                if (isNaN(stiffness)) return;
+                                curDesignInfo.selectedObj.cur.stiffness = stiffness;
+                                setCurDesignInfo(prev => ({
+                                    ...prev,
+                                    stiffness,
+                                }));
+                            }}></input>
                             </td>
                             <td>len { curDesignInfo.len}
-                            </td>
+                            </td>                            
                         </tr>
                         </>
                 }
