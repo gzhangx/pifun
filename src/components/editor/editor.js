@@ -18,10 +18,52 @@ export function getEditorInitState() {
 export function setUISelectedObj(setCurDesignInfo, o) {
     console.log('set ui selected object');
     console.log(o);
+    const cur = o.cur;
+    if (cur.bodyA || cur.bodyB) {
+        let bodyAx = 'NA', bodyBx = 'NA', bodyAy = 'NA', bodyBy = 'NA', stiffness = cur.stiffness;
+        let pointAx = 'NA', pointBx = 'NA', pointAy = 'NA', pointBy = 'NA';
+        if (cur.bodyA) {
+            const pos = cur.bodyA.position;
+            bodyAx = pos.x.toFixed(0);
+            bodyAy = pos.y.toFixed(0);
+        }
+        if (cur.bodyB) {
+            const pos = cur.bodyB.position;
+            bodyBx = pos.x.toFixed(0);
+            bodyBy = pos.y.toFixed(0);
+        }
+        if (cur.pointA) {
+            const pos = cur.pointA;
+            pointAx = pos.x.toFixed(2);
+            pointAy = pos.y.toFixed(2);
+        }
+        if (cur.pointB) {
+            const pos = cur.pointB;
+            pointBx = pos.x.toFixed(2);
+            pointBy = pos.y.toFixed(2);
+        }
+        setCurDesignInfo(prev => ({
+            ...prev,
+            selectedObj: o,
+            type: 'constraint',
+            stiffness,
+            bodyAx,
+            bodyBx,
+            bodyAy, 
+            bodyBy,
+            pointAx,
+            pointAy,
+            pointBx,
+            pointBy,
+            len: cur.length.toFixed(2)
+        }));
+        return;
+    }
     const info = get(o, 'cur.ggInfo.buildInfo');
     if (!info) return;
     setCurDesignInfo(prev => ({
         ...prev,
+        type: 'body',
         selectedObj: o,
         x: info.x || 0,
         y: info.y || 0,
@@ -34,7 +76,7 @@ export function setUISelectedObj(setCurDesignInfo, o) {
 export function DesignEditor(props) {
     const { core, curDesignInfo, setCurDesignInfo,
         stBuildType } = props.context;        
-    const { selectedObj } = curDesignInfo;
+    const { selectedObj, type } = curDesignInfo;
     const tranx = curDesignInfo.x - curDesignInfo.centerX;
     const trany = curDesignInfo.y - curDesignInfo.centerY;
     //const selectedObj = core.getCurPlayerInputState().selectObj.cur;
@@ -61,7 +103,7 @@ export function DesignEditor(props) {
                         </td>
                     </tr>
                 {
-                    selectedObj && <><tr>
+                    type==='body' && selectedObj && <><tr>
                         <td>x: <input type="text" value={tranx} onChange={
                             defUi0ByName('x')
                         }></input></td>
@@ -84,6 +126,24 @@ export function DesignEditor(props) {
                                     centerY,
                                 }))
                             }}>SetCenter</button> </td>
+                        </tr>
+                        </>
+                }
+                {
+                    type === 'constraint' && selectedObj && <>
+                        <tr>
+                            <td>BodyA {curDesignInfo.bodyAx},{curDesignInfo.bodyAy}</td>
+                            <td>pointA <input type="text" value={curDesignInfo.pointAx}></input>
+                                <input type="text" value={curDesignInfo.pointAy}></input>
+                            </td>
+                            <td>BodyB {curDesignInfo.bodyBx},{curDesignInfo.bodyBy}</td>
+                            <td>pointB <input type="text" value={curDesignInfo.pointBx}></input>
+                                <input type="text" value={curDesignInfo.pointBy}></input>
+                            </td>
+                            <td>stiffness <input type="text" value={curDesignInfo.stiffness}></input>
+                            </td>
+                            <td>len { curDesignInfo.len}
+                            </td>
                         </tr>
                         </>
                 }
