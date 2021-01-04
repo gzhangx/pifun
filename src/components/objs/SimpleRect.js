@@ -12,8 +12,10 @@ export default function SimpleRect(initInfo, engine) {
     this.body = body;
     const ggInfo = ggOpts || { health: 0, h };
     ggInfo.buildInfo = {
+        id: body.id,
         type: 'rectangle',
         x, y, w, h,
+        opts,
     };
     ggOpts.funcs = {};
     engine.setBodyGGInfo(body, ggInfo);

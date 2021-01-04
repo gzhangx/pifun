@@ -9,8 +9,10 @@ export default function SimpleCircle(initInfo, engine) {
 
     this.body = body;
     ggOpts.buildInfo = {
+        id: body.id,
         type: 'circle',
         x, y, r,
+        opts,
     };
     ggOpts.funcs = {};
     engine.setBodyGGInfo(body, ggOpts);
