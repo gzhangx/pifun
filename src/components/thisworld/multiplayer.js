@@ -19,6 +19,10 @@ export function setupMultiplayer(core) {
                     }))
                 })
                 break;
+            case 'objSyncResponse':
+                console.log('got objSyncResponse')
+                console.log(msg);
+                break;
         }
     });
 }
