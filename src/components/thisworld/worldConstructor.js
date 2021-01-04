@@ -423,6 +423,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     //core.groupGroup = group;
     core.worldCon = createConstructor(core);
     core.mouseConstraint = mouseConstraint;
+    core.sendWsMsg = sendWsMsg;
     core.render.run();
 }
 

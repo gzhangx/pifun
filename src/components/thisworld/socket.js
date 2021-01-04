@@ -1,4 +1,4 @@
-const urlBase = 'http://192.168.1.41:8081';
+const urlBase = 'http://192.168.1.41';
 const WsSocket = {
     socket: null,
     freeFormMsgListener: null,

@@ -10,6 +10,15 @@ export function setupMultiplayer(core) {
                 if (!playerState.mouse) playerState.mouse = mouse;
                 else playerState.mouse = Object.assign(playerState.mouse, mouse);
                 break;
+            case 'objSyncMsg':
+                sendWsMsg({
+                    type: 'objSyncResponse',
+                    bodies: core.createdEngine.engine.world.bodies.map(b => ({
+                        buildInfo: b.ggInfo.buildInfo,
+                        position: b.position,
+                    }))
+                })
+                break;
         }
     });
 }

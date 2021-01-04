@@ -92,6 +92,11 @@ function App() {
           <tr><td>Gravity {gravity} <button onClick={() => {
             setGravity(core.createdEngine.getGravity());
           }}>Get Gravity</button></td></tr>          
+          <tr><td><button onClick={() => {
+            core.sendWsMsg({
+              type:'objSyncMsg'
+            });
+          }}>Sync</button></td></tr>
         </table>
       </div>
     </div>
