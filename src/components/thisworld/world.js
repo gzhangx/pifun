@@ -1,5 +1,5 @@
 import CreateSimpleCircle from '../objs/SimpleCircle';
-import SimpleRect from '../objs/SimpleRect';
+import CreateSimpleRect from '../objs/SimpleRect';
 
 import { initWorld, getMouse } from './worldConstructor';
 
@@ -270,7 +270,7 @@ function run(core, props) {
                 h,                
                 opts: { restitution: 0.5, },
             };
-            const c = new SimpleRect(Object.assign({                
+            const cbody = CreateSimpleRect(Object.assign({                
                 ggOpts: {
                     isImmortal: false,
                     isDesignerItem: true,
@@ -282,8 +282,8 @@ function run(core, props) {
                     const ggCstInfo = {
                         type:'designerCst',
                     };
-                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 }, ggCstInfo });
-                    core.worldCon.addCst({ bodyB: c.body, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 }, ggCstInfo });    
+                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 }, ggCstInfo });
+                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 }, ggCstInfo });    
                 }
                 c.body.ggInfo.funcs.addDesignCst = addDesignCst;
                 const y = mouse.pressLocation.y + (h / 2);
@@ -291,7 +291,7 @@ function run(core, props) {
                 addDesignCst({ x, y });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx, y: cy }, pointB: { x: -w / 2, y: 0 } });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx + w, y: cy }, pointB: { x: w / 2, y: 0 } });
-                sdata.body = c.body;
+                sdata.body = cbody;
                 core.designerData.items.push(sdata);
             }
         }
@@ -317,7 +317,7 @@ function createWorld(core) {
         opts: { restitution: 0.5, collisionFilter: worldCats.ground.structure.getCollisionFilter()},
     }, createdEngine);
 
-    new SimpleRect({
+    CreateSimpleRect({
         x: 310,
         y: 100,
         w: 30,
@@ -329,7 +329,7 @@ function createWorld(core) {
     }, createdEngine);
     
     const GroundHeight = 200;
-    new SimpleRect({
+    CreateSimpleRect({
         x: WIDTH/2,
         y: HEIGHT + GroundHeight/2- 10,
         w: WIDTH,

@@ -1,6 +1,6 @@
 import { createEngine, getDispAng } from "../platform/engine";
 import { createRender } from './ui';
-import SimpleRect from '../objs/SimpleRect';
+import CreateSimpleRect from '../objs/SimpleRect';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
 import CreateSimpleCircle from '../objs/SimpleCircle';
 import {sendWsMsg} from './socket';
@@ -117,7 +117,7 @@ export const createConstructor = (core) => {
      * @param {*} playerInfo {side, player}
      */
     const makeCell = (wallPts, downConns, collisionFilter, playerInfo) => {
-        const makeRect = (rr, label) => new SimpleRect({
+        const makeRect = (rr, label) => CreateSimpleRect({
             x: rr.x, y: rr.y, w: rr.w, h: rr.h,
             opts: { label, angle: getDispAng(rr.angle), collisionFilter, },
             ggOpts: { label, health: 10, w: rr.w, h: rr.h, playerInfo },
@@ -133,8 +133,8 @@ export const createConstructor = (core) => {
                 }
                 return x.body;
             }
-            const bodyA = checkAdd(a).body;
-            const bodyB = checkAdd(b).body;
+            const bodyA = checkAdd(a);
+            const bodyB = checkAdd(b);
 
             const cst = { bodyA, bodyB, pointA, pointB, stiffness };
             addCst(cst);
@@ -154,8 +154,8 @@ export const createConstructor = (core) => {
                 y: a.y - a.body.position.y,
             }
         };
-        addCst({ bodyA: anchorRight, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
-        addCst({ bodyA: anchorLeft, bodyB: btmBeam.body.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
+        addCst({ bodyA: anchorRight, bodyB: btmBeam.body, pointA: getAnchorOff(downConns.end), pointB: btmRight });
+        addCst({ bodyA: anchorLeft, bodyB: btmBeam.body, pointA: getAnchorOff(downConns.start), pointB: btmLeft });
         if (!core.debugInfo) {
             core.debugInfo = allWalls[0];
         }

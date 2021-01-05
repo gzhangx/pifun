@@ -1,6 +1,6 @@
 import { Vector } from "matter-js";
 //import { core, WIDTH } from '../thisworld/consts';
-import SimpleRect from './SimpleRect';
+import CreateSimpleRect from './SimpleRect';
 import { stickRect2Body } from "../platform/engine";
 const w = 100;
 const h = 20;
@@ -62,7 +62,7 @@ export function createCannon(opt, pos) {
     const angle = newC.angle;
     const { side } = opt;
     const { createdEngine } = core;
-    const rc = new SimpleRect({
+    const rc = CreateSimpleRect({
         x: newC.x,
         y: newC.y,
         w,
@@ -77,7 +77,7 @@ export function createCannon(opt, pos) {
 
     const stiffness = 0.9;
     const getCst = who => {
-        return { bodyA: rrr.body, bodyB: rc.body, pointA: Vector.sub(rrr.goodPts[who], rrr.body.position), pointB: Vector.sub(rrr.goodPts[who], rc.body.position), stiffness };
+        return { bodyA: rrr.body, bodyB: rc, pointA: Vector.sub(rrr.goodPts[who], rrr.body.position), pointB: Vector.sub(rrr.goodPts[who], rc.position), stiffness };
     };
     core.worldCon.addCst(getCst(0));
     core.worldCon.addCst(getCst(1));

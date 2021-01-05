@@ -1,6 +1,6 @@
 import { Vector } from "matter-js";
 //import { core, WIDTH } from '../thisworld/consts';
-import SimpleRect from './SimpleRect';
+import CreateSimpleRect from './SimpleRect';
 import CreateSimpleCircle from './SimpleCircle';
 const w = 200;
 const h = 40;
@@ -12,7 +12,7 @@ export function createCar(opt, pos) {
     const { side } = opt;
     const opts = null;//{ restitution: 0.5, collisionFilter: core.worldCats.getCat(side).structure.getCollisionFilter() };
 
-    const rc = new SimpleRect({
+    const rc = CreateSimpleRect({
         x: pos.x,
         y: pos.y,
         w,
@@ -38,14 +38,14 @@ export function createCar(opt, pos) {
     const stiffness = 0.1;
     const wws = [w1, w2];
     wws.forEach(w => {
-        w.ggInfo = Object.assign({}, rc.body.ggInfo, {
+        w.ggInfo = Object.assign({}, rc.ggInfo, {
             isTestWheel: true,
             forceLeftRight: lr => Body.applyForce(w, { x: w.position.x, y: w.position.y + 1 }, { x: 0.01*lr, y: 0 })
         });
     })
-    rc.body.ggInfo.wheels = wws;
+    rc.ggInfo.wheels = wws;
     const getCst = (who, mul=1) => {
-        return { bodyA: wws[who], bodyB: rc.body, pointA: {x:0,y:0}, pointB: {x: (who?(w/2-wheelR):(-w/2+wheelR))*mul,y:0}, stiffness };
+        return { bodyA: wws[who], bodyB: rc, pointA: {x:0,y:0}, pointB: {x: (who?(w/2-wheelR):(-w/2+wheelR))*mul,y:0}, stiffness };
     };
     core.worldCon.addCst(getCst(0));
     core.worldCon.addCst(getCst(0,0));
