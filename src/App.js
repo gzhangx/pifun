@@ -82,7 +82,11 @@ function App() {
           </tr>
           <tr><td>setMaster<input type="checkbox" checked={isMaster} onClick={() => {
             if (!isMaster) {
-              core.masterPlayerId = core.curPlayerId;
+              core.playersInfo.masterPlayerId = core.playersInfo.curPlayerId;
+              core.sendWsMsg({
+                type: 'setMasterPlayer',
+                masterPlayerId: core.playersInfo.curPlayerId,
+              })
             }
             setIsMaster(!isMaster);
             

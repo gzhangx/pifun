@@ -9,9 +9,7 @@ const halfWallWidth = wallWidth / 10;
 export const INVALID_NUM = -9999999;
 export function createCore() {
     const curPlayerId = utils.uuidv1();
-    const core = {
-        masterPlayerId:'',
-        curPlayerId,
+    const core = {        
         consts: {
             WIDTH,
             HEIGHT,
@@ -46,6 +44,8 @@ export function createCore() {
         },
         playersInfo: {
             curPlayerId,
+            masterPlayerId: '',
+            isMaster: ()=>core.playersInfo.masterPlayerId === curPlayerId,
             playerIds: [curPlayerId],
             players: {
                 [curPlayerId]: {
