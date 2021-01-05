@@ -297,7 +297,7 @@ export function createEngine() {
   }
   created.getBodiesUnderPos = pos => getBodiesUnderPos(created, pos);
   created.clearAll = () => {
-    const bodies = engine.bodies.slice();
+    const bodies = engine.world.bodies.slice();
     bodies.forEach(created.removeFromWorld);
   }
   return created;

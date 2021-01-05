@@ -28,6 +28,8 @@ export function setupMultiplayer(core) {
             case 'objSyncResponse':
                 console.log('got objSyncResponse')
                 console.log(msg);
+                core.createdEngine.clearAll();
+                core.importBuildInfo(msg.bodies);
                 break;
         }
     });
