@@ -1,4 +1,4 @@
-import SimpleCircle from '../objs/SimpleCircle';
+import CreateSimpleCircle from '../objs/SimpleCircle';
 import SimpleRect from '../objs/SimpleRect';
 
 import { initWorld, getMouse } from './worldConstructor';
@@ -242,19 +242,19 @@ function run(core, props) {
                 x, y, r,
                 opts: { restitution: 0.5, },
             };
-            const c = new SimpleCircle(Object.assign({}, sdata, {
+            const c = CreateSimpleCircle(Object.assign({}, sdata, {
                 ggOpts: {
                     isDesignerItem: true,
                 },                
             }), core.createdEngine);
             if (core.inputs.isDesignMode) {
-                c.body.ggInfo.funcs.addDesignCst = pointA => {
+                c.ggInfo.funcs.addDesignCst = pointA => {
                     const ggCstInfo = {
                         type: 'designerCst',
                     };
                     core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 }, ggCstInfo });    
                 }
-                c.body.ggInfo.funcs.addDesignCst({ x, y });
+                c.ggInfo.funcs.addDesignCst({ x, y });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
                 sdata.body = c.body;
                 core.designerData.items.push(sdata);
@@ -307,7 +307,7 @@ function createWorld(core) {
     const { worldCats, createdEngine, consts } = core;
     const { WIDTH, HEIGHT} = consts;
     
-    new SimpleCircle({
+    CreateSimpleCircle({
         x: 210,
         y: 100,
         r: 30,

@@ -2,7 +2,7 @@ import { createEngine, getDispAng } from "../platform/engine";
 import { createRender } from './ui';
 import SimpleRect from '../objs/SimpleRect';
 import { Vector, Body, Bounds, Mouse } from "matter-js";
-import SimpleCircle from '../objs/SimpleCircle';
+import CreateSimpleCircle from '../objs/SimpleCircle';
 import {sendWsMsg} from './socket';
 import { setupMultiplayer } from './multiplayer';
 
@@ -424,6 +424,12 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     core.worldCon = createConstructor(core);
     core.mouseConstraint = mouseConstraint;
     core.sendWsMsg = sendWsMsg;
+    core.importBuildInfo = builds => {
+        const importedConstraints = {};
+        builds.forEach(build => {
+           //if (build.type ===) 
+        });
+    }
     core.render.run();
 }
 
@@ -723,7 +729,7 @@ function doFireBall(core, p2, p1, side) {
     const y1 = p1.y;
     const x2 = p2.x;
     const y2 = p2.y;
-    const ball = new SimpleCircle({
+    const bbody = CreateSimpleCircle({
         x: x2,
         y: y2,
         r: 10,
@@ -731,7 +737,6 @@ function doFireBall(core, p2, p1, side) {
         opts: { restitution: 0.5, collisionFilter: core.worldCats.getCat(side).fire.getCollisionFilter() },
         ggOpts: { label: 'fireball', time: new Date(), side },
     }, core.createdEngine);
-    const bbody = ball.body;
     bbody.label = 'fireball';
     const forceMagnitude = bbody.mass * 0.05;
     const xx = x1 - x2;

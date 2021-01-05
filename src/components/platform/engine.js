@@ -296,5 +296,9 @@ export function createEngine() {
     }
   }
   created.getBodiesUnderPos = pos => getBodiesUnderPos(created, pos);
+  created.clearAll = () => {
+    const bodies = engine.bodies.slice();
+    bodies.forEach(created.removeFromWorld);
+  }
   return created;
 }
