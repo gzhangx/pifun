@@ -426,10 +426,18 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     core.worldCon = createConstructor(core);
     core.mouseConstraint = mouseConstraint;
     core.sendWsMsg = sendWsMsg;
+    const buildTypes = {
+        circle: CreateSimpleCircle,
+        rectangle: CreateSimpleRect,
+    }
     core.importBuildInfo = builds => {
         const importedConstraints = {};
         builds.forEach(build => {
-           //if (build.type ===) 
+            const binf = build.buildInfo;
+            const b = buildTypes[binf.type](binf, core.createdEngine);
+            if (build.position.x !== b.position.x || build.position.y !== b.position.y) {
+                Body.setPosition(b,build.position);
+            }
         });
     }
     core.render.run();
