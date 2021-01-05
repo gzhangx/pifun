@@ -5,6 +5,7 @@ import { Vector, Body, Bounds, Mouse } from "matter-js";
 import CreateSimpleCircle from '../objs/SimpleCircle';
 import {sendWsMsg} from './socket';
 import { setupMultiplayer } from './multiplayer';
+import { get } from 'lodash';
 
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -376,11 +377,12 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         mouse.state = 'pressed';
         mouse.pressLocation = p;
         //selectObj.cur = null;
+        const buildInfo = get(selectObj, 'cur.buildInfo');
         sendWsMsg({
             type: 'mouseMsg',
             player: core.curPlayerId,
             mouse,
-            selectObj,
+            selectObj: buildInfo,
         });
         selectObj.curProcessed = false;
         core.states.mouse.state = 'pressed';
