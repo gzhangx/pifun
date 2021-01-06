@@ -436,6 +436,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             const binf = build.buildInfo;
             binf.opts.id = binf.id;
             const b = buildTypes[binf.type](binf, core.createdEngine);
+            b.isStatic = true;
             if (build.position.x !== b.position.x || build.position.y !== b.position.y) {
                 Body.setPosition(b, build.position);
             }
