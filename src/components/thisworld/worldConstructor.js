@@ -195,7 +195,7 @@ export const createConstructor = (core) => {
         addCst,
         makeCell,
         removeBadBodies,
-        doSelect: () => doSelect({ core, removeFromWorld, }),
+        doSelect: playerId => doSelect({ core, removeFromWorld, playerId}),
         doDragDrop: () => doDragDrop(core),
         doDragDrop,
         showSelect: ({ isSelect,
@@ -504,10 +504,12 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
 function doSelect({
     core,
     removeFromWorld,
+    playerId,
 }) {
     const mouseConstraint = core.mouseConstraint;
     const key = core.inputs.loopKey;
-    const { selectObj, mouse } = core.getCurPlayerInputState();
+    const { selectObj, mouse } = core.getPlayerInputStateById(playerId);
+    if (!selectObj.isSelectMode) return;
     if (!selectObj.cur || !selectObj.curProcessed) {
         if (mouseConstraint.body) {
             selectObj.curProcessed = true;

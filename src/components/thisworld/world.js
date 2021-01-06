@@ -85,7 +85,9 @@ function run(core, props) {
     const { mouseConstraint } = core;
     
     //const mouse = core.states.mouse;
-    const mouse = core.getCurPlayerInputState().mouse;
+    const curPlayerInputState = core.getCurPlayerInputState();
+    curPlayerInputState.selectObj.isSelectMode = isSelect;
+    const mouse = curPlayerInputState.mouse;
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,
@@ -141,10 +143,11 @@ function run(core, props) {
     }
     //if (core.inputs.curBuildType === 'wall') 
 
-    if (isSelect) {
-        doSelect();
+    //if (isSelect) 
+    core.playersInfo.playerIds.map(pid => {
+        doSelect(pid);
         //props.inputs.setUISelectedObj(core.selectObj);
-    }
+    });
     doDragDrop(core);
     core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
     core.uiDspInfo.playersInfo = core.playersInfo.playerIds.map(pid => {
