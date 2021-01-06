@@ -30,6 +30,7 @@ export function setupMultiplayer(core) {
                                 if (!acc.keys[cst.id]) {
                                     acc.keys[cst.id] = cst;
                                     acc.constraints.push({
+                                        opts: {id: cst.id},
                                         pointA: cst.pointA,
                                         pointB: cst.pointB,
                                         bodyA: getBodyIdOnly(cst.bodyA),

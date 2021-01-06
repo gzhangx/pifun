@@ -432,17 +432,25 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     }
     core.importBuildInfo = ({bodies, constraints}) => {
         const importedConstraints = {};
-        bodies.reduce((acc,build) => {
+        const keys = bodies.reduce((acc, build) => {
             const binf = build.buildInfo;
+            binf.opts.id = binf.id;
             const b = buildTypes[binf.type](binf, core.createdEngine);
             if (build.position.x !== b.position.x || build.position.y !== b.position.y) {
-                Body.setPosition(b,build.position);
+                Body.setPosition(b, build.position);
             }
             acc[b.id] = b;
             return acc;
         }, {});
+        const rbody = bb => bb && keys[bb.id];
         constraints.forEach(cst => {
-            
+            core.worldCon.addCst({
+                pointA: cst.pointA,
+                pointB: cst.pointB,
+                bodyA: rbody(cst.bodyA),
+                bodyB: rbody(cst.bodyB),
+                opts: cst.opts,
+            });
         });
     }
     core.render.run();
