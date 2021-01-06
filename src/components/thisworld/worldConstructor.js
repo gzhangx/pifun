@@ -433,6 +433,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         const importedConstraints = {};
         const keys = bodies.reduce((acc, build) => {
             const binf = build.buildInfo;
+            if (!binf.opts) binf.opts = {};
             binf.opts.id = binf.id;
             const b = buildTypes[binf.type](binf, core.createdEngine);
             b.isStatic = true;
