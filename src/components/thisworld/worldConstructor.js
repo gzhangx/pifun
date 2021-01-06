@@ -430,14 +430,19 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         circle: CreateSimpleCircle,
         rectangle: CreateSimpleRect,
     }
-    core.importBuildInfo = builds => {
+    core.importBuildInfo = ({bodies, constraints}) => {
         const importedConstraints = {};
-        builds.forEach(build => {
+        bodies.reduce((acc,build) => {
             const binf = build.buildInfo;
             const b = buildTypes[binf.type](binf, core.createdEngine);
             if (build.position.x !== b.position.x || build.position.y !== b.position.y) {
                 Body.setPosition(b,build.position);
             }
+            acc[b.id] = b;
+            return acc;
+        }, {});
+        constraints.forEach(cst => {
+            
         });
     }
     core.render.run();

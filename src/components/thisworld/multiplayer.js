@@ -17,19 +17,45 @@ export function setupMultiplayer(core) {
                 break;            
             case 'objSyncMsg':
                 if (!core.playersInfo.isMaster()) return;
+                const getBodyIdOnly = b => b && { id: b.id };
+                const items = core.createdEngine.engine.world.bodies.reduce((acc, b) => {
+                    if (!acc.keys[b.id]) {
+                        acc.keys[b.id] = b;
+                        acc.bodies.push({
+                            buildInfo: b.ggInfo.buildInfo,
+                            position: b.position,    
+                        });
+                        if (b.ggConstraints) {
+                            b.ggConstraints.forEach(cst => {
+                                if (!acc.keys[cst.id]) {
+                                    acc.keys[cst.id] = cst;
+                                    acc.constraints.push({
+                                        pointA: cst.pointA,
+                                        pointB: cst.pointB,
+                                        bodyA: getBodyIdOnly(cst.bodyA),
+                                        bodyB: getBodyIdOnly(cst.bodyB),
+                                    })
+                               } 
+                            });
+                        }
+                    }
+                    return acc;
+                }, {
+                    bodies: [],
+                    constraints: [],
+                    keys: {}
+                });
                 sendWsMsg({
                     type: 'objSyncResponse',
-                    bodies: core.createdEngine.engine.world.bodies.map(b => ({
-                        buildInfo: b.ggInfo.buildInfo,
-                        position: b.position,
-                    }))
+                    bodies: items.bodies,
+                    constraints: items.constraints,
                 })
                 break;
             case 'objSyncResponse':
                 console.log('got objSyncResponse')
                 console.log(msg);
                 core.createdEngine.clearAll();
-                core.importBuildInfo(msg.bodies);
+                core.importBuildInfo(msg); //bodies, constraints
                 break;
         }
     });
