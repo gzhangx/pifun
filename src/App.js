@@ -25,7 +25,8 @@ function App() {
   });
   const stBuildType = t => {
     setCurBuildType(t);
-    core.inputs.curBuildType = t;
+    const cpi = core.getCurPlayerInputState()
+    cpi.curBuildType = t;
   };
   const stCurSide = e => {
     const side = parseInt(e.target.value);

@@ -71,15 +71,15 @@ const arrowDir = {
 }
 
 function run(core, props) {    
-    //const { props } = opt;
-    const { curBuildType } = core.inputs;
-    const { setCurDebugText } = props.inputs;    
-    const isSelect = curBuildType === 'select';    
+    //const { props } = opt;    
+    const { setCurDebugText } = props.inputs;         
     //const { mouseConstraint } = core;
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
-    sendWsPlayerInputs(core.inputs, curPlayerInputState);
+    sendWsPlayerInputs(curPlayerInputState, core.inputs);
+    const { curBuildType } = curPlayerInputState;
+    const isSelect = curBuildType === 'select';
     //curPlayerInputState.selectObj.isSelectMode = isSelect;
     
     //const mouse = curPlayerInputState.mouse;
