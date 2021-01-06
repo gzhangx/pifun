@@ -73,23 +73,17 @@ const arrowDir = {
 function run(core, props) {    
     //const { props } = opt;
     const { curBuildType } = core.inputs;
-    const { setCurDebugText } = props.inputs;
-    const isWallMode = curBuildType === 'wall';
-    const isFireMode = curBuildType === 'fire';
-    const isCannonMode = curBuildType === 'cannon';
-    const isConnection = curBuildType === 'connection';
-    const isSelect = curBuildType === 'select';
-    const isCircle = curBuildType === 'circle';
-    const isRectangle = curBuildType === 'rectangle';
-    const { mouseConstraint } = core;
+    const { setCurDebugText } = props.inputs;    
+    const isSelect = curBuildType === 'select';    
+    //const { mouseConstraint } = core;
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
     sendWsPlayerInputs(curPlayerInputState, core.inputs);
-    curPlayerInputState.selectObj.isSelectMode = isSelect;
+    //curPlayerInputState.selectObj.isSelectMode = isSelect;
     
-    const mouse = curPlayerInputState.mouse;
-    mouseConstraint.disabled = !isSelect && mouse.pressLocation;
+    //const mouse = curPlayerInputState.mouse;
+    //mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
     const { getDragCellPoints, makeCell, worldOperations,
         doSelect,
@@ -103,9 +97,7 @@ function run(core, props) {
     //processCollisions(core);
     worldOperations();
     const allBodies = Composite.allBodies(engine.world);
-
-
-    const c = core.render.context;
+    
     const side = core.inputs.curSide;
     const key = core.inputs.loopKey;
     
@@ -155,13 +147,7 @@ function run(core, props) {
         const cur = get(core.playersInfo.players, [pid, 'playerInputState','mouse','cur']);        
         if (!cur) return;
         return cur;
-    }).filter(x=>x);
-    if (isCannonMode && mouse.state === 'dragged') {
-        core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
-            x: mouse.cur.x,
-            y: mouse.cur.y,
-        })
-    }
+    }).filter(x=>x);    
     
     core.playersInfo.playerIds.forEach(pid => {
         const cur = get(core.playersInfo.players, [pid, 'playerInputState']);
@@ -194,6 +180,16 @@ function mouseProcessing(core, { mouse, curBuildType, allBodies,
         doFireBall,
         checkWallPoints,
     } = core.worldCon;
+    
+    mouseConstraint.disabled = !isSelect && mouse.pressLocation;
+
+    if (isCannonMode && mouse.state === 'dragged') {
+        //const c = core.render.context;
+        core.uiDspInfo.cannonHolder = showCannonHolder({ core, allBodies, setCurDebugText }, {
+            x: mouse.cur.x,
+            y: mouse.cur.y,
+        })
+    }
 
     if (mouse.state === 'dragged') {
         if (isFireMode || isConnection) {

@@ -73,7 +73,7 @@ export function createCore() {
                         curKey: '',
                         curSide: 1,
                         selectObj: {
-                            isSelectMode: false,
+                            //: false,
                             cur: null,
                             curIndex: -1,
                             curType: '',

@@ -507,8 +507,8 @@ function doSelect({
 }) {
     const mouseConstraint = core.mouseConstraint;
     const key = core.inputs.loopKey;
-    const { selectObj, mouse } = core.getPlayerInputStateById(playerId);
-    if (!selectObj.isSelectMode) return;
+    const { selectObj, mouse, curBuildType } = core.getPlayerInputStateById(playerId);
+    if (curBuildType !== 'select') return;
     if (!selectObj.cur || !selectObj.curProcessed) {
         if (mouseConstraint.body) {
             selectObj.curProcessed = true;
