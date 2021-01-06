@@ -31,15 +31,28 @@ export function createCore() {
         states: {
             mouse: {
                 state: '',
-                pressLocation: null,
+                pressLocation: {
+                    x: null,
+                    y: null,
+                },
                 cur: null,
             },
             lastGoodWallPts: null,
         },
         inputs: {
+            curBuildType: 'select',
+            mouse: {
+                state: '',
+                pressLocation: null,
+                cur: null,
+            },
+            selectObj: {
+                x: null,
+                y: null,r:null,w:null,h:null,
+            },
+            lastGoodWallPts: null,
             curKey: '',
             curSide: 1,
-            curBuildType: 'wall',
             isDesignMode: false,
         },
         playersInfo: {
@@ -50,6 +63,7 @@ export function createCore() {
             players: {
                 [curPlayerId]: {
                     playerInputState: {
+                        curBuildType: 'select',
                         mouse: {
                             state: '',
                             pressLocation: null,
@@ -58,8 +72,8 @@ export function createCore() {
                         lastGoodWallPts: null,
                         curKey: '',
                         curSide: 1,
-                        curBuildType: 'wall',
                         selectObj: {
+                            isSelectMode: false,
                             cur: null,
                             curIndex: -1,
                             curType: '',

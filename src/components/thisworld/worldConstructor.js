@@ -367,8 +367,8 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             player: core.curPlayerId,
             mouse,
         })
-        core.states.mouse.state = 'dragged';
-        core.states.mouse.cur = p;
+        //core.states.mouse.state = 'dragged';
+        //core.states.mouse.cur = p;
     });
     Events.on(mouseConstraint, 'mousedown', e => {        
         if (outOfBound(e)) return;
@@ -385,9 +385,8 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             selectObj: buildInfo,
         });
         selectObj.curProcessed = false;
-        core.states.mouse.state = 'pressed';
-        core.states.mouse.pressLocation = p;
-        //core.selectObj.cur = null;        
+        //core.states.mouse.state = 'pressed';
+        //core.states.mouse.pressLocation = p;
         mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
     });
     Events.on(mouseConstraint, 'mouseup', e => {
@@ -399,10 +398,10 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             mouse,
         })
 
-        core.states.mouse.state = 'released';
+        //core.states.mouse.state = 'released';
         if (outOfBound(e)) return;
         const p = getMouse(e.mouse.position);
-        core.states.mouse.cur = p;
+        //core.states.mouse.cur = p;
     });
 
     setupMultiplayer(core);

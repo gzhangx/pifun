@@ -7,6 +7,7 @@ import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { createCar} from '../objs/simplecar';
 import { postRender } from './unitui';
 import { get } from 'lodash';
+import { sendWsPlayerInputs } from './inputTransfer';
 
 const MAX_WALL_WIDTH = 200;
 const MAX_WALL_HEIGHT = 200;
@@ -68,10 +69,8 @@ const arrowDir = {
     ArrowRight: 1,
     ArrowLeft: -1,
 }
-function run(core, props) {
-    const {
-        WALLHEALTH,
-    } = core.consts;
+
+function run(core, props) {    
     //const { props } = opt;
     const { curBuildType } = core.inputs;
     const { setCurDebugText } = props.inputs;
@@ -86,7 +85,9 @@ function run(core, props) {
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
+    sendWsPlayerInputs(curPlayerInputState, core.inputs);
     curPlayerInputState.selectObj.isSelectMode = isSelect;
+    
     const mouse = curPlayerInputState.mouse;
     mouseConstraint.disabled = !isSelect && mouse.pressLocation;
     const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
@@ -161,8 +162,38 @@ function run(core, props) {
             y: mouse.cur.y,
         })
     }
+    
+    core.playersInfo.playerIds.forEach(pid => {
+        const cur = get(core.playersInfo.players, [pid, 'playerInputState']);
+        if (!cur) return;
+        const mouse = cur.mouse;
+        mouseProcessing(core, { mouse, curBuildType: cur.curBuildType, allBodies, side }, setCurDebugText);
+    })    
+}
+
+
+function mouseProcessing(core, { mouse, curBuildType, allBodies,
+    side
+}, setCurDebugText) {
+    const isWallMode = curBuildType === 'wall';
+    const isFireMode = curBuildType === 'fire';
+    const isCannonMode = curBuildType === 'cannon';
+    const isConnection = curBuildType === 'connection';
+    const isSelect = curBuildType === 'select';
+    const isCircle = curBuildType === 'circle';
+    const isRectangle = curBuildType === 'rectangle';
     if (!mouse.pressLocation) return;
     if (!mouse.cur) return;
+    const {
+        WALLHEALTH,
+    } = core.consts;
+    const { mouseConstraint } = core;
+    const { rayQueryWithPoints, Vector, } = core.createdEngine;
+    const { getDragCellPoints, makeCell,        
+        showSelect,
+        doFireBall,
+        checkWallPoints,
+    } = core.worldCon;
 
     if (mouse.state === 'dragged') {
         if (isFireMode || isConnection) {
@@ -203,15 +234,16 @@ function run(core, props) {
 
     } else if (mouse.state === 'released') {
         mouse.state = '';
+        console.log('mouse released')
         const mouseFrom = getMouse(mouse.pressLocation);
         const mouseCur = getMouse(mouse.cur);
         core.states.mouse.pressLocation = null;
-            
+
         if (isCannonMode) {
             createCannon({ core, allBodies, side }, mouseCur);
         }
         if (curBuildType === 'gmakecar') {
-            createCar({core, allBodies, side}, mouseCur)
+            createCar({ core, allBodies, side }, mouseCur)
         }
         if (isConnection) {
             const bodyA = core.createdEngine.getBodiesUnderPos(mouse.cur);
@@ -232,11 +264,11 @@ function run(core, props) {
             if (wallPts && wallPts.connects && wallPts.connects.length) {
                 core.uiDspInfo.wallPts = wallPts;
                 //drawCellPointsCnv(wallPts);
-                const allWalls=makeCell(wallPts.connects,endPoints,core.worldCats.getCat(side).structure.getCollisionFilter(),
+                const allWalls = makeCell(wallPts.connects, endPoints, core.worldCats.getCat(side).structure.getCollisionFilter(),
                     {
                         side,
                         player: side + 1,
-                });
+                    });
                 allWalls.forEach(w => w.health = WALLHEALTH);
                 return allWalls;
             }
@@ -244,7 +276,7 @@ function run(core, props) {
 
         if (curBuildType === 'circle') {
             const r = Vector.magnitude(Vector.sub(mouse.pressLocation, mouse.cur));
-            const { x, y } = mouse.cur;            
+            const { x, y } = mouse.cur;
 
             const sdata = {
                 x, y, r,
@@ -253,14 +285,14 @@ function run(core, props) {
             const c = CreateSimpleCircle(Object.assign({}, sdata, {
                 ggOpts: {
                     isDesignerItem: true,
-                },                
+                },
             }), core.createdEngine);
             if (core.inputs.isDesignMode) {
                 c.ggInfo.funcs.addDesignCst = pointA => {
                     const ggCstInfo = {
                         type: 'designerCst',
                     };
-                    core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 }, ggCstInfo });    
+                    core.worldCon.addCst({ bodyB: c.body, pointA, pointB: { x: 0, y: 0 }, ggCstInfo });
                 }
                 c.ggInfo.funcs.addDesignCst({ x, y });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x, y }, pointB: { x: 0, y: 0 } });
@@ -275,27 +307,27 @@ function run(core, props) {
                 x: mouse.pressLocation.x + w / 2,
                 y: mouse.pressLocation.y + h / 2,
                 w,
-                h,                
+                h,
                 opts: { restitution: 0.5, },
             };
-            const cbody = CreateSimpleRect(Object.assign({                
+            const cbody = CreateSimpleRect(Object.assign({
                 ggOpts: {
                     isImmortal: false,
                     isDesignerItem: true,
-                },                
+                },
             }, sdata), core.createdEngine)
             if (core.inputs.isDesignMode) {
                 const addDesignCst = ({ x, y }, wh) => {
                     const wi = wh || { w, h };
                     const ggCstInfo = {
-                        type:'designerCst',
+                        type: 'designerCst',
                     };
-                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x-(w/2), y }, pointB: { x: -wi.w / 2, y: 0 }, ggCstInfo });
-                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x + (w/2), y }, pointB: { x: wi.w / 2, y: 0 }, ggCstInfo });    
+                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x - (w / 2), y }, pointB: { x: -wi.w / 2, y: 0 }, ggCstInfo });
+                    core.worldCon.addCst({ bodyB: cbody, pointA: { x: x + (w / 2), y }, pointB: { x: wi.w / 2, y: 0 }, ggCstInfo });
                 }
-                c.body.ggInfo.funcs.addDesignCst = addDesignCst;
+                cbody.ggInfo.funcs.addDesignCst = addDesignCst;
                 const y = mouse.pressLocation.y + (h / 2);
-                const x = mouse.pressLocation.x + (w/2);
+                const x = mouse.pressLocation.x + (w / 2);
                 addDesignCst({ x, y });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx, y: cy }, pointB: { x: -w / 2, y: 0 } });
                 //core.worldCon.addCst({ bodyB: c.body, pointA: { x: mx + w, y: cy }, pointB: { x: w / 2, y: 0 } });
@@ -304,9 +336,7 @@ function run(core, props) {
             }
         }
     }
-    
 }
-
 
 function createWorld(core) {
 
