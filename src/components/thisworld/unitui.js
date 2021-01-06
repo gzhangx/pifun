@@ -209,12 +209,26 @@ function showEditorObj(c, dspInfo) {
     }
 }
 
+function showPlayerAction(c, dspInfo) {
+    if (dspInfo.playersInfo) {
+        dspInfo.playersInfo.forEach(p => {
+            c.beginPath();
+            c.lineWidth = 2;
+            c.strokeStyle = 'red';
+            c.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+            c.stroke();
+        });
+    }
+}
+
+
 export function postRender(c, opts) {
     const dspInfo = opts.core.uiDspInfo;
     showFireLine(c, dspInfo);
     drawCellPointsCnv(c, dspInfo);
     showCannonHolder(c, dspInfo);
     showSelect(c, dspInfo);    
+    showPlayerAction(c, dspInfo);
     showEditorObj(c, dspInfo);
 }
 

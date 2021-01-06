@@ -147,6 +147,11 @@ function run(core, props) {
     }
     doDragDrop(core);
     core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
+    core.uiDspInfo.playersInfo = core.playersInfo.playerIds.map(pid => {
+        const cur = get(core.playersInfo.players, [pid, 'playerInputState','mouse','cur']);        
+        if (!cur) return;
+        return cur;
+    }).filter(x=>x);
     if (isCannonMode && mouse.state === 'dragged') {
         core.uiDspInfo.cannonHolder = showCannonHolder({ c, core, allBodies, setCurDebugText }, {
             x: mouse.cur.x,

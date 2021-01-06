@@ -14,7 +14,7 @@ export function setupMultiplayer(core) {
                 const playerState = core.getCurPlayerInputState(player);
                 if (!playerState.mouse) playerState.mouse = mouse;
                 else playerState.mouse = Object.assign(playerState.mouse, mouse);
-                break;            
+                break;
             case 'objSyncMsg':
                 if (!core.playersInfo.isMaster()) return;
                 const getBodyIdOnly = b => b && { id: b.id };
