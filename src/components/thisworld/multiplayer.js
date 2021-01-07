@@ -77,8 +77,8 @@ export function sendSyncMessage(core) {
         if (!acc.keys[b.id]) {
             acc.keys[b.id] = b;
             const buildInfo = b.ggInfo.buildInfo;
-            const xdiff = Math.abs(buildInfo.x = b.position.x);
-            const ydiff = Math.abs(buildInfo.y = b.position.y);
+            const xdiff = Math.abs(buildInfo.x - b.position.x);
+            const ydiff = Math.abs(buildInfo.y - b.position.y);
             const angdiff = Math.abs(buildInfo.angle - b.angle);
             if (xdiff >= 1 || ydiff >= 1 || angdiff >= 0.00001 || buildInfo.forceSync) {
                 buildInfo.x = b.position.x;
