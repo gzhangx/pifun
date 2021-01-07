@@ -105,7 +105,7 @@ function run(core, props) {
     });
     doDragDrop(core);
     core.uiDspInfo.selectInfos = core.playersInfo.playerIds.map(pid => {
-        const playerState = core.getPlayerById(pid);
+        const playerState = core.getPlayerInputStateById(pid);
         const key = playerState.loopKey;
         if (pid === core.curPlayerId) {
             if (key === 'c' || key === 'v') {
