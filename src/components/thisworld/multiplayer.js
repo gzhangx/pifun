@@ -64,6 +64,41 @@ export function setupMultiplayer(core) {
                 core.createdEngine.clearAll();
                 core.importBuildInfo(msg); //bodies, constraints
                 break;
+            case 'itemsSync':                
+                core.syncBuildInfo(msg);
+                break;
         }
     });
+}
+
+export function sendSyncMessage(core) {
+    if (!core.playersInfo.isMaster()) return;
+    const bodies = core.createdEngine.engine.world.bodies.reduce((acc, b) => {
+        if (!acc.keys[b.id]) {
+            acc.keys[b.id] = b;
+            const buildInfo = b.ggInfo.buildInfo;
+            const xdiff = Math.abs(buildInfo.x = b.position.x);
+            const ydiff = Math.abs(buildInfo.y = b.position.y);
+            const angdiff = Math.abs(buildInfo.angle - b.angle);
+            if (xdiff >= 1 || ydiff >= 1 || angdiff >= 0.00001 || buildInfo.forceSync) {
+                buildInfo.x = b.position.x;
+                buildInfo.y = b.position.y;
+                buildInfo.angle = b.angle;
+                acc.bodies.push({
+                    buildInfo,
+                });
+            }            
+        }
+        return acc;
+    }, {
+        bodies: [],
+        keys: {}
+    }).bodies;
+    if (bodies.length) {
+        sendWsMsg({
+            type: 'itemsSync',
+            bodies,
+            constraints: [],
+        });
+    }
 }

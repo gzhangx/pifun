@@ -457,6 +457,28 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             });
         });
     }
+    core.syncBuildInfo = ({ bodies }) => {
+        const ebk = core.createdEngine.engine.world.bodies.reduce((acc, b) => {
+            acc[b.id] = b;
+            return acc;
+        }, {});
+        const keys = bodies.reduce((acc, build) => {
+            const binf = build.buildInfo;
+            if (!binf.opts) binf.opts = {};
+            binf.opts.id = binf.id;
+            const ex = ebk[binf.id];
+            const b = ex || buildTypes[binf.type](binf, core.createdEngine);
+            b.isStatic = true;
+            if (binf.angle) {
+                Body.setAngle(b, binf.angle);
+            }
+            if (ex) {
+                Body.setPosition(b, binf)
+            }
+            acc[b.id] = b;
+            return acc;
+        }, {});
+    }
     core.render.run();
 }
 

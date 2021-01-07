@@ -8,6 +8,7 @@ import { createCar} from '../objs/simplecar';
 import { postRender } from './unitui';
 import { get } from 'lodash';
 import { sendWsPlayerInputs } from './inputTransfer';
+import { sendSyncMessage } from './multiplayer';
 
 const MAX_WALL_WIDTH = 200;
 const MAX_WALL_HEIGHT = 200;
@@ -154,7 +155,8 @@ function run(core, props) {
         if (!cur) return;
         const mouse = cur.mouse;
         mouseProcessing(core, { mouse, curBuildType: cur.curBuildType, allBodies, side }, setCurDebugText);
-    })    
+    });
+    sendSyncMessage(core);
 }
 
 
