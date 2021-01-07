@@ -23,7 +23,8 @@ export function setupMultiplayer(core) {
                         acc.keys[b.id] = b;
                         acc.bodies.push({
                             buildInfo: b.ggInfo.buildInfo,
-                            position: b.position,    
+                            position: b.position,
+                            angle: b.angle,
                         });
                         if (b.ggConstraints) {
                             b.ggConstraints.forEach(cst => {

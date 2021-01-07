@@ -440,6 +440,9 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             if (build.position.x !== b.position.x || build.position.y !== b.position.y) {
                 Body.setPosition(b, build.position);
             }
+            if (build.angle) {
+                Body.setAngle(b, build.angle);
+            }
             acc[b.id] = b;
             return acc;
         }, {});
