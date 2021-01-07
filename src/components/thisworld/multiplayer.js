@@ -10,7 +10,8 @@ export function setupMultiplayer(core) {
                 console.log(`master player is ${masterPlayerId}`);
                 break;
             case 'userInputMsg':
-                const { player, mouse } = msg;
+                const { player, mouse, curPlayerId } = msg;
+                if (curPlayerId === core.curPlayerId) return;
                 const playerState = core.getCurPlayerInputState(player);
                 if (!playerState.mouse) playerState.mouse = mouse;
                 else playerState.mouse = Object.assign(playerState.mouse, mouse);
