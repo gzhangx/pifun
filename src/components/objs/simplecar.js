@@ -38,7 +38,7 @@ export function createCar(opt, pos) {
     const stiffness = 0.1;
     const wws = [w1, w2];
     wws.forEach(w => {
-        w.ggInfo = Object.assign({}, rc.ggInfo, {
+        Object.assign(w.ggInfo, {
             isTestWheel: true,
             forceLeftRight: lr => Body.applyForce(w, { x: w.position.x, y: w.position.y + 1 }, { x: 0.01*lr, y: 0 })
         });
