@@ -71,11 +71,18 @@ function gatherPlayerInputs(curPlayerInputState,
     });
 }
 
-export function sendWsPlayerInputs(curPlayerInputState,
-    prev) {
+export function sendWsPlayerInputs(core) {
+    const curPlayerInputState = core.getCurPlayerInputState();
+    const prev = core.inputs;
     const info = gatherPlayerInputs(curPlayerInputState,
         prev)
     if (info.changed) {
-        sendWsMsg(info.msg);
+        //userInputMsg
+        //sendWsMsg(info.msg);
+        sendWsMsg({
+            type: 'userInputMsg',
+            player: core.curPlayerId,
+            mouse: curPlayerInputState.mouse,
+        })
     }
 }

@@ -77,7 +77,7 @@ function run(core, props) {
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
-    sendWsPlayerInputs(curPlayerInputState, core.inputs);
+    sendWsPlayerInputs(core);
     const { curBuildType } = curPlayerInputState;
     const isSelect = curBuildType === 'select';
     //curPlayerInputState.selectObj.isSelectMode = isSelect;
