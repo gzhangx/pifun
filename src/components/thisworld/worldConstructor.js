@@ -213,7 +213,7 @@ export const createConstructor = (core) => {
         doFireBall: (p1, p2, side) => doFireBall(core, p1, p2, side),
         worldOperations: () => {
             core.playersInfo.playerIds.map(pid => {
-                const player = core.getPlayerById(pid);
+                const player = core.getPlayerInputStateById(pid);
                 player.loopKey = player.curKey;
                 player.curKey = null;
                 //props.inputs.setUISelectedObj(core.selectObj);
