@@ -78,7 +78,9 @@ function run(core, props) {
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
+    const key = curPlayerInputState.curKey;
     sendWsPlayerInputs(core);
+    curPlayerInputState.curKey = '';
     const { curBuildType } = curPlayerInputState;
     const isSelect = curBuildType === 'select';
     //curPlayerInputState.selectObj.isSelectMode = isSelect;
@@ -100,7 +102,6 @@ function run(core, props) {
     const allBodies = Composite.allBodies(engine.world);
     
     const side = core.inputs.curSide;
-    const key = core.inputs.loopKey;
     
     setCurDebugText("key=" + core.inputs.lastKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
     

@@ -97,10 +97,7 @@ export function DesignEditor(props) {
                         <td>
                             <button onClick={() => stBuildType('circle')}>Circle</button>
                             <button onClick={() => stBuildType('rectangle')}>Rect</button>
-                        </td>
-                        <td>
-                            <input ></input>
-                        </td>
+                        </td>                        
                     </tr>
                 {
                     type==='body' && selectedObj && <><tr>

@@ -19,13 +19,13 @@ function App() {
   const [curDesignInfo, setCurDesignInfo] = useState(getEditorInitState());
   useEffect(() => {
     initWS();
-  },[]);
+  }, []);
+  const cpi = core.getCurPlayerInputState()
   keyHandler(key=>{    
-    core.inputs.curKey = key;
+    cpi.curKey = key;
   });
   const stBuildType = t => {
-    setCurBuildType(t);
-    const cpi = core.getCurPlayerInputState()
+    setCurBuildType(t);    
     cpi.curBuildType = t;
   };
   const stCurSide = e => {
