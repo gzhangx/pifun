@@ -362,11 +362,11 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             mouse.state = 'moved';
         }
         mouse.cur = p;
-        sendWsMsg({
-            type: 'mouseMsg',
-            player: core.curPlayerId,
-            mouse,
-        })
+        //sendWsMsg({
+        //    type: 'mouseMsg',
+        //    player: core.curPlayerId,
+        //    mouse,
+        //})
         //core.states.mouse.state = 'dragged';
         //core.states.mouse.cur = p;
     });
@@ -378,12 +378,12 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         mouse.pressLocation = p;
         //selectObj.cur = null;
         const buildInfo = get(selectObj, 'cur.buildInfo');
-        sendWsMsg({
-            type: 'mouseMsg',
-            player: core.curPlayerId,
-            mouse,
-            selectObj: buildInfo,
-        });
+        //sendWsMsg({
+        //    type: 'mouseMsg',
+        //    player: core.curPlayerId,
+        //    mouse,
+        //    selectObj: buildInfo,
+        //});
         selectObj.curProcessed = false;
         //core.states.mouse.state = 'pressed';
         //core.states.mouse.pressLocation = p;
@@ -392,11 +392,11 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     Events.on(mouseConstraint, 'mouseup', e => {
         const mouse = core.getCurPlayerInputState().mouse;
         mouse.state = 'released';
-        sendWsMsg({
-            type: 'mouseMsg',
-            player: core.curPlayerId,
-            mouse,
-        })
+        //sendWsMsg({
+        //    type: 'mouseMsg',
+        //    player: core.curPlayerId,
+        //    mouse,
+        //})
 
         //core.states.mouse.state = 'released';
         if (outOfBound(e)) return;
