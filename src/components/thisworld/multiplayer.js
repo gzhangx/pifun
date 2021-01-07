@@ -21,8 +21,12 @@ export function setupMultiplayer(core) {
                 const items = core.createdEngine.engine.world.bodies.reduce((acc, b) => {
                     if (!acc.keys[b.id]) {
                         acc.keys[b.id] = b;
+                        const buildInfo = b.ggInfo.buildInfo;
+                        buildInfo.x = b.position.x;
+                        buildInfo.y = b.position.y;
+                        buildInfo.angle = b.angle;
                         acc.bodies.push({
-                            buildInfo: b.ggInfo.buildInfo,
+                            buildInfo,
                             position: b.position,
                             angle: b.angle,
                         });
