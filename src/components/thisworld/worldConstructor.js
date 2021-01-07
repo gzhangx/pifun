@@ -535,8 +535,9 @@ function doSelect({
     playerId,
 }) {
     const mouseConstraint = core.mouseConstraint;
-    const key = core.inputs.loopKey;
-    const { selectObj, mouse, curBuildType } = core.getPlayerInputStateById(playerId);
+    const playerState = core.getPlayerInputStateById(playerId);
+    const key = playerState.loopKey;
+    const { selectObj, mouse, curBuildType } = playerState;
     if (curBuildType !== 'select') return;
     if (!selectObj.cur || !selectObj.curProcessed) {
         if (mouseConstraint.body) {
@@ -577,7 +578,7 @@ function doSelect({
     }
 
     const body = selectObj.cur;
-    if (body && core.inputs.loopKey === 'Delete') {
+    if (body && key === 'Delete') {
         const canDel1 = body.ggInfo && body.ggInfo.player !== 0 && !body.ggInfo.isImmortal;
         const isCons = body.bodyA || body.bodyB;
         if (canDel1 || isCons) {
