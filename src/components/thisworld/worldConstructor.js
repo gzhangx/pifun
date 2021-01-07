@@ -199,22 +199,25 @@ export const createConstructor = (core) => {
         doDragDrop: () => doDragDrop(core),
         doDragDrop,
         showSelect: ({ isSelect,
-            key,
+            //key,
+            playerState,
             side, }) => showSelect({
-                core, isSelect,
+                core,
+                playerState,
+                //isSelect,
                 //mouse,
-                key,
+                //key,
                 side,
             }),
         doTranslate: translate => doTranslate(core, translate),
         doFireBall: (p1, p2, side) => doFireBall(core, p1, p2, side),
         worldOperations: () => {
-            const key = core.inputs.curKey;
-            core.inputs.loopKey = key;
-            if (key) {
-                core.inputs.lastKey = key;
-                core.inputs.curKey = null;
-            }
+            core.playersInfo.playerIds.map(pid => {
+                const player = core.getPlayerById(pid);
+                player.loopKey = player.curKey;
+                player.curKey = null;
+                //props.inputs.setUISelectedObj(core.selectObj);
+            });
             removeBadBodies();
             processCollisions(core);
         },
@@ -629,12 +632,16 @@ function doDragDrop(core) {
 
 function showSelect({
     core,
-    isSelect,
+    //isSelect,
     //mouse,
-    key,
+    //key,
     side,
+    playerState,
 }) {    
-    const { selectObj } = core.getCurPlayerInputState();
+    const { selectObj, mouse, loopKey, curBuildType } = playerState;
+    if (!selectObj) return;
+    const isSelect = curBuildType === 'select';
+    const key = loopKey;
     const body = selectObj.cur;
     if (!body) return;
 
@@ -653,7 +660,7 @@ function showSelect({
     }
 
     if (!isSelect) return;
-    const mouse = core.states.mouse;
+    //const mouse = core.states.mouse;
     const selectInfo = {};
     
     if (selectObj.curType === 'selbody') {

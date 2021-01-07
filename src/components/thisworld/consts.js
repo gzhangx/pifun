@@ -139,7 +139,7 @@ export function createCore() {
         uiDspInfo: {
             wallPts: [],
             cannonHolder: null,
-            selectInfo: null,
+            selectInfos: [],
         }
     };
 

@@ -78,23 +78,14 @@ function run(core, props) {
     
     //const mouse = core.states.mouse;
     const curPlayerInputState = core.getCurPlayerInputState();
-    const key = curPlayerInputState.curKey;
-    sendWsPlayerInputs(core);
-    curPlayerInputState.curKey = '';
-    const { curBuildType } = curPlayerInputState;
-    const isSelect = curBuildType === 'select';
-    //curPlayerInputState.selectObj.isSelectMode = isSelect;
+    sendWsPlayerInputs(core);    
     
-    //const mouse = curPlayerInputState.mouse;
-    //mouseConstraint.disabled = !isSelect && mouse.pressLocation;
-    const { engine, rayQueryWithPoints, Vector, Composite, Body } = core.createdEngine;
-    const { getDragCellPoints, makeCell, worldOperations,
+    const { engine,  Composite, } = core.createdEngine;
+    const { worldOperations,
         doSelect,
         doDragDrop,
         showSelect,
         doTranslate,
-        doFireBall,
-        checkWallPoints,
     } = core.worldCon;
     //removeBadBodies();
     //processCollisions(core);
@@ -103,39 +94,8 @@ function run(core, props) {
     
     const side = core.inputs.curSide;
     
-    setCurDebugText("key=" + core.inputs.lastKey + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
-    
-
-    
-    if (key === 'c' || key === 'v') {
-        if (key === 'c') screenOff.y += 10;
-        if (key === 'v') screenOff.y -= 10;
-        core.inputs.loopKey = '';
-        doTranslate(screenOff);
-    }
-
-    if (arrowDir[key]) {
-        const dir = arrowDir[key];
-        // allBodies.forEach(b => {
-        //     const isTestWheel = get(b, 'ggInfo.isTestWheel');
-        //     if (isTestWheel) {
-        //         Body.applyForce(b, { x: b.position.x, y: b.position.y + 1 }, { x: 0.01, y: 0 })
-        //         console.log(`${b.position.x} ${b.position.y}`)
-        //     }
-        // })
-        const selected = core.getCurPlayerInputState().selectObj.cur;
-        if (selected && selected.ggInfo) {
-            if (selected.ggInfo.forceLeftRight) {
-                selected.ggInfo.forceLeftRight(dir)
-            } else if (selected.ggInfo.wheels) {
-                selected.ggInfo.wheels.forEach(w => {
-                    if (w.ggInfo.forceLeftRight) {
-                        w.ggInfo.forceLeftRight(dir);
-                    }
-                })
-            }
-        }
-    }
+    //setCurDebugText("key=" + key + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
+                
     //if (core.inputs.curBuildType === 'wall') 
 
     //if (isSelect) 
@@ -144,7 +104,34 @@ function run(core, props) {
         //props.inputs.setUISelectedObj(core.selectObj);
     });
     doDragDrop(core);
-    core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
+    core.uiDspInfo.selectInfos = core.playersInfo.playerIds.map(pid => {
+        const playerState = core.getPlayerById(pid);
+        const key = playerState.loopKey;
+        if (pid === core.curPlayerId) {
+            if (key === 'c' || key === 'v') {
+                if (key === 'c') screenOff.y += 10;
+                if (key === 'v') screenOff.y -= 10;
+                doTranslate(screenOff);
+            }
+        }
+        if (arrowDir[key]) {
+            const dir = arrowDir[key];            
+            const selected = playerState.selectObj.cur;
+            if (selected && selected.ggInfo) {
+                if (selected.ggInfo.forceLeftRight) {
+                    selected.ggInfo.forceLeftRight(dir)
+                } else if (selected.ggInfo.wheels) {
+                    selected.ggInfo.wheels.forEach(w => {
+                        if (w.ggInfo.forceLeftRight) {
+                            w.ggInfo.forceLeftRight(dir);
+                        }
+                    })
+                }
+            }
+        }        
+        return showSelect({ playerState, side });
+    });
+    //    core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
     core.uiDspInfo.playersInfo = core.playersInfo.playerIds.map(pid => {
         const cur = get(core.playersInfo.players, [pid, 'playerInputState','mouse','cur']);        
         if (!cur) return;
