@@ -179,7 +179,7 @@ export function createCore() {
                 }
             };
             core.playersInfo.players[id] = player;
-            core.playersInfo.players = core.playersInfo.players.push(id);
+            core.playersInfo.playerIds.push(id);
         }
         return player.playerInputState;
     }

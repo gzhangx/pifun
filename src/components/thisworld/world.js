@@ -133,7 +133,7 @@ function run(core, props) {
     });
     //    core.uiDspInfo.selectInfo = showSelect({ isSelect, key, side });
     core.uiDspInfo.playersInfo = core.playersInfo.playerIds.map(pid => {
-        const cur = get(core.playersInfo.players, [pid, 'playerInputState','mouse','cur']);        
+        const cur = get(core.playersInfo.players, [pid, 'playerInputState', 'mouse', 'cur']);        
         if (!cur) return;
         return cur;
     }).filter(x=>x);    
