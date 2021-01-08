@@ -81,7 +81,7 @@ export function sendWsPlayerInputs(core) {
         //sendWsMsg(info.msg);
         sendWsMsg({
             type: 'userInputMsg',
-            player: core.curPlayerId,
+            pid: core.playersInfo.curPlayerId,
             mouse: curPlayerInputState.mouse,
         })
     }

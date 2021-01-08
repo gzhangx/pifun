@@ -2,7 +2,7 @@ import { sendWsMsg, setFreeFormMsgListener } from './socket';
 
 export function setupMultiplayer(core) {
     setFreeFormMsgListener(msg => {
-        if (msg.player === core.playersInfo.curPlayerId) return;
+        if (msg.pid === core.playersInfo.curPlayerId) return;
         switch (msg.type) {
             case 'setMasterPlayer':
                 const { masterPlayerId } = msg;
@@ -10,9 +10,9 @@ export function setupMultiplayer(core) {
                 console.log(`master player is ${masterPlayerId}`);
                 break;
             case 'userInputMsg':
-                const { player, mouse, curPlayerId } = msg;
-                if (curPlayerId === core.curPlayerId) return;
-                const playerState = core.getCurPlayerInputState(player);
+                const { mouse, pid } = msg;
+                if (pid === core.curPlayerId) return;
+                const playerState = core.getCurPlayerInputState(pid);
                 if (!playerState.mouse) playerState.mouse = mouse;
                 else playerState.mouse = Object.assign(playerState.mouse, mouse);
                 break;
