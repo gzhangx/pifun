@@ -507,7 +507,7 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
                                 constraint.angleB = body.angle;
 
                                 Sleeping.set(body, false);
-                                Events.trigger(mouseConstraint, 'startdrag', { mouse: mouse, body: body });
+                                //Events.trigger(mouseConstraint, 'startdrag', { mouse: mouse, body: body });
 
                                 break;
                             }
@@ -522,8 +522,8 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
             constraint.bodyB = mouseConstraint.body = null;
             constraint.pointB = null;
 
-            if (body)
-                Events.trigger(mouseConstraint, 'enddrag', { mouse: mouse, body: body });
+            //if (body)
+            //    Events.trigger(mouseConstraint, 'enddrag', { mouse: mouse, body: body });
         }
     };
 }
@@ -646,14 +646,16 @@ function showSelect({
     const body = selectObj.cur;
     if (!body) return;
     
-    const ggInfo = selectObj.cur.ggInfo;
-    const prevPos = ggInfo.buildInfo;
-    if (prevPos && ggInfo) {
-        const xDiff = Math.abs(prevPos.x - body.position.x);
-        if (xDiff >=1
-            || Math.abs(prevPos.y - body.position.y)>=1) {            
-            core.raiseMySelectedObjChange();
-            selectObj.prevPos = { ...body.position };
+    const ggInfo = selectObj.cur.ggInfo;    
+    if (ggInfo) {
+        const prevPos = ggInfo.buildInfo;
+        if (prevPos) {
+            const xDiff = Math.abs(prevPos.x - body.position.x);
+            if (xDiff >= 1
+                || Math.abs(prevPos.y - body.position.y) >= 1) {
+                core.raiseMySelectedObjChange();
+                selectObj.prevPos = { ...body.position };
+            }
         }
     }
 
