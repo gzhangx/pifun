@@ -645,16 +645,13 @@ function showSelect({
     const key = loopKey;
     const body = selectObj.cur;
     if (!body) return;
-
-    const prevPos = selectObj.prevPos;
+    
     const ggInfo = selectObj.cur.ggInfo;
+    const prevPos = ggInfo.buildInfo;
     if (prevPos && ggInfo) {
         const xDiff = Math.abs(prevPos.x - body.position.x);
         if (xDiff >=1
-            || Math.abs(prevPos.y - body.position.y)>=1) {
-            const buildInfo = ggInfo.buildInfo;
-            buildInfo.x = body.position.x;
-            buildInfo.y = body.position.y;
+            || Math.abs(prevPos.y - body.position.y)>=1) {            
             core.raiseMySelectedObjChange();
             selectObj.prevPos = { ...body.position };
         }
