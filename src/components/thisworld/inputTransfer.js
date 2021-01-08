@@ -15,6 +15,15 @@ const importFields = [
                 pathes: ['x', 'y']
             }                        
         ]
+    }, {
+        obj: 'selectObj',
+        pathes: [
+            'cur',
+            'curIndex',
+            'curType',
+            'curProcessed',
+            'prevPos',
+        ]
     }
 ];
 
