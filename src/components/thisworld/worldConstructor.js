@@ -498,9 +498,10 @@ function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine
     
     const { mouse, mouseConstraint } = playerState;
     const disabled = mouseConstraint.disabled;
-    if (mouse.state === 'pressed' && !disabled) {
+    if (mouse.state === 'pressed') {
         mouseConstraint.body = createdEngine.getBodiesUnderPos(mouse.cur);
     }
+    if (disabled) return;
     const { body } = mouseConstraint;
     let constraint = mouseConstraint.constraint;
     if (!constraint) {
@@ -520,7 +521,7 @@ function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine
         createdEngine.addToWorld(constraint);
     }
 
-    if (mouse.cur.button === 0 && !disabled) {
+    if (mouse.cur.button === 0) {
             if (!constraint.bodyB) {
                 if (body) {
                     if (Bounds.contains(body.bounds, mouse.cur)
