@@ -496,9 +496,9 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
 
 function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine, Vertices, Sleeping }) {
     
-        if (playerState.mouseConstraint.disabled) return;
     const { mouse, mouseConstraint } = playerState;
-    if (mouse.state === 'pressed') {
+    const disabled = mouseConstraint.disabled;
+    if (mouse.state === 'pressed' && !disabled) {
         mouseConstraint.body = createdEngine.getBodiesUnderPos(mouse.cur);
     }
     const { body } = mouseConstraint;
@@ -520,7 +520,7 @@ function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine
         createdEngine.addToWorld(constraint);
     }
 
-        if (mouse.cur.button === 0) {
+    if (mouse.cur.button === 0 && !disabled) {
             if (!constraint.bodyB) {
                 if (body) {
                     if (Bounds.contains(body.bounds, mouse.cur)
