@@ -16,8 +16,7 @@ export function getEditorInitState() {
 }
 
 export function setUISelectedObj(setCurDesignInfo, o) {
-    console.log('set ui selected object');
-    console.log(o);
+    
     const cur = o.cur;
     if (cur.bodyA || cur.bodyB) {
         let bodyAx = 'NA', bodyBx = 'NA', bodyAy = 'NA', bodyBy = 'NA', stiffness = cur.stiffness;

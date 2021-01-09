@@ -213,7 +213,7 @@ function mouseProcessing(core, { cur, allBodies,
         console.log('mouse released')
         const mouseFrom = getMouse(mouse.pressLocation);
         const mouseCur = getMouse(mouse.cur);
-        mouse.pressLocation = null;
+        //mouse.pressLocation = null;
 
         if (isCannonMode) {
             createCannon({ core, allBodies, side }, mouseCur);
@@ -275,7 +275,7 @@ function mouseProcessing(core, { cur, allBodies,
                 sdata.body = c.body;
                 core.designerData.items.push(sdata);
             }
-        } else if (curBuildType === 'rectangle') {
+        } else if (curBuildType === 'rectangle') {            
             const diff = Vector.sub(mouse.pressLocation, mouse.cur);
             const w = Math.abs(diff.x);
             const h = Math.abs(diff.y);

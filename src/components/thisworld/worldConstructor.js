@@ -382,14 +382,13 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     const processMyMouseEvents = () => {
         const mouseEvents = amouse.sourceEvents;
         if (mouseEvents.mouseup)
-            mouseup();
-        
-        if (outOfBound()) return;
-        if (mouseEvents.mousemove)
-            mousemove();
-
-        if (mouseEvents.mousedown)
-            mousedown();        
+            mouseup();        
+        else if (!outOfBound()) {
+            if (mouseEvents.mousedown)
+                mousedown();
+            else if (mouseEvents.mousemove)
+                mousemove();            
+        }
 
         // reset the mouse state ready for the next step
         Mouse.clearSourceEvents(amouse);
@@ -397,7 +396,7 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
     
     const mousedown= () => {                
         const p = getMouse(amouse.position);
-        const mouse = syncMyMouse(() => 'pressed');
+        const mouse = syncMyMouse(() => 'pressed');        
         mouse.pressLocation = p;
 
         curPlayerState.selectObj.curProcessed = false;        
