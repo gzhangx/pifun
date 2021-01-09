@@ -501,8 +501,7 @@ function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine
     if (mouse.state === 'pressed') {
         mouseConstraint.body = createdEngine.getBodiesUnderPos(mouse.cur);
     }
-    if (disabled) return;
-    const { body } = mouseConstraint;
+        
     let constraint = mouseConstraint.constraint;
     if (!constraint) {
         constraint = Constraint.create({
@@ -521,8 +520,15 @@ function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine
         createdEngine.addToWorld(constraint);
     }
 
+    if (disabled) {
+        constraint.bodyB = null;
+        constraint.pointB = null;
+        return;
+    }
+    
     if (mouse.cur.button === 0) {
-            if (!constraint.bodyB) {
+        if (!constraint.bodyB) {
+            const { body } = mouseConstraint;
                 if (body) {
                     if (Bounds.contains(body.bounds, mouse.cur)
                     //    && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)
