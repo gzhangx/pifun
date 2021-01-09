@@ -7,7 +7,7 @@ import { showCannonHolder, createCannon } from '../objs/Cannon';
 import { createCar} from '../objs/simplecar';
 import { postRender } from './unitui';
 import { get } from 'lodash';
-import { sendWsPlayerInputs } from './inputTransfer';
+
 import { sendSyncMessage } from './multiplayer';
 
 const MAX_WALL_WIDTH = 200;
@@ -73,13 +73,7 @@ const arrowDir = {
 
 function run(core, props) {    
     //const { props } = opt;    
-    const { setCurDebugText } = props.inputs;         
-    //const { mouseConstraint } = core;
-    
-    //const mouse = core.states.mouse;
-    const curPlayerInputState = core.getCurPlayerInputState();
-    sendWsPlayerInputs(core);    
-    
+    const { setCurDebugText } = props.inputs;
     const { engine,  Composite, } = core.createdEngine;
     const { worldOperations,
         doSelect,
@@ -87,18 +81,14 @@ function run(core, props) {
         showSelect,
         doTranslate,
     } = core.worldCon;
-    //removeBadBodies();
-    //processCollisions(core);
+    
     worldOperations();
     const allBodies = Composite.allBodies(engine.world);
     
     const side = core.inputs.curSide;
     
     //setCurDebugText("key=" + key + ` bodyCnt=${allBodies.length} cnsts=${Composite.allConstraints(engine.world).length}`);
-                
-    //if (core.inputs.curBuildType === 'wall') 
-
-    //if (isSelect) 
+                    
     core.playersInfo.playerIds.map(pid => {
         doSelect(pid);
         //props.inputs.setUISelectedObj(core.selectObj);
@@ -141,16 +131,17 @@ function run(core, props) {
     core.playersInfo.playerIds.forEach(pid => {
         const cur = get(core.playersInfo.players, [pid, 'playerInputState']);
         if (!cur) return;
-        const mouse = cur.mouse;
-        mouseProcessing(core, { mouse, curBuildType: cur.curBuildType, allBodies, side }, setCurDebugText);
+        //const mouse = cur.mouse;
+        mouseProcessing(core, { cur, allBodies, side }, setCurDebugText);
     });
     sendSyncMessage(core);
 }
 
 
-function mouseProcessing(core, { mouse, curBuildType, allBodies,
+function mouseProcessing(core, { cur, allBodies,
     side
 }, setCurDebugText) {
+    const { mouse, curBuildType, mouseConstraint } = cur;
     const isWallMode = curBuildType === 'wall';
     const isFireMode = curBuildType === 'fire';
     const isCannonMode = curBuildType === 'cannon';
@@ -163,7 +154,6 @@ function mouseProcessing(core, { mouse, curBuildType, allBodies,
     const {
         WALLHEALTH,
     } = core.consts;
-    const { mouseConstraint } = core;
     const { rayQueryWithPoints, Vector, } = core.createdEngine;
     const { getDragCellPoints, makeCell,        
         showSelect,
@@ -171,7 +161,7 @@ function mouseProcessing(core, { mouse, curBuildType, allBodies,
         checkWallPoints,
     } = core.worldCon;
     
-    mouseConstraint.disabled = !isSelect && mouse.pressLocation;
+    mouseConstraint.disabled = !isSelect;// && mouse.pressLocation;
 
     if (isCannonMode && mouse.state === 'dragged') {
         //const c = core.render.context;
@@ -223,7 +213,7 @@ function mouseProcessing(core, { mouse, curBuildType, allBodies,
         console.log('mouse released')
         const mouseFrom = getMouse(mouse.pressLocation);
         const mouseCur = getMouse(mouse.cur);
-        core.states.mouse.pressLocation = null;
+        mouse.pressLocation = null;
 
         if (isCannonMode) {
             createCannon({ core, allBodies, side }, mouseCur);

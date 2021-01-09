@@ -28,17 +28,6 @@ export function createCore() {
         //constraints: [],
         collisions: [],
         collisionEvent: {},
-        states: {
-            mouse: {
-                state: '',
-                pressLocation: {
-                    x: null,
-                    y: null,
-                },
-                cur: null,
-            },
-            lastGoodWallPts: null,
-        },
         inputs: {
             curBuildType: 'select',
             mouse: {
@@ -54,6 +43,8 @@ export function createCore() {
             curKey: '',
             curSide: 1,
             isDesignMode: false,
+
+            mouseConstraint: null,  //current player only
         },
         playersInfo: {
             curPlayerId,
@@ -67,7 +58,11 @@ export function createCore() {
                         mouse: {
                             state: '',
                             pressLocation: null,
-                            cur: null,
+                            cur: {
+                                button: -1,
+                                x: 0,
+                                y: 0,
+                            },
                         },
                         lastGoodWallPts: null,
                         curKey: '',
@@ -79,6 +74,12 @@ export function createCore() {
                             curType: '',
                             curProcessed: false,
                             prevPos: { x: INVALID_NUM, y: INVALID_NUM}
+                        },
+
+                        mouseConstraint: {
+                            disabled: false,
+                            body: null,
+                            constraint: null,
                         },
                         events: {
                             onSelectedObjectChange: null,
@@ -128,8 +129,7 @@ export function createCore() {
             },
         },
 
-        deepCurCollisions: {},
-        mouseConstraint: null,
+        deepCurCollisions: {},        
         selectObj: {
             cur: null,
             curIndex: -1,
@@ -175,6 +175,11 @@ export function createCore() {
                         cur: null,
                         curIndex: -1,
                         curType: '',
+                    },
+                    mouseConstraint: {
+                        disabled: false,
+                        body: null,
+                        constraint: null,
                     },
                 }
             };

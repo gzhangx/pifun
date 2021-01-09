@@ -6,6 +6,7 @@ import CreateSimpleCircle from '../objs/SimpleCircle';
 import {sendWsMsg} from './socket';
 import { setupMultiplayer } from './multiplayer';
 import { get } from 'lodash';
+import { sendWsPlayerInputs } from './inputTransfer';
 
 const getConstraintOffset = (op, obj) => {
     const { angle, h } = obj;
@@ -212,14 +213,22 @@ export const createConstructor = (core) => {
         doTranslate: translate => doTranslate(core, translate),
         doFireBall: (p1, p2, side) => doFireBall(core, p1, p2, side),
         worldOperations: () => {
+            removeBadBodies();
+            processCollisions(core);
+
+            core.processMyMouseEvents();
+            core.playersInfo.playerIds.map(pid => {
+                const player = core.getPlayerInputStateById(pid);
+                core.processMouseConstraint(player);
+            });        
+            sendWsPlayerInputs(core);
+
             core.playersInfo.playerIds.map(pid => {
                 const player = core.getPlayerInputStateById(pid);
                 player.loopKey = player.curKey;
                 player.curKey = null;
                 //props.inputs.setUISelectedObj(core.selectObj);
             });
-            removeBadBodies();
-            processCollisions(core);
         },
         checkWallPoints,
     }
@@ -333,82 +342,75 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
         HEIGHT,
     } = core.consts;
     const createdEngine = core.createdEngine;
-    const { Mouse, MouseConstraint, Events } = createdEngine.Matter;
+    const { Mouse, Events, Constraint,
+        Detector, Vertices, Sleeping,
+    } = createdEngine.Matter;
 
-    const mouse = Mouse.create(canvas);
     const { engine, Matter } = createdEngine;
-    engine.mouse = mouse;
-    const mouseConstraint = MouseConstraint.create(engine, {
-        element: canvas,
-        constraint: {
-            stiffness: 0.2,
-        }
-    });
+    //engine.mouse = mouse;
+    const amouse = Mouse.create(canvas);
 
-    resetMouseConstraint(Matter)
+    //resetMouseConstraint(Matter)
 
-    const outOfBound = e => {
-        const p = e.mouse.absolute;
+    const curPlayerState = core.getCurPlayerInputState();
+    function syncMyMouse(act) {
+        const mouse = curPlayerState.mouse;
+        mouse.state = act(mouse.state);
+        const pm = mouse.cur;
+        const ap = amouse.position;
+        pm.x = ap.x;
+        pm.y = ap.y;
+        pm.button = amouse.button;
+        return mouse;
+    }
+    const outOfBound = () => {
+        const p = amouse.absolute;
         if (p.x < 0) return true;
         if (p.x > WIDTH) return true;
         if (p.y < 0) return true;
         if (p.y > HEIGHT) return true;
         return false;
     }
-    Events.on(mouseConstraint, 'mousemove', e => {
-        if (outOfBound(e)) return;
-        const p = getMouse(e.mouse.position);
-        const mouse = core.getCurPlayerInputState().mouse;
-        if (mouse.state === 'dragged' || mouse.state === 'pressed') {
-            mouse.state = 'dragged';
-        } else {
-            mouse.state = 'moved';
-        }
-        mouse.cur = p;
-        //sendWsMsg({
-        //    type: 'mouseMsg',
-        //    player: core.curPlayerId,
-        //    mouse,
-        //})
-        //core.states.mouse.state = 'dragged';
-        //core.states.mouse.cur = p;
-    });
-    Events.on(mouseConstraint, 'mousedown', e => {        
-        if (outOfBound(e)) return;
-        const p = getMouse(e.mouse.position);
-        const { mouse, selectObj } = core.getCurPlayerInputState();        
-        mouse.state = 'pressed';
-        mouse.pressLocation = p;
-        //selectObj.cur = null;
-        const buildInfo = get(selectObj, 'cur.buildInfo');
-        //sendWsMsg({
-        //    type: 'mouseMsg',
-        //    player: core.curPlayerId,
-        //    mouse,
-        //    selectObj: buildInfo,
-        //});
-        selectObj.curProcessed = false;
-        //core.states.mouse.state = 'pressed';
-        //core.states.mouse.pressLocation = p;
-        mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
-    });
-    Events.on(mouseConstraint, 'mouseup', e => {
-        const mouse = core.getCurPlayerInputState().mouse;
-        mouse.state = 'released';
-        //sendWsMsg({
-        //    type: 'mouseMsg',
-        //    player: core.curPlayerId,
-        //    mouse,
-        //})
+    const mousemove = () => {
+        syncMyMouse(state => {
+            if (state === 'dragged' || state === 'pressed') {
+                return 'dragged';
+            }
+            return 'moved';
+        });        
+    };
+    const processMyMouseEvents = () => {
+        const mouseEvents = amouse.sourceEvents;
+        if (mouseEvents.mouseup)
+            mouseup();
+        
+        if (outOfBound()) return;
+        if (mouseEvents.mousemove)
+            mousemove();
 
-        //core.states.mouse.state = 'released';
-        if (outOfBound(e)) return;
-        const p = getMouse(e.mouse.position);
-        //core.states.mouse.cur = p;
-    });
+        if (mouseEvents.mousedown)
+            mousedown();        
+
+        // reset the mouse state ready for the next step
+        Mouse.clearSourceEvents(amouse);
+    }
+    
+    const mousedown= () => {                
+        const p = getMouse(amouse.position);
+        const mouse = syncMyMouse(() => 'pressed');
+        mouse.pressLocation = p;
+
+        curPlayerState.selectObj.curProcessed = false;        
+        //mouseConstraint.body = createdEngine.getBodiesUnderPos(p);
+    };
+    const mouseup = () => {
+        //const mouse = core.getCurPlayerInputState().mouse;
+        //mouse.state = 'released';
+        syncMyMouse(() => 'released');
+    };
 
     setupMultiplayer(core);
-    core.createdEngine.addToWorld(mouseConstraint);
+    
     core.render = createRender({
         core,
         canvas,
@@ -425,8 +427,14 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
 
     core.removeFromWorld = itm => createdEngine.removeFromWorld(itm, core);
     //core.groupGroup = group;
+    core.processMouseConstraint = playerState => processMouseConstraint({
+        playerState, Constraint,
+        createdEngine,
+        Bounds, Detector, Vertices, Sleeping
+    });
+    core.processMyMouseEvents = processMyMouseEvents;
     core.worldCon = createConstructor(core);
-    core.mouseConstraint = mouseConstraint;
+    //core.inputs.actualMouse = mouse;
     core.sendWsMsg = sendWsMsg;
     const buildTypes = {
         circle: CreateSimpleCircle,
@@ -482,33 +490,52 @@ export const initWorld = (core, { canvas, run, props, renderOpts }) => {
             return acc;
         }, {});
     }
+    
     core.render.run();
 }
 
 
-function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Events, Sleeping }) {
-    MouseConstraint.update = function (mouseConstraint, bodies) {
-        if (mouseConstraint.disabled) return;
-        const mouse = mouseConstraint.mouse,
-            constraint = mouseConstraint.constraint,
-            body = mouseConstraint.body;
+function processMouseConstraint({ playerState, Constraint, Bounds, createdEngine, Vertices, Sleeping }) {
+    
+        if (playerState.mouseConstraint.disabled) return;
+    const { mouse, mouseConstraint } = playerState;
+    if (mouse.state === 'pressed') {
+        mouseConstraint.body = createdEngine.getBodiesUnderPos(mouse.cur);
+    }
+    const { body } = mouseConstraint;
+    let constraint = mouseConstraint.constraint;
+    if (!constraint) {
+        constraint = Constraint.create({
+            label: 'Mouse Constraint',
+            pointA: mouse.cur,
+            pointB: { x: 0, y: 0 },
+            length: 0.01,
+            stiffness: 0.1,
+            angularStiffness: 1,
+            render: {
+                strokeStyle: '#90EE90',
+                lineWidth: 3
+            }
+        });
+        playerState.mouseConstraint.constraint = constraint;
+        createdEngine.addToWorld(constraint);
+    }
 
-        if (mouse.button === 0) {
+        if (mouse.cur.button === 0) {
             if (!constraint.bodyB) {
                 if (body) {
-                    if (Bounds.contains(body.bounds, mouse.position)
-                        && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
+                    if (Bounds.contains(body.bounds, mouse.cur)
+                    //    && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)
+                    ) {
                         for (var j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j++) {
                             var part = body.parts[j];
-                            if (Vertices.contains(part.vertices, mouse.position)) {
-                                constraint.pointA = mouse.position;
+                            if (Vertices.contains(part.vertices, mouse.cur)) {
+                                constraint.pointA = mouse.cur;
                                 constraint.bodyB = mouseConstraint.body = body;
-                                constraint.pointB = { x: mouse.position.x - body.position.x, y: mouse.position.y - body.position.y };
+                                constraint.pointB = { x: mouse.cur.x - body.position.x, y: mouse.cur.y - body.position.y };
                                 constraint.angleB = body.angle;
 
                                 Sleeping.set(body, false);
-                                //Events.trigger(mouseConstraint, 'startdrag', { mouse: mouse, body: body });
-
                                 break;
                             }
                         }
@@ -516,7 +543,7 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
                 }
             } else {
                 Sleeping.set(constraint.bodyB, false);
-                constraint.pointA = mouse.position;
+                constraint.pointA = mouse.cur;
             }
         } else {
             constraint.bodyB = mouseConstraint.body = null;
@@ -525,7 +552,6 @@ function resetMouseConstraint({ MouseConstraint, Bounds, Detector, Vertices, Eve
             //if (body)
             //    Events.trigger(mouseConstraint, 'enddrag', { mouse: mouse, body: body });
         }
-    };
 }
 
 
@@ -534,8 +560,8 @@ function doSelect({
     removeFromWorld,
     playerId,
 }) {
-    const mouseConstraint = core.mouseConstraint;
     const playerState = core.getPlayerInputStateById(playerId);
+    const {mouseConstraint} = playerState;
     const key = playerState.loopKey;
     const { selectObj, mouse, curBuildType } = playerState;
     if (curBuildType !== 'select') return;
