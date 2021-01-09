@@ -8,21 +8,9 @@ const importFields = [
         pathes: [
             'state',            
             {
-                obj: 'pressLocation',
-                pathes: ['x','y']
-            }, {
                 obj: 'cur',
                 pathes: ['x', 'y']
             }                        
-        ]
-    }, {
-        obj: 'selectObj',
-        pathes: [
-            'cur',
-            'curIndex',
-            'curType',
-            'curProcessed',
-            'prevPos',
         ]
     }
 ];

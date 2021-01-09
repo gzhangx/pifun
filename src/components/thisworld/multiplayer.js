@@ -10,14 +10,19 @@ export function setupMultiplayer(core) {
                 console.log(`master player is ${masterPlayerId}`);
                 break;
             case 'userInputMsg':
-                const { mouse, pid, curBuildType, curKey, selectObj } = msg;
+                const { mouse, pid, curBuildType, curKey } = msg;
                 if (pid === core.playersInfo.curPlayerId) return;
                 const playerState = core.getPlayerInputStateById(pid);
                 if (!playerState.mouse) playerState.mouse = mouse;
-                else playerState.mouse = Object.assign(playerState.mouse, mouse);
-                playerState.curBuildType = curBuildType;
-                playerState.curKey = curKey;
-                playerState.selectObj = Object.assign(playerState.selectObj || {}, selectObj);
+                else {
+                    if (mouse.state) playerState.mouse.state = mouse.state;
+                    const mc = mouse.cur;
+                    if (mc) {
+                        playerState.mouse.cur = mc;                        
+                    }
+                }
+                if (curBuildType) playerState.curBuildType = curBuildType;
+                if (curKey) playerState.curKey = curKey;                
                 break;
             case 'objSyncMsg':
                 if (!core.playersInfo.isMaster()) return;
